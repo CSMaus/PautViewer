@@ -6,7 +6,8 @@
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:local="clr-namespace:PAUTViewer.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="400">
+             d:DesignHeight="450" d:DesignWidth="400"
+             x:Name="Ascan">
     <Grid>
         <s:SciChartSurface x:Name="Surface">
 
@@ -31,10 +32,9 @@
                 <s:FastLineRenderableSeries x:Name="LineSeries"
                                     StrokeThickness="2"
                                     Stroke="DodgerBlue"
-                                    DataSeries="{Binding LineDataSeries, ElementName=Root}"/>
+                                    DataSeries="{Binding LineDataSeries, ElementName=Ascan}"/>
             </s:SciChartSurface.RenderableSeries>
 
-            <!-- EXACTLY ONE VERTICAL LINE (docs style) -->
             <s:SciChartSurface.Annotations>
                 <!-- Declares a VerticalLineAnnotation; label shown on axis; editable -->
                 <s:VerticalLineAnnotation x:Name="VLine"
@@ -49,7 +49,6 @@
                     </s:VerticalLineAnnotation.AnnotationLabels>
                 </s:VerticalLineAnnotation>
             </s:SciChartSurface.Annotations>
-
         </s:SciChartSurface>
     </Grid>
 </UserControl>
