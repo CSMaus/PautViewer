@@ -6,12 +6,11 @@
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:local="clr-namespace:PAUTViewer.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="400"
+             d:DesignHeight="250" d:DesignWidth="400"
              x:Name="Ascan">
     <Grid>
         <s:SciChartSurface x:Name="Surface">
 
-            <!-- ONE X axis -->
             <s:SciChartSurface.XAxes>
                 <s:NumericAxis x:Name="XAxis"
                        AxisTitle="X"
@@ -19,7 +18,6 @@
                        VisibleRange="0,10"/>
             </s:SciChartSurface.XAxes>
 
-            <!-- ONE Y axis -->
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis x:Name="YAxis"
                        AxisTitle="Y"
@@ -27,7 +25,6 @@
                        VisibleRange="0,1"/>
             </s:SciChartSurface.YAxis>
 
-            <!-- SERIES -->
             <s:SciChartSurface.RenderableSeries>
                 <s:FastLineRenderableSeries x:Name="LineSeries"
                                     StrokeThickness="2"
@@ -36,7 +33,6 @@
             </s:SciChartSurface.RenderableSeries>
 
             <s:SciChartSurface.Annotations>
-                <!-- Declares a VerticalLineAnnotation; label shown on axis; editable -->
                 <s:VerticalLineAnnotation x:Name="VLine"
                                   Stroke="Orange"
                                   StrokeThickness="2"
