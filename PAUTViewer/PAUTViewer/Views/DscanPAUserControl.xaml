@@ -8,6 +8,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
+        <s:GradientStopsToLinearGradientBrushConverter x:Key="ColorsToLinearGradientBrushConverter"/>
+
         <s:HeatmapColorPalette x:Key="DscanColorPalette">
             <s:HeatmapColorPalette.GradientStops>
                 <GradientStop Offset="0.00" Color="#00007F"/>
@@ -20,8 +22,12 @@
             </s:HeatmapColorPalette.GradientStops>
         </s:HeatmapColorPalette>
     </UserControl.Resources>
-    
+
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <s:SciChartSurface x:Name="Surface" Padding="0" BorderThickness="0">
             <!-- Renderable series -->
             <s:SciChartSurface.RenderableSeries>
@@ -55,5 +61,17 @@
                                             DragDelta="IndexLine_OnDragDelta"/>
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
+        <s:HeatmapColorMap Grid.Column="1"
+                   Margin="0"
+                   Width="20"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Stretch"
+                   Background="{Binding Source={x:Reference Surface}, Path=Background}"
+                   Foreground="{Binding Source={x:Reference Surface}, Path=Foreground}"
+                   ColorMap="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.GradientStops, Converter={StaticResource ColorsToLinearGradientBrushConverter}}"
+                   Minimum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Minimum, Mode=TwoWay}"
+                   Maximum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Maximum, Mode=TwoWay}"
+                   Orientation="Vertical"
+                   TextFormatting="0.00"/>
     </Grid>
 </UserControl>

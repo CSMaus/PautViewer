@@ -26,7 +26,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="70" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <s:SciChartSurface x:Name="Surface" Grid.Column="0" Padding="0" BorderThickness="0">
@@ -59,18 +59,18 @@
                                     DragDelta="IndexLine_OnDragDelta" />
     </s:SciChartSurface.Annotations>
 </s:SciChartSurface>
-
-
-
-        <!-- Color bar -->
         <s:HeatmapColorMap Grid.Column="1"
-                           Margin="8"
-                           Background="{Binding Source={x:Reference Surface}, Path=Background}"
-                           Foreground="{Binding Source={x:Reference Surface}, Path=Foreground}"
-                           ColorMap="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.GradientStops, Converter={StaticResource ColorsToLinearGradientBrushConverter}}"
-                           Minimum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Minimum, Mode=TwoWay}"
-                           Maximum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Maximum, Mode=TwoWay}"
-                           Orientation="Vertical"
-                           TextFormatting="0.00"/>
+                   Margin="0"
+                   Width="20"
+                           FontSize="9"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Stretch"
+                   Background="{Binding Source={x:Reference Surface}, Path=Background}"
+                   Foreground="{Binding Source={x:Reference Surface}, Path=Foreground}"
+                   ColorMap="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.GradientStops, Converter={StaticResource ColorsToLinearGradientBrushConverter}}"
+                   Minimum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Minimum, Mode=TwoWay}"
+                   Maximum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Maximum, Mode=TwoWay}"
+                   Orientation="Vertical"
+                   TextFormatting="0.00"/>
     </Grid>
 </UserControl>

@@ -20,11 +20,12 @@
                 <GradientStop Offset="1.00" Color="#FF0000"/>
             </s:HeatmapColorPalette.GradientStops>
         </s:HeatmapColorPalette>
+        
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="80" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <!-- SciChart Surface -->
@@ -47,11 +48,9 @@
                                                       ColorMap="{StaticResource BscanColorPalette}"/>
             </s:SciChartSurface.RenderableSeries>
         </s:SciChartSurface>
-
-        <!-- Color bar -->
         <s:HeatmapColorMap Grid.Column="1"
-                           Margin="12"
-                           Width="70"
+                           Margin="0"
+                           Width="20"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Stretch"
                            Background="{Binding Source={x:Reference Surface}, Path=Background}"
