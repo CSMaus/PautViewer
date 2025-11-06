@@ -266,6 +266,14 @@ namespace PAUTViewer.ViewModels
                 MpsLim.Add(new float[] { mps[0], mps[mps.Length - 1] });
                 TofLim.Add(new float[] { Tofs[ichan][0], Tofs[ichan][Tofs[ichan].GetLength(0) - 1] });
 
+                EnsureAscending(xlims);
+                EnsureAscending(ylims);
+                EnsureAscending(MpsLim[ichan]);
+                EnsureAscending(TofLim[ichan]);
+
+                Xlims.Add(xlims);
+                Ylims.Add(ylims);
+
                 Xlims.Add(xlims);
                 Ylims.Add(ylims);
             }
@@ -625,6 +633,15 @@ namespace PAUTViewer.ViewModels
         #endregion
 
         #region Helpers
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EnsureAscending(float[] lims)
+        {
+            if (lims != null && lims.Length >= 2 && lims[1] < lims[0])
+            {
+                (lims[0], lims[1]) = (lims[1], lims[0]);
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double DegToRad(double deg) => deg * Math.PI / 180.0;
 
