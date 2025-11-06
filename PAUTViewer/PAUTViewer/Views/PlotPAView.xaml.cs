@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PAUTViewer.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -18,9 +19,10 @@ namespace PAUTViewer.Views
     /// </summary>
     public partial class PlotPAView : UserControl
     {
-        public PlotPAView()
+        public PlotPAView(PlotPAViewModel sharedPlotPAViewModel)
         {
             InitializeComponent();
+            DataContext = sharedPlotPAViewModel;
         }
     }
 }

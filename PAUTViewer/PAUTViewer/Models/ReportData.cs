@@ -324,7 +324,7 @@ namespace PAUTViewer.Models
                     StampComments = "U28"
                 }
             };
-            Defects = new ObservableCollection<DefectData>();
+            //Defects = new ObservableCollection<DefectData>();
         }
         #endregion
 

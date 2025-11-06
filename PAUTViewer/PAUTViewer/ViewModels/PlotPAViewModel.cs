@@ -136,16 +136,6 @@ namespace PAUTViewer.ViewModels
                 OnPropertyChanged(nameof(configNames));
             }
         }
-        private int _selectedConfigIndex = 0;
-        public int SelectedConfigIndex
-        {
-            get { return _selectedConfigIndex; }
-            set
-            {
-                _selectedConfigIndex = value;
-                OnPropertyChanged(nameof(SelectedConfigIndex));
-            }
-        }
 
         private int signalIndex = 10;
         private int scanIndex = 0;
@@ -290,7 +280,28 @@ namespace PAUTViewer.ViewModels
         string toSaveSignalsPath_config = "";
 
         // tabs container (used later in PlotData)
+        public ChannelUI Current
+        {
+            get
+            {
+                var i = Math.Clamp(SelectedConfigIndex, 0, Math.Max(0, Channels.Count - 1));
+                return Channels.Count > 0 ? Channels[i] : null;
+            }
+        }
         public ObservableCollection<ChannelUI> Channels { get; } = new();
+        private int _selectedConfigIndex = 0;
+        public int SelectedConfigIndex
+        {
+            get => _selectedConfigIndex;
+            set
+            {
+                if (_selectedConfigIndex == value) return;
+                _selectedConfigIndex = value;
+                OnPropertyChanged(nameof(SelectedConfigIndex));
+                OnPropertyChanged(nameof(Current));           // <— important
+            }
+        }
+
 
         public void PlotData()
         {
