@@ -27,7 +27,7 @@ namespace PAUTViewer.ProjectUtilities
 
                         cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(
                             notificationLifetime: TimeSpan.FromSeconds(3),
-                            maximumNotificationCount: MaximumNotificationCount.FromCount(5));
+                            maximumNotificationCount: MaximumNotificationCount.FromCount(3));
 
                         cfg.Dispatcher = Application.Current.Dispatcher;
                     });

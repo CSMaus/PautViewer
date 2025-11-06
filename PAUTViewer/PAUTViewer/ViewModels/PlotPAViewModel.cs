@@ -14,6 +14,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Globalization;
+using System.Linq;
+using ToastNotifications.Messages;
 
 namespace PAUTViewer.ViewModels
 {
@@ -39,27 +41,6 @@ namespace PAUTViewer.ViewModels
 
         private int[] channels;
 
-        private List<string> _configNames;
-        public List<string> configNames
-        {
-            get { return _configNames; }
-            set
-            {
-                _configNames = value;
-                OnPropertyChanged(nameof(configNames));
-            }
-        }
-        private int _selectedConfigIndex = 0;
-        public int SelectedConfigIndex
-        {
-            get { return _selectedConfigIndex; }
-            set
-            {
-                _selectedConfigIndex = value;
-                OnPropertyChanged(nameof(SelectedConfigIndex));
-            }
-        }
-
         public List<float[]> Tofs { get; set; }
         public List<float[]> Mps { get; set; }
         public List<float[]> Depths { get; set; }
@@ -79,11 +60,6 @@ namespace PAUTViewer.ViewModels
         public List<float[]> TofLim { get; private set; }
         private List<float> ScanStep { get; set; }
 
-        private int signalIndex = 10;
-        private int scanIndex = 0;
-        private bool isUpdatingLinkedLinesDepth = false;
-        private bool isUpdatingLinkedLinesScan = false;
-        private bool isUpdatingSelectedRect = false;
         private uint numAngles { get; set; }
         public int numChannels { get; set; }
         private float SoundVel;
@@ -93,7 +69,8 @@ namespace PAUTViewer.ViewModels
 
 
         // here store information with all scan plots
-        public ObservableCollection<TabContentViewModel> ChannelTabs { get; } = new ObservableCollection<TabContentViewModel>();
+        // public ObservableCollection<TabContentViewModel> ChannelTabs { get; } = new ObservableCollection<TabContentViewModel>();
+
 
         private int _selectedTabIndex = -1;
         public int SelectedTabIndex
@@ -146,6 +123,38 @@ namespace PAUTViewer.ViewModels
         public List<string> InspectionMethods { get; } = Enum.GetNames(typeof(InspectionMethodType)).ToList();
 
         #endregion
+
+        #region Scans Fields and Variables
+
+        private List<string> _configNames;
+        public List<string> configNames
+        {
+            get { return _configNames; }
+            set
+            {
+                _configNames = value;
+                OnPropertyChanged(nameof(configNames));
+            }
+        }
+        private int _selectedConfigIndex = 0;
+        public int SelectedConfigIndex
+        {
+            get { return _selectedConfigIndex; }
+            set
+            {
+                _selectedConfigIndex = value;
+                OnPropertyChanged(nameof(SelectedConfigIndex));
+            }
+        }
+
+        private int signalIndex = 10;
+        private int scanIndex = 0;
+        private bool isUpdatingLinkedLinesDepth = false;
+        private bool isUpdatingLinkedLinesScan = false;
+        private bool isUpdatingSelectedRect = false;
+
+        #endregion
+
 
         private DataLoader loadedData;
         public PlotPAViewModel(DataLoader loadedData)
@@ -315,11 +324,8 @@ namespace PAUTViewer.ViewModels
                 NotificationManager.Notifier.ShowError(notificationText);
                 return;
             }
-            _isCscanWindowOpen = new List<bool>();
-            // TabClient = new InterTabClient();
             foreach (int ichan in channels)
             {
-                _isCscanWindowOpen.Add(false);
                 AscanPAUserControl ascanControl = new AscanPAUserControl();
                 ascanControl.CreateAscanPlotModel(MpsLim[ichan], Alims[ichan], ichan);
                 // choose middle scan
@@ -331,7 +337,7 @@ namespace PAUTViewer.ViewModels
                 // MyAscanControls.Add(ascanControl);
 
                 CscanPAUserControl cscanControl = new CscanPAUserControl();
-                cscanControl.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1], ScanStep[ichan], _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0]);
+                cscanControl.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1], _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], ScanStep[ichan]);
                 // let's try SigDps, better for max Angle == 0
                 // if isReshaped == true and Ylims, then plot is D-scan
                 // otherwise, it's C-scan
@@ -351,7 +357,7 @@ namespace PAUTViewer.ViewModels
                 BscanPAUserControl bscanControl = new BscanPAUserControl();
                 bscanControl.CreateScanPlotModel(ichan, Ylims[ichan], Xlims[ichan], Alims[ichan][1], lineSeries1, lineSeries2, bPalette);
                 bscanControl.UpdateScanPlotModel(SigPa[ichan], (int)ScanLims[ichan][0] + 1, Xlims[ichan], Ylims[ichan], 1);
-                bscanControl.ArrowMoved += MyBscanControl_LineMoved;
+                //bscanControl.ArrowMoved += MyBscanControl_LineMoved;
 
 
                 int numBeams = _sigDpsLengths[ichan][0];
@@ -440,20 +446,24 @@ namespace PAUTViewer.ViewModels
 
                 ChannelTabs.Add(tabContent);
             }
-            AddSNRDefectsIntoDevTable = new RelayCommand(() => DefineRectangularDefectLocations(0, true));
-            AddRectangularDefects_DEVELOPER_Command = new RelayCommand(() => AddRectangularDefects_DEVELOPER(0));
 
-            BindAllScanPlots();
-            CreateAnalysisPlot();
-            totalAreaPointNumber = ChannelTabs[0].CscanPlot.CscanData.GetLength(0) * ChannelTabs[0].CscanPlot.CscanData.GetLength(1);
             _selectedConfigIndex = 0;
             SelectedConfigIndex = 0;
 
-            PredictAndDisplayDefects = new RelayCommand(() => MakePredictionsForAllScanData());
-
             FillAIInspectionFileInfo();
             SelectedTabIndex = 0;
-            RecalculateDscanGates_ClickCommand = new RelayCommand(() => RecalculateDscanGates());
+
+            //AddSNRDefectsIntoDevTable = new RelayCommand(() => DefineRectangularDefectLocations(0, true));
+            //AddRectangularDefects_DEVELOPER_Command = new RelayCommand(() => AddRectangularDefects_DEVELOPER(0));
+
+            //BindAllScanPlots();
+            //CreateAnalysisPlot();
+            //totalAreaPointNumber = ChannelTabs[0].CscanPlot.CscanData.GetLength(0) * ChannelTabs[0].CscanPlot.CscanData.GetLength(1);
+
+            //PredictAndDisplayDefects = new RelayCommand(() => MakePredictionsForAllScanData());
+
+            //RecalculateDscanGates_ClickCommand = new RelayCommand(() => RecalculateDscanGates());
+
 
             DscanMeanValues = new float[ChannelTabs[0].DscanPlot.CscanData.GetLength(1)];
             foreach (int ichan in channels)
@@ -634,6 +644,16 @@ namespace PAUTViewer.ViewModels
             ResetDepthLimsBasedOnGates(ichan);
         }
 
+        private bool _isBilateralFilterAscan = false;
+        public bool IsBilateralFilterAscan
+        {
+            get => _isBilateralFilterAscan;
+            set
+            {
+                _isBilateralFilterAscan = value;
+                OnPropertyChanged(nameof(IsBilateralFilterAscan));
+            }
+        }
         public (double[,], List<(int, int)>) ComputeMaskByRowAggregate(double[,] inputData, bool useMedian = false)
         {
             // calculated accumulated signal: from 2D get 1D signal
@@ -829,6 +849,125 @@ namespace PAUTViewer.ViewModels
                 _execute();
             }
         }
+
+        public void ClearData()
+        {
+
+            //if (_analysisWindow != null && _analysisWindow.IsLoaded) _analysisWindow.Close();
+            //if (_aiDefectDetectionWindow != null && _aiDefectDetectionWindow.IsLoaded) _aiDefectDetectionWindow.Close();
+            //if (_dataDevTestWindow != null && _dataDevTestWindow.IsLoaded) _dataDevTestWindow.Close();
+            //if (_fileInfoWindow != null && _fileInfoWindow.IsLoaded) _fileInfoWindow.Close();
+
+            //_analysisWindow = null;
+            //_aiDefectDetectionWindow = null;
+            //_dataDevTestWindow = null;
+            //_fileInfoWindow = null;
+
+            //// Clear user control references
+            //AscanUserControl = null;
+            //BscanUserControl = null;
+            //CscanUserControl = null;
+            //DscanUserControl = null;
+
+            // Clear large data collections - these are the main memory consumers
+            Tofs?.Clear();
+            Tofs = null;
+
+            SigDps?.Clear();
+            SigDps = null;
+
+            CscanSig?.Clear();
+            CscanSig = null;
+
+            Mps?.Clear();
+            Mps = null;
+
+            Depths?.Clear();
+            Depths = null;
+
+            Dists?.Clear();
+            Dists = null;
+
+
+            Angles?.Clear();
+            Angles = null;
+
+            Alims?.Clear();
+            Alims = null;
+
+            Indexes?.Clear();
+            Indexes = null;
+
+            Xlims?.Clear();
+            Xlims = null;
+
+            Ylims?.Clear();
+            Ylims = null;
+
+            MpsLim?.Clear();
+            MpsLim = null;
+
+            TofLim?.Clear();
+            TofLim = null;
+
+            _sigDpsLengths?.Clear();
+            _sigDpsLengths = null;
+
+            ScanLims?.Clear();
+            ScanLims = null;
+
+            ScanStep?.Clear();
+            ScanStep = null;
+
+
+            // Clear analysis and defect data
+            //RectangleInfos?.Clear();
+            //RectangleInfos = null;
+
+            //DefectDatas?.Clear();
+            //DefectDatas = null;
+
+            // Clear file information
+            FileInfoList?.Clear();
+            FileInfoList = null;
+
+            configNames?.Clear();
+            configNames = null;
+
+            // Clear other collections and dictionaries
+            //Entries?.Clear();
+            //Entries = new Dictionary<string, Dictionary<string, float>>();
+
+            // Clear channel tabs
+            //ChannelTabs.Clear();
+
+            // Reset basic properties
+            FilePath = null;
+            FileInfo = null;
+            channels = null;
+            SelectedConfigIndex = 0;
+            numChannels = 0;
+            numAngles = 0;
+            SoundVel = 0;
+            signalIndex = 10;
+            scanIndex = 0;
+
+            // Clear inspection info
+            aiInspectionFileInfo = null;
+            _ReportData = null;
+
+            if (loadedData != null)
+            {
+                loadedData.ClearData(); // Will need to add this method to DataLoader
+                loadedData = null;
+            }
+
+            // Force garbage collection to free memory immediately
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

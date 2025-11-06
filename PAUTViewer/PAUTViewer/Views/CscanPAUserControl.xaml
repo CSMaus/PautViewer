@@ -1,0 +1,76 @@
+﻿<UserControl x:Class="PAUTViewer.Views.CscanPAUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
+             xmlns:local="clr-namespace:PAUTViewer.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <s:GradientStopsToLinearGradientBrushConverter x:Key="ColorsToLinearGradientBrushConverter"/>
+
+        <!-- Jet-like palette -->
+        <s:HeatmapColorPalette x:Key="CscanColorPalette" Minimum="0" Maximum="1">
+            <s:HeatmapColorPalette.GradientStops>
+                <GradientStop Offset="0.00" Color="#00007F"/>
+                <GradientStop Offset="0.17" Color="#0000FF"/>
+                <GradientStop Offset="0.33" Color="#00FFFF"/>
+                <GradientStop Offset="0.50" Color="#00FF00"/>
+                <GradientStop Offset="0.67" Color="#FFFF00"/>
+                <GradientStop Offset="0.83" Color="#FF7F00"/>
+                <GradientStop Offset="1.00" Color="#FF0000"/>
+            </s:HeatmapColorPalette.GradientStops>
+        </s:HeatmapColorPalette>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="70" />
+        </Grid.ColumnDefinitions>
+
+        <s:SciChartSurface x:Name="Surface" Grid.Column="0" Padding="0" BorderThickness="0">
+            <s:SciChartSurface.RenderableSeries>
+                <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries"
+                                              Opacity="0.95"
+                                              ColorMap="{StaticResource CscanColorPalette}"/>
+            </s:SciChartSurface.RenderableSeries>
+
+            <s:SciChartSurface.XAxis>
+                <s:NumericAxis x:Name="XAxis" />
+            </s:SciChartSurface.XAxis>
+            <s:SciChartSurface.YAxis>
+                <s:NumericAxis x:Name="YAxis" />
+            </s:SciChartSurface.YAxis>
+
+            <!-- Correct -->
+            <s:SciChartSurface.Annotations>
+                <s:VerticalLineAnnotation x:Name="ScanLine"
+                                  Stroke="Black"
+                                  StrokeThickness="2"
+                                  X1="0"
+                                  IsEditable="True"
+                                  DragDelta="ScanLine_OnDragDelta" />
+                <s:HorizontalLineAnnotation x:Name="IndexLine"
+                                    Stroke="Black"
+                                    StrokeThickness="2"
+                                    Y1="0"
+                                    IsEditable="True"
+                                    DragDelta="IndexLine_OnDragDelta" />
+            </s:SciChartSurface.Annotations>
+        </s:SciChartSurface>
+
+
+
+        <!-- Color bar -->
+        <s:HeatmapColorMap Grid.Column="1"
+                           Margin="8"
+                           Background="{Binding Source={x:Reference Surface}, Path=Background}"
+                           Foreground="{Binding Source={x:Reference Surface}, Path=Foreground}"
+                           ColorMap="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.GradientStops, Converter={StaticResource ColorsToLinearGradientBrushConverter}}"
+                           Minimum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Minimum, Mode=TwoWay}"
+                           Maximum="{Binding Source={x:Reference HeatmapSeries}, Path=ColorMap.Maximum, Mode=TwoWay}"
+                           Orientation="Vertical"
+                           TextFormatting="0.00"/>
+    </Grid>
+</UserControl>
