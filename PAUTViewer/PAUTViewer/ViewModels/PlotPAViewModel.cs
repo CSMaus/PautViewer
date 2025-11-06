@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq; // <-- needed for ToList(), Min/Max LINQ, etc.
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
@@ -42,6 +41,12 @@ namespace PAUTViewer.ViewModels
 
         private int[] channels;
 
+        private string _depthMin;
+        public string DepthMin { get => _depthMin; set { _depthMin = value; OnPropertyChanged(nameof(DepthMin)); } }
+
+        private string _depthMax;
+        public string DepthMax { get => _depthMax; set { _depthMax = value; OnPropertyChanged(nameof(DepthMax)); } }
+
         public List<float[]> Tofs { get; set; }
         public List<float[]> Mps { get; set; }
         public List<float[]> Depths { get; set; }
@@ -66,6 +71,17 @@ namespace PAUTViewer.ViewModels
         private float SoundVel;
         Stopwatch stopwatch = new Stopwatch();
         public bool IsResettingGUI { get; set; } = false;
+
+        private List<string> _exportOptions;
+        public List<string> ExportOptions
+        {
+            get { return _exportOptions; }
+            set
+            {
+                _exportOptions = value;
+                OnPropertyChanged(nameof(ExportOptions));
+            }
+        }
 
 
 
@@ -292,71 +308,56 @@ namespace PAUTViewer.ViewModels
 
             foreach (int ichan in channels)
             {
-                // === Create 4 plots ===
-                var ascanControl = new AscanPAUserControl();
-                ascanControl.CreateAscanPlotModel(MpsLim[ichan], Alims[ichan], ichan);
+                var a = new AscanPAUserControl();
+                a.CreateAscanPlotModel(MpsLim[ichan], Alims[ichan], ichan);
+                a.UpdateAscanPlotModel(SigDps[ichan],
+                    _sigDpsLengths[ichan][0] / 2,
+                    _sigDpsLengths[ichan][1] / 2,
+                    MpsLim[ichan], 1);
 
-                int scanIdxA = (int)(_sigDpsLengths[ichan][1] / 2);
-                int sigIdxA = (int)(_sigDpsLengths[ichan][0] / 2);
-                ascanControl.UpdateAscanPlotModel(SigDps[ichan], sigIdxA, scanIdxA, MpsLim[ichan], 1);
+                var c = new CscanPAUserControl();
+                c.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1],
+                                      _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], ScanStep[ichan]);
+                c.UpdateScanPlotModel(SigDps[ichan], -1, -1);
 
-                var cscanControl = new CscanPAUserControl();
-                cscanControl.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1],
-                                                 _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], ScanStep[ichan]);
-                // C-scan (isReshaped=false):
-                cscanControl.UpdateScanPlotModel(SigDps[ichan],-1, -1);
-
-                var dscanControl = new DscanPAUserControl();
-                dscanControl.CreateScanPlotModel(
+                var d = new DscanPAUserControl();
+                d.CreateScanPlotModel(
                     channel: ichan,
-                    scansLims: ScanLims[ichan],                 // X axis
-                    xlims: Xlims[ichan],                        // Y axis (index)
-                    depthWorldRange: (Ylims[ichan][0], Ylims[ichan][1]), // Z colormap range
+                    scansLims: ScanLims[ichan],                 // X
+                    xlims: Xlims[ichan],                        // Y
+                    depthWorldRange: (Ylims[ichan][0], Ylims[ichan][1]),  // Z colormap
                     ampMaxAbs: Alims[ichan][1],
                     scanCount: _sigDpsLengths[ichan][1],
                     sampleCount: _sigDpsLengths[ichan][0],
                     scanStep: ScanStep[ichan],
                     indexStep: 1.0
                 );
-                // paint
-                dscanControl.UpdateScanPlotModel(
-                    currentData: SigDps[ichan],
-                    depthMinIdx: 0,
-                    depthMaxIdx: _sigDpsLengths[ichan][2],
-                    ampRelMin: 0.3,
-                    ampRelMax: 1.0,
-                    softGain: 1f
-                );
+                d.UpdateScanPlotModel(SigDps[ichan], 0, _sigDpsLengths[ichan][2], 0.3, 1.0, 1f);
 
-                var bscanControl = new BscanPAUserControl();
-                // NOTE: SciChart version does not need OxyPlot line series/palette
-                bscanControl.CreateScanPlotModel(ichan, Ylims[ichan], Xlims[ichan], Alims[ichan][1]);
-                bscanControl.UpdateScanPlotModel(SigDps[ichan], (int)ScanLims[ichan][0] + 1, Xlims[ichan], Ylims[ichan], 1);
+                var b = new BscanPAUserControl();
+                b.CreateScanPlotModel(ichan, Ylims[ichan], Xlims[ichan], Alims[ichan][1]);
+                b.UpdateScanPlotModel(SigDps[ichan], (int)ScanLims[ichan][0] + 1, Xlims[ichan], Ylims[ichan], 1);
 
-                // === Create tab VM ===
-                int numBeams = _sigDpsLengths[ichan][0];
-
-
-                // === NEW: Coordinator wiring per channel (no data copies, no feature removal) ===
-                var ctx = new ChannelContext(
-                    ichan,
-                    SigDps[ichan],
-                    MpsLim[ichan],
-                    Xlims[ichan],
-                    Ylims[ichan],
-                    ScanLims[ichan],
-                    Alims[ichan]);
-
+                // Coordinator wiring (NO ad-hoc "+=" handlers)
+                var ctx = new ChannelContext(ichan, SigDps[ichan], MpsLim[ichan], Xlims[ichan], Ylims[ichan], ScanLims[ichan], Alims[ichan]);
                 var st = new ScanState();
                 st.SetScanIndex(_sigDpsLengths[ichan][1] / 2);
                 st.SetSampleIndex(_sigDpsLengths[ichan][0] / 2);
                 st.SetDepthGate(0, _sigDpsLengths[ichan][2] - 1);
                 st.SetGain(1f);
+                var coord = new ScanCoordinator(ctx, st, a, b, c, d);
 
-                var coord = new ScanCoordinator(ctx, st,
-                                                ascanControl, bscanControl,
-                                                cscanControl, dscanControl);
-                // If you want to access later, you can store ctx/st/coord into tabContent
+                Channels.Add(new ChannelUI
+                {
+                    Channel = ichan,
+                    Ascan = a,
+                    Bscan = b,
+                    Cscan = c,
+                    Dscan = d,
+                    Context = ctx,
+                    State = st,
+                    Coordinator = coord
+                });
             }
 
             _selectedConfigIndex = 0;
@@ -392,7 +393,6 @@ namespace PAUTViewer.ViewModels
                 DBName = "Database Name"
             };
 
-            RowHeightExport = new GridLength(0);
             ExportOptions = new List<string>() { "Export CSV", "Export DB" };
 
             aiInspectionFileInfo = inf;
@@ -411,32 +411,25 @@ namespace PAUTViewer.ViewModels
             }
         }
 
-        /*
         private void ResetDepthLimsBasedOnGates(int ichan)
         {
+            var cscan = Channels[ichan].Cscan;
             if (Application.Current.Resources["gateFirstReflection"] is string k1 &&
-                ChannelTabs[ichan].CscanPlot.Gates.TryGetValue(k1, out var t1))
-            {
-                var mpsFirst = t1.Item3;
-                ChannelTabs[ichan].DepthMin = Math.Round(mpsFirst, 2)
-                                                 .ToString(CultureInfo.InvariantCulture);
-            }
+                cscan.Gates.TryGetValue(k1, out var t1))
+                DepthMin = Math.Round(t1.Item3, 2).ToString(CultureInfo.InvariantCulture);
 
             if (Application.Current.Resources["gateSecondReflection"] is string k2 &&
-                ChannelTabs[ichan].CscanPlot.Gates.TryGetValue(k2, out var t2))
-            {
-                var mpsSecond = t2.Item4;
-                ChannelTabs[ichan].DepthMax = Math.Round(mpsSecond, 2)
-                                                 .ToString(CultureInfo.InvariantCulture);
-            }
+                cscan.Gates.TryGetValue(k2, out var t2))
+                DepthMax = Math.Round(t2.Item4, 2).ToString(CultureInfo.InvariantCulture);
         }
 
 
+        /*
         
         public void RecalculateDscanGates(bool isSelectedChannel = true, int ichan = 0)
         {
             ichan = isSelectedChannel ? SelectedConfigIndex : ichan;
-            double[,] dataDscan = ChannelTabs[ichan].DscanPlot.CscanData;
+            double[,] dataDscan = Channels[ichan].Dscan.CscanData;
             float siglen = _sigDpsLengths[ichan][2];
             float mpsLen = MpsLim[ichan][1] - MpsLim[ichan][0];
 
@@ -447,13 +440,13 @@ namespace PAUTViewer.ViewModels
             int firstIndex_prev = 0;
             int secondIndex_prev = 0;
 
-            var keysToRemove = ChannelTabs[ichan].CscanPlot.Gates.Keys.ToArray();
-            ChannelTabs[ichan].CscanPlot.SelectedGateKey = null;
+            var keysToRemove = Channels[ichan].Cscan.Gates.Keys.ToArray();
+            Channels[ichan].Cscan.SelectedGateKey = null;
             foreach (var key in keysToRemove)
-                ChannelTabs[ichan].CscanPlot.Gates.Remove(key);
+                Channels[ichan].Cscan.Gates.Remove(key);
 
             string gatesKey = Application.Current.Resources["gateFullDepth"] as string;
-            ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (0, (int)siglen - 1, MpsLim[ichan][0], MpsLim[ichan][1]);
+            Channels[ichan].Cscan.Gates[gatesKey] = (0, (int)siglen - 1, MpsLim[ichan][0], MpsLim[ichan][1]);
 
             foreach ((int start, int end) in GatesIdxs)
             {
@@ -469,10 +462,10 @@ namespace PAUTViewer.ViewModels
                 if (lineIdx == 0)
                 {
                     gatesKey = Application.Current.Resources["gateWater"] as string;
-                    //ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
+                    //Channels[ichan].Cscan.Gates[gatesKey] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
 
                     gatesKey = Application.Current.Resources["gateFirstReflection"] as string;
-                    //ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                    //Channels[ichan].Cscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                 }
                 else
                 {
@@ -482,18 +475,18 @@ namespace PAUTViewer.ViewModels
                     if (lineIdx == 1)
                     {
                         gatesKey = Application.Current.Resources["gateSpecimenThickness"] as string;
-                        //ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (secondIndex_prev, firstIndex, mpsSecond_prev, mpsFirst);
+                        //Channels[ichan].Cscan.Gates[gatesKey] = (secondIndex_prev, firstIndex, mpsSecond_prev, mpsFirst);
 
                         gatesKey = Application.Current.Resources["gateSecondReflection"] as string;
-                        //ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                        //Channels[ichan].Cscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                     }
                     else
                     {
                         gatesKey = Application.Current.Resources["gateBeforeReflection"] as string;
-                        //ChannelTabs[ichan].CscanPlot.Gates[$"{gatesKey} {lineIdx}"] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
+                        //Channels[ichan].Cscan.Gates[$"{gatesKey} {lineIdx}"] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
 
                         gatesKey = Application.Current.Resources["gateReflection"] as string;
-                        //ChannelTabs[ichan].CscanPlot.Gates[$"{gatesKey} {lineIdx}"] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                        //Channels[ichan].Cscan.Gates[$"{gatesKey} {lineIdx}"] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                     }
                 }
 
@@ -505,11 +498,11 @@ namespace PAUTViewer.ViewModels
             float secondIndex_lastPRC = Math.Clamp((float)secondIndex_prev / siglen, 0f, 1f);
             float mpsSecond_last = MpsLim[ichan][0] + mpsLen * secondIndex_lastPRC;
             //gatesKey = Application.Current.Resources["gateBelowLastReflection"] as string;
-            //ChannelTabs[ichan].CscanPlot.Gates[gatesKey] = (secondIndex_prev, (int)siglen - 1, mpsSecond_last, MpsLim[ichan][1] - mpsLen / 100);
+            //Channels[ichan].Cscan.Gates[gatesKey] = (secondIndex_prev, (int)siglen - 1, mpsSecond_last, MpsLim[ichan][1] - mpsLen / 100);
 
-            //ChannelTabs[ichan].CscanPlot.Gates = new Dictionary<string, (int, int, float, float)>(ChannelTabs[ichan].CscanPlot.Gates);
-            //ChannelTabs[ichan].CscanPlot.GatesPropertyChanged();
-            //if (IsDisplayGatesMask) ChannelTabs[ichan].DscanPlot.AddDefectedMask(mask, ScanLims[ichan], Ylims[ichan]);
+            //Channels[ichan].Cscan.Gates = new Dictionary<string, (int, int, float, float)>(Channels[ichan].Cscan.Gates);
+            //Channels[ichan].Cscan.GatesPropertyChanged();
+            //if (IsDisplayGatesMask) Channels[ichan].Dscan.AddDefectedMask(mask, ScanLims[ichan], Ylims[ichan]);
 
             ResetDepthLimsBasedOnGates(ichan);
         }
@@ -812,6 +805,7 @@ namespace PAUTViewer.ViewModels
         public event Action<int> SampleIndexChanged;
         public event Action<int, int> DepthGateChanged;
         public event Action<float> GainChanged;
+        public event Action<double, double> AmpLimitsChanged;
 
         public void SetScanIndex(int v) { if (v == ScanIndex) return; ScanIndex = v; ScanIndexChanged?.Invoke(v); }
         public void SetSampleIndex(int v) { if (v == SampleIndex) return; SampleIndex = v; SampleIndexChanged?.Invoke(v); }
@@ -840,5 +834,6 @@ namespace PAUTViewer.ViewModels
         public ChannelContext Context { get; init; }
         public ScanState State { get; init; }
         public ScanCoordinator Coordinator { get; init; }
+
     }
 }

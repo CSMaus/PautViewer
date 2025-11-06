@@ -37,6 +37,11 @@ namespace PAUTViewer.Views
         private int _channel;
         double _xStart, _xStep, _yStart, _yStep;
 
+        public Dictionary<string, (int startIdx, int endIdx, float yMinWorld, float yMaxWorld)> Gates { get; set; }
+                 = new Dictionary<string, (int, int, float, float)>();
+        public string? SelectedGateKey { get; set; }
+        public void GatesPropertyChanged() => OnPropertyChanged(nameof(Gates));
+
         #endregion
 
         public CscanPAUserControl()

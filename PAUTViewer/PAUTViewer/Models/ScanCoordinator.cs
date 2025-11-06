@@ -3,6 +3,7 @@ using PAUTViewer.Views;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Documents;
 
 namespace PAUTViewer.Models
 {
@@ -28,6 +29,7 @@ namespace PAUTViewer.Models
 
             // If D-scan also has a scan line the user can drag, keep both in sync:
             _d.LineMovedScan += OnDscanScanMoved;
+            _d.LineMovedIndex += OnDscanIndexMoved;
 
             _a.LineMovedMin += OnAscanGateMinMoved;
             _a.LineMovedMax += OnAscanGateMaxMoved;
@@ -43,8 +45,7 @@ namespace PAUTViewer.Models
         {
             int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
             _st.SetScanIndex(scan);
-            // keep D-scan line synced visually (optional)
-            _d.UpdateScanLinePosition(scan);
+            _d.UpdateScanLinePosition(scan); // keep D-scan line synced visually
             UpdateAscan(); UpdateBscan(); UpdateDscan();
         }
 
@@ -56,11 +57,19 @@ namespace PAUTViewer.Models
             _c.UpdateScanLinePosition(scan);
             UpdateAscan(); UpdateBscan(); UpdateDscan();
         }
+        private void OnDscanIndexMoved(object? sender, float yWorld, int _)
+        {
+            int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
+            _st.SetSampleIndex(sample);
+            _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (sample / (double)(_ctx.Samples - 1)));
+            UpdateBscan();
+        }
 
         private void OnCscanIndexMoved(object? sender, float yWorld, int _)
         {
             int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
             _st.SetSampleIndex(sample);
+            _d.UpdateIndexLinePosition(sample);
             UpdateBscan();
         }
 
@@ -112,6 +121,7 @@ namespace PAUTViewer.Models
                 softGain: _st.Gain
             );
             _d.UpdateScanLinePosition(_st.ScanIndex);
+            _d.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Samples - 1)));
         }
 
         // ---- utils ----

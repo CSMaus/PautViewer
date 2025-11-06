@@ -32,5 +32,14 @@ namespace PAUTViewer
         {
             InitializeComponent();
         }
+
+        public void UpdatePAPlotDataContext(PlotPAViewModel viewModel)
+        {
+            // maybe do not need this anymore bcs of the SharedPlotPAViewModel, but it will be here for now
+            plotPAView.DataContext = null;
+            plotPAView.DataContext = viewModel;
+            //flawTableUserControl.DataContext = viewModel;
+        }
+
     }
 }

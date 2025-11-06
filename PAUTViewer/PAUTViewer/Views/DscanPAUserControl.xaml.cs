@@ -69,7 +69,7 @@ namespace PAUTViewer.Views
             _channel = channel;
 
             _scans = Math.Max(1, scanCount);   // height
-            _samples = Math.max(1, sampleCount); // width
+            _samples = Math.Max(1, sampleCount); // width
 
             _scanMin = scansLims[0];
             _scanMax = scansLims[1];
