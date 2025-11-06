@@ -33,12 +33,23 @@
             </s:SciChartSurface.RenderableSeries>
 
             <s:SciChartSurface.Annotations>
-                <s:VerticalLineAnnotation x:Name="VLine"
-                                  Stroke="Orange"
+                <s:VerticalLineAnnotation x:Name="VLineMin"
+                                  Stroke="LightGreen"
                                   StrokeThickness="2"
-                                  X1="5"
+                                  X1="1"
                                   IsEditable="True"
-                                  LabelTextFormatting="$0.00"
+                                  LabelTextFormatting="0.00"
+                                  ShowLabel="True">
+                    <s:VerticalLineAnnotation.AnnotationLabels>
+                        <s:AnnotationLabel LabelPlacement="Axis"/>
+                    </s:VerticalLineAnnotation.AnnotationLabels>
+                </s:VerticalLineAnnotation>
+                <s:VerticalLineAnnotation x:Name="VLineMax"
+                                  Stroke="LightBlue"
+                                  StrokeThickness="2"
+                                  X1="8"
+                                  IsEditable="True"
+                                  LabelTextFormatting="0.00"
                                   ShowLabel="True">
                     <s:VerticalLineAnnotation.AnnotationLabels>
                         <s:AnnotationLabel LabelPlacement="Axis"/>

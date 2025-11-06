@@ -8,6 +8,16 @@
         mc:Ignorable="d"
         Title="PAUT Viewer" Height="450" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Frame x:Name="ExplorerFrame" NavigationUIVisibility="Hidden" Grid.Row="0"/>
+        <Frame x:Name="PAFrame" NavigationUIVisibility="Hidden" Grid.Row="1"/>
 
     </Grid>
 </Window>

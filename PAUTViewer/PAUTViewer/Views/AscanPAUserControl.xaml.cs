@@ -21,6 +21,7 @@ namespace PAUTViewer.Views
         public XyDataSeries<double, double> LineDataSeries { get; } = new();
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
         public event LineMovedEventHandler LineMovedMin;
+        public event LineMovedEventHandler LineMovedMax;
 
         private int _channel;
         #endregion
@@ -40,18 +41,29 @@ namespace PAUTViewer.Views
             YAxis.VisibleRange = new DoubleRange(yLims[0], yLims[1]);
 
             // place line inside range (center)
-            double xMid = xLims[0] + 0.5 * (xLims[1] - xLims[0]);
-            VLine.X1 = xMid;
+            double xMin = xLims[0] + 0.1 * (xLims[1] - xLims[0]);
+            VLineMin.X1 = xMin;
+            double xMax = xLims[0] + 0.9 * (xLims[1] - xLims[0]);
+            VLineMax.X1 = xMax;
 
             // built-in drag event; IMPORTANT: X1 is IComparable → convert to double, clamp, assign back
-            VLine.DragDelta += (_, __) =>
+            VLineMin.DragDelta += (_, __) =>
             {
                 var rx = (DoubleRange)XAxis.VisibleRange;      // IRange → DoubleRange (has Min/Max doubles)
-                double x = Convert.ToDouble(VLine.X1);         // IComparable → double
+                double x = Convert.ToDouble(VLineMin.X1);         // IComparable → double
                 // Clamp to axis visible range
                 x = x < rx.Min ? rx.Min : (x > rx.Max ? rx.Max : x);
-                VLine.X1 = x;                                  // assign back as IComparable
+                VLineMin.X1 = x;                                  // assign back as IComparable
                 LineMovedMin?.Invoke(this, (float)x, _channel);
+            };
+            VLineMax.DragDelta += (_, __) =>
+            {
+                var rx = (DoubleRange)XAxis.VisibleRange;      // IRange → DoubleRange (has Min/Max doubles)
+                double x = Convert.ToDouble(VLineMax.X1);         // IComparable → double
+                // Clamp to axis visible range
+                x = x < rx.Min ? rx.Min : (x > rx.Max ? rx.Max : x);
+                VLineMax.X1 = x;                                  // assign back as IComparable
+                LineMovedMax?.Invoke(this, (float)x, _channel);
             };
         }
 

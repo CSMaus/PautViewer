@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using PAUTViewer.Models;
+using PAUTViewer.ViewModels;
+using PAUTViewer.Views;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,6 +19,15 @@ namespace PAUTViewer
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private DataLoader loadedData;
+        private PlotPAView plotPAView;
+        public static MenuUserControl _menuUserControl;
+        //private FlawTableUserControl flawTableUserControl;
+
+        private IDisposable _apiServer;
+        public static PlotPAViewModel SharedPlotPAViewModel { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();

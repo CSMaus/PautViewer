@@ -2,11 +2,43 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              xmlns:local="clr-namespace:PAUTViewer.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <s:SciChartSurface x:Name="Surface" Padding="0" BorderThickness="0">
+            <!-- Renderable series -->
+            <s:SciChartSurface.RenderableSeries>
+                <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries" Opacity="0.95"/>
+            </s:SciChartSurface.RenderableSeries>
+
+            <!-- Axes -->
+            <s:SciChartSurface.XAxis>
+                <!-- scans (kept same as C-scan) -->
+                <s:NumericAxis x:Name="XAxis" DrawMajorBands="True"/>
+            </s:SciChartSurface.XAxis>
+            <s:SciChartSurface.YAxis>
+                <!-- index (kept same as C-scan) -->
+                <s:NumericAxis x:Name="YAxis" DrawMajorBands="True"/>
+            </s:SciChartSurface.YAxis>
+
+            <!-- Draggable scan & index lines -->
+            <s:SciChartSurface.Annotations>
+                <s:VerticalLineAnnotation x:Name="ScanLine"
+                                          Stroke="Black"
+                                          StrokeThickness="2"
+                                          X1="0"
+                                          IsEditable="True"
+                                          DragDelta="ScanLine_OnDragDelta"/>
+                <s:HorizontalLineAnnotation x:Name="IndexLine"
+                                            Stroke="Black"
+                                            StrokeThickness="2"
+                                            Y1="0"
+                                            IsEditable="True"
+                                            DragDelta="IndexLine_OnDragDelta"/>
+            </s:SciChartSurface.Annotations>
+        </s:SciChartSurface>
     </Grid>
 </UserControl>
