@@ -30,35 +30,35 @@
         </Grid.ColumnDefinitions>
 
         <s:SciChartSurface x:Name="Surface" Grid.Column="0" Padding="0" BorderThickness="0">
-            <s:SciChartSurface.RenderableSeries>
-                <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries"
+    <s:SciChartSurface.RenderableSeries>
+        <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries"
                                               Opacity="0.95"
                                               ColorMap="{StaticResource CscanColorPalette}"/>
-            </s:SciChartSurface.RenderableSeries>
+    </s:SciChartSurface.RenderableSeries>
 
-            <s:SciChartSurface.XAxis>
-                <s:NumericAxis x:Name="XAxis" />
-            </s:SciChartSurface.XAxis>
-            <s:SciChartSurface.YAxis>
-                <s:NumericAxis x:Name="YAxis" />
-            </s:SciChartSurface.YAxis>
+    <s:SciChartSurface.XAxis>
+        <s:NumericAxis x:Name="XAxis" />
+    </s:SciChartSurface.XAxis>
+    <s:SciChartSurface.YAxis>
+        <s:NumericAxis x:Name="YAxis" />
+    </s:SciChartSurface.YAxis>
 
-            <!-- Correct -->
-            <s:SciChartSurface.Annotations>
-                <s:VerticalLineAnnotation x:Name="ScanLine"
+    <!-- Correct -->
+    <s:SciChartSurface.Annotations>
+        <s:VerticalLineAnnotation x:Name="ScanLine"
                                   Stroke="Black"
                                   StrokeThickness="2"
                                   X1="0"
                                   IsEditable="True"
                                   DragDelta="ScanLine_OnDragDelta" />
-                <s:HorizontalLineAnnotation x:Name="IndexLine"
+        <s:HorizontalLineAnnotation x:Name="IndexLine"
                                     Stroke="Black"
                                     StrokeThickness="2"
                                     Y1="0"
                                     IsEditable="True"
                                     DragDelta="IndexLine_OnDragDelta" />
-            </s:SciChartSurface.Annotations>
-        </s:SciChartSurface>
+    </s:SciChartSurface.Annotations>
+</s:SciChartSurface>
 
 
 

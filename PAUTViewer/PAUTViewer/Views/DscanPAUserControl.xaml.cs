@@ -56,15 +56,15 @@ namespace PAUTViewer.Views
 
 
         public void CreateScanPlotModel(
-    int channel,
-    int[] scansLims,           // X axis (scans)
-    float[] xlims,             // Y axis (index)
-    (double min, double max) depthWorldRange, // Z colormap (DEPTH in world units)
-    double ampMaxAbs,
-    int scanCount,
-    int sampleCount,
-    double scanStep = 1.0,
-    double indexStep = 1.0)
+                int channel,
+                int[] scansLims,           // X axis (scans)
+                float[] xlims,             // Y axis (index)
+                (double min, double max) depthWorldRange, // Z colormap (DEPTH in world units)
+                double ampMaxAbs,
+                int scanCount,
+                int sampleCount,
+                double scanStep = 1.0,
+                double indexStep = 1.0)
         {
             _channel = channel;
 
@@ -95,9 +95,9 @@ namespace PAUTViewer.Views
 
             // Mapping: X = scans (flipped), Y = index
             _xStart = _scanMax;
-            _xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0;
+            _xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0; // X = scans (flipped)
             _yStart = _idxMin;
-            _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
+            _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0; // Y = index
 
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(
                 new double[_scans, _samples], _xStart, _xStep, _yStart, _yStep);
@@ -111,17 +111,18 @@ namespace PAUTViewer.Views
 
 
         public void UpdateScanPlotModel(
-    float[][][] currentData,
-    int depthMinIdx,
-    int depthMaxIdx,
-    double ampRelMin,
-    double ampRelMax = 1.0, // reserved
-    float softGain = 1f)
+                float[][][] currentData,
+                int depthMinIdx,
+                int depthMaxIdx,
+                double ampRelMin,        // gate; set small like 0.05–0.15
+                double ampRelMax,
+                double _ = 1.0,
+                float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0) return;
 
-            int samples = currentData.Length;        // width
-            int scans = currentData[0].Length;     // height
+            int samples = currentData.Length;        // width (index/sample)
+            int scans = currentData[0].Length;     // height (scan)
             int depths = currentData[0][0].Length;  // depth count
             _depths = depths;
 
@@ -135,10 +136,16 @@ namespace PAUTViewer.Views
                 _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
             }
 
-            int d0 = Math.Max(0, Math.Min(depthMinIdx, depths));
-            int d1 = Math.Max(d0, Math.Min(depthMaxIdx, depths));
+            // depth window: treat <0 as full range
+            int d0, d1;
+            if (depthMinIdx < 0 || depthMaxIdx < 0) { d0 = 0; d1 = depths; }
+            else
+            {
+                d0 = Math.Clamp(depthMinIdx, 0, depths - 1);
+                d1 = Math.Clamp(depthMaxIdx, d0 + 1, depths);
+            }
 
-            double thrAbs = Math.Clamp(ampRelMin, 0.0, 1.0) * _ampMaxAbs;
+            double ampGateAbs = Math.Clamp(ampRelMin, 0.0, 1.0) * _ampMaxAbs;
             double dyW = (_depths > 1) ? (_depthMaxW - _depthMinW) / (_depths - 1) : 0.0;
 
             var z = new double[_scans, _samples];
@@ -148,23 +155,31 @@ namespace PAUTViewer.Views
                 for (int s = 0; s < _scans; s++)
                 {
                     var depthLine = currentData[i][s];
-                    double outDepth = double.NaN;
+                    int argMax = d0;
+                    float maxVal = float.NegativeInfinity;
 
                     for (int d = d0; d < d1; d++)
                     {
-                        if (depthLine[d] * softGain >= thrAbs)
-                        {
-                            outDepth = _depthMinW + d * dyW;
-                            break; // first crossing
-                        }
+                        float v = depthLine[d] * softGain;
+                        if (v > maxVal) { maxVal = v; argMax = d; }
                     }
-                    z[s, i] = outDepth;
+
+                    // If local max is below gate, still return a valid depth (e.g., surface)
+                    double depthWorld = (maxVal >= ampGateAbs) ? (_depthMinW + argMax * dyW)
+                                                               : _depthMinW;
+                    z[s, i] = depthWorld;
                 }
             });
 
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
             HeatmapSeries.DataSeries = _dataSeries;
+
+            // Ensure palette spans your world depth range
+            HeatmapSeries.ColorMap.Minimum = _depthMinW;
+            HeatmapSeries.ColorMap.Maximum = _depthMaxW;
+
         }
+
 
 
 

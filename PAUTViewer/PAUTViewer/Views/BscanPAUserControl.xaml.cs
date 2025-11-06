@@ -48,7 +48,8 @@ namespace PAUTViewer.Views
                                 float softGain)
         {
             if (currentData == null || currentData.Length == 0) return;
-
+            
+            // wrong names - change them
             int numSignals = currentData.Length;          // rows (Y)
             int numScans = currentData[0].Length;
             int numDist = currentData[0][0].Length;    // cols (X)
@@ -64,19 +65,19 @@ namespace PAUTViewer.Views
             double gain = (softGain == 0f) ? 1.0 : softGain;
 
             // Build Z [ny, nx]
-            var data = new double[_ny, _nx];
+            var data = new double[_nx, _ny];
             System.Threading.Tasks.Parallel.For(0, _ny, i =>
             {
                 var row = currentData[i][scanIdx]; // length = _nx
                 for (int j = 0; j < _nx; j++)
-                    data[i, j] = row[j] * gain;
+                    data[j, i] = row[j] * gain;
             });
 
             // World mapping
             double xStart = _xlims[0];
-            double xStep = (_nx > 1) ? (_xlims[1] - _xlims[0]) / (_nx - 1) : 1.0;
+            double xStep = (_ny > 1) ? (_xlims[1] - _xlims[0]) / (_ny - 1) : 1.0;
             double yStart = _ylims[0];
-            double yStep = (_ny > 1) ? (_ylims[1] - _ylims[0]) / (_ny - 1) : 1.0;
+            double yStep = (_nx > 1) ? (_ylims[1] - _ylims[0]) / (_nx - 1) : 1.0;
 
             // Recreate data series each update (no UpdateZValues / XStart / XStep setters in API)
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(data, xStart, xStep, yStart, yStep);

@@ -134,8 +134,17 @@ namespace PAUTViewer.Views
             }
 
             // clamp depth limits
-            int d0 = Math.Max(0, Math.Min(depthMin, depths));
-            int d1 = Math.Max(d0, Math.Min(depthMax, depths));
+            int d0, d1;
+            if (depthMin < 0 || depthMax < 0)
+            {
+                d0 = 0;
+                d1 = depths;
+            }
+            else
+            {
+                d0 = Math.Clamp(depthMin, 0, depths - 1);
+                d1 = Math.Clamp(depthMax, d0 + 1, depths);
+            }
 
             var z = new double[_scans, _samples];
 
@@ -155,6 +164,16 @@ namespace PAUTViewer.Views
                     z[s, i] = maxv;
                 }
             });
+
+            double zMin = double.PositiveInfinity, zMax = double.NegativeInfinity;
+            for (int r = 0; r < _scans; r++)
+                for (int c = 0; c < _samples; c++) { var v = z[r, c]; if (v < zMin) zMin = v; if (v > zMax) zMax = v; }
+            if (!double.IsFinite(zMin) || !double.IsFinite(zMax) || zMin == zMax) { zMin = 0; zMax = 1; } // safe fallback
+
+            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            HeatmapSeries.DataSeries = _dataSeries;
+            HeatmapSeries.ColorMap.Minimum = zMin;
+            HeatmapSeries.ColorMap.Maximum = zMax;
 
             // Recreate series each update (fast & API-safe)
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);

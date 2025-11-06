@@ -31,8 +31,7 @@
         <s:SciChartSurface x:Name="Surface"
                            Grid.Column="0"
                            Padding="0"
-                           BorderThickness="0"
-                           MaxWidth="10">
+                           BorderThickness="0">
             <s:SciChartSurface.XAxis>
                 <s:NumericAxis x:Name="XAxis"
                                DrawMajorBands="False"/>

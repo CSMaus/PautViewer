@@ -7,11 +7,26 @@
              xmlns:local="clr-namespace:PAUTViewer.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <s:HeatmapColorPalette x:Key="DscanColorPalette">
+            <s:HeatmapColorPalette.GradientStops>
+                <GradientStop Offset="0.00" Color="#00007F"/>
+                <GradientStop Offset="0.17" Color="#0000FF"/>
+                <GradientStop Offset="0.33" Color="#00FFFF"/>
+                <GradientStop Offset="0.50" Color="#00FF00"/>
+                <GradientStop Offset="0.67" Color="#FFFF00"/>
+                <GradientStop Offset="0.83" Color="#FF7F00"/>
+                <GradientStop Offset="1.00" Color="#FF0000"/>
+            </s:HeatmapColorPalette.GradientStops>
+        </s:HeatmapColorPalette>
+    </UserControl.Resources>
+    
     <Grid>
         <s:SciChartSurface x:Name="Surface" Padding="0" BorderThickness="0">
             <!-- Renderable series -->
             <s:SciChartSurface.RenderableSeries>
-                <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries" Opacity="0.95"/>
+                <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries" Opacity="0.95"
+                                                      ColorMap="{StaticResource DscanColorPalette}" />
             </s:SciChartSurface.RenderableSeries>
 
             <!-- Axes -->
