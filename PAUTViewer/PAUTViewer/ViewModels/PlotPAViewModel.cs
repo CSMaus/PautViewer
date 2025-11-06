@@ -783,21 +783,21 @@ namespace PAUTViewer.ViewModels
         public int Ch { get; }
         public float[][][] SigDps { get; }
         public float[] MpsLim { get; }
-        public float[] Xlims { get; }
-        public float[] Ylims { get; }
+        public float[] Xlims { get; }   // beams (index) world range
+        public float[] Ylims { get; }   // depth world range
         public int[] ScanLims { get; }
         public float[] Alims { get; }
 
-        public int Samples { get; }
+        public int DepthSamples { get; }
         public int Scans { get; }
-        public int Depths { get; }
+        public int Beams { get; }
 
         public ChannelContext(int ch, float[][][] sigDps, float[] mpsLim, float[] xlims, float[] ylims, int[] scanLims, float[] alims)
         {
             Ch = ch; SigDps = sigDps; MpsLim = mpsLim; Xlims = xlims; Ylims = ylims; ScanLims = scanLims; Alims = alims;
-            Samples = sigDps.Length;
-            Scans = sigDps[0].Length;
-            Depths = sigDps[0][0].Length;
+            Beams = sigDps.Length;          // d
+            Scans = sigDps[0].Length;       // s
+            DepthSamples = sigDps[0][0].Length;    // b   <-- use this for Y dimension
         }
     }
 

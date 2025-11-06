@@ -97,11 +97,8 @@ namespace PAUTViewer.Views
             ScanLine.X1 = _scanMin + _scanStep;
             IndexLine.Y1 = _idxMin + _idxStep;
 
-            // X = scans (flipped)
-            _xStart = _scanMax;
-            _xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0;
-
-            // Y = index
+            _xStart = _scanMin;
+            _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
             _yStart = _idxMin;
             _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
 
@@ -111,76 +108,87 @@ namespace PAUTViewer.Views
         }
 
 
+        // currentData[d][s][b]
         public void UpdateScanPlotModel(
-           float[][][] currentData,
-           int depthMin, int depthMax,
-           float softGain = 1f)
+    float[][][] currentData,
+    int depthMin, int depthMax,
+    float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0) return;
 
-            int samples = currentData.Length;        // width
-            int scans = currentData[0].Length;     // height
-            int depths = currentData[0][0].Length;
+            // REAL DATA SHAPE IN YOUR APP:
+            int beams = currentData.Length;          // INDEX (Y-axis)
+            int scans = currentData[0].Length;       // SCANS (X-axis)
+            int depth = currentData[0][0].Length;    // DEPTH (projection dimension)
 
-            if (samples != _samples || scans != _scans)
+            // Heatmap grid = [index(beams), scan]
+            if (beams != _samples || scans != _scans)
             {
-                _samples = samples;
-                _scans = scans;
+                _samples = beams;            // rows = index
+                _scans = scans;            // columns = scans
 
-                _xStart = _scanMax;
-                _xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0;
+                // X = scans
+                _xStart = _scanMin;
+                _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
+
+                // Y = index (from Xlims!)
                 _yStart = _idxMin;
                 _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
             }
 
-            // clamp depth limits
-            int d0, d1;
-            if (depthMin < 0 || depthMax < 0)
-            {
-                d0 = 0;
-                d1 = depths;
-            }
-            else
-            {
-                d0 = Math.Clamp(depthMin, 0, depths - 1);
-                d1 = Math.Clamp(depthMax, d0 + 1, depths);
-            }
+            // Clamp depth window
+            int d0 = (depthMin < 0) ? 0 : Math.Clamp(depthMin, 0, depth - 1);
+            int d1 = (depthMax < 0) ? depth : Math.Clamp(depthMax, d0 + 1, depth);
 
-            var z = new double[_scans, _samples];
+            var z = new double[_samples, _scans];   // z[index, scan]
 
-            // Fill Z[y=scan, x=sample] with max over depth
-            Parallel.For(0, _samples, i =>
+            float g = (softGain == 0f) ? 1f : softGain;
+
+            Parallel.For(0, scans, s =>
             {
-                for (int s = 0; s < _scans; s++)
+                for (int b = 0; b < beams; b++)
                 {
                     float maxv = 0f;
-                    var depthLine = currentData[i][s];
                     for (int d = d0; d < d1; d++)
                     {
-                        float v = depthLine[d] * softGain;
+                        float v = currentData[b][s][d] * g;
                         if (v > maxv) maxv = v;
                     }
-                    // row index s corresponds to scan line; store in [s, i]
-                    z[s, i] = maxv;
+                    z[b, s] = maxv;
                 }
             });
 
-            double zMin = double.PositiveInfinity, zMax = double.NegativeInfinity;
-            for (int r = 0; r < _scans; r++)
-                for (int c = 0; c < _samples; c++) { var v = z[r, c]; if (v < zMin) zMin = v; if (v > zMax) zMax = v; }
-            if (!double.IsFinite(zMin) || !double.IsFinite(zMax) || zMin == zMax) { zMin = 0; zMax = 1; } // safe fallback
-
-            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            // Update heatmap
+            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(
+                z, _xStart, _xStep, _yStart, _yStep);
             HeatmapSeries.DataSeries = _dataSeries;
-            HeatmapSeries.ColorMap.Minimum = zMin;
-            HeatmapSeries.ColorMap.Maximum = zMax;
 
-            // Recreate series each update (fast & API-safe)
-            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
-            HeatmapSeries.DataSeries = _dataSeries;
+            // auto amplitude palette
+            double mn = 0, mx = 1;
+            {
+                double lo = double.PositiveInfinity, hi = double.NegativeInfinity;
+                for (int i = 0; i < _samples; i++)
+                    for (int j = 0; j < _scans; j++)
+                    {
+                        double v = z[i, j];
+                        if (v < lo) lo = v;
+                        if (v > hi) hi = v;
+                    }
+                if (double.IsFinite(lo) && double.IsFinite(hi) && lo < hi)
+                { mn = lo; mx = hi; }
+            }
+
+            HeatmapSeries.ColorMap.Minimum = mn;
+            HeatmapSeries.ColorMap.Maximum = mx;
+
+            // ✅ AXES FIXED: SCAN + INDEX ONLY
+            XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);  // scans
+            YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);    // index
+
         }
 
-        // External programmatic updates of the lines (optional)
+
+
         public void UpdateScanLinePosition(double newScan)
         {
             ScanLine.X1 = newScan;

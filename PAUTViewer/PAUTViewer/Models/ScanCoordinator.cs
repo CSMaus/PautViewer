@@ -57,33 +57,55 @@ namespace PAUTViewer.Models
             _c.UpdateScanLinePosition(scan);
             UpdateAscan(); UpdateBscan(); UpdateDscan();
         }
-        private void OnDscanIndexMoved(object? sender, float yWorld, int _)
+        private static int WorldToNearestBeam(double yWorld, float[] idxLims, int beams)
         {
-            int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
-            _st.SetSampleIndex(sample);
-            _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (sample / (double)(_ctx.Samples - 1)));
+            double t = (yWorld - idxLims[0]) / (idxLims[1] - idxLims[0]);
+            return (int)Math.Clamp(Math.Round(t * (beams - 1)), 0, beams - 1);
+        }
+
+        private static double BeamToWorld(int beam, float[] idxLims, int beams)
+        {
+            if (beams <= 1) return idxLims[0];
+            double t = beam / (double)(beams - 1);
+            return idxLims[0] + t * (idxLims[1] - idxLims[0]);
+        }
+
+        // C-scan handler
+        private void OnCscanIndexMoved(object? sender, float yWorld, int _)
+        {
+            int beam = WorldToNearestBeam(yWorld, _ctx.Xlims, _ctx.Beams);
+            _st.SetSampleIndex(beam);
+
+            double ySnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
+            _d.UpdateIndexLinePosition(ySnap);   // keep visual in sync
+            _c.UpdateIndexLinePosition(ySnap);
+
             UpdateBscan(); UpdateAscan();
         }
 
-        private void OnCscanIndexMoved(object? sender, float yWorld, int _)
+        // D-scan handler
+        private void OnDscanIndexMoved(object? sender, float yWorld, int _)
         {
-            int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
-            _st.SetSampleIndex(sample);
-            double yWorldAligned = _ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (sample / (double)(_ctx.Samples - 1));
-            _d.UpdateIndexLinePosition(yWorldAligned);
+            int beam = WorldToNearestBeam(yWorld, _ctx.Xlims, _ctx.Beams);
+            _st.SetSampleIndex(beam);
+
+            double ySnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
+            _c.UpdateIndexLinePosition(ySnap);
+            _d.UpdateIndexLinePosition(ySnap);
+
             UpdateBscan(); UpdateAscan();
         }
 
         private void OnAscanGateMinMoved(object? sender, float yWorld, int _)
         {
-            var g0 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.Depths);
+            var g0 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.DepthSamples);
             _st.SetDepthGate(g0, _st.GateDepthMax);
             UpdateCscan(); UpdateDscan();
         }
 
         private void OnAscanGateMaxMoved(object? sender, float yWorld, int _)
         {
-            var g1 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.Depths);
+            var g1 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.DepthSamples);
             _st.SetDepthGate(_st.GateDepthMin, g1);
             UpdateCscan(); UpdateDscan();
         }
@@ -108,7 +130,7 @@ namespace PAUTViewer.Models
                 _st.Gain);
             // keep C-scan lines in sync with state (optional)
             _c.UpdateScanLinePosition(_st.ScanIndex);
-            _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Samples - 1)));
+            _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
         }
 
         private void UpdateDscan()
@@ -122,7 +144,7 @@ namespace PAUTViewer.Models
                 softGain: _st.Gain
             );
             _d.UpdateScanLinePosition(_st.ScanIndex);
-            _d.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Samples - 1)));
+            _d.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
         }
 
         // ---- utils ----
