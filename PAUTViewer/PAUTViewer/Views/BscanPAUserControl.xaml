@@ -24,7 +24,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="80" />
         </Grid.ColumnDefinitions>
 
         <!-- SciChart Surface -->
@@ -37,7 +37,7 @@
                                DrawMajorBands="False"/>
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis x:Name="YAxis"
+                <s:NumericAxis x:Name="YAxis" FlipCoordinates="True"
                                DrawMajorBands="False"/>
             </s:SciChartSurface.YAxis>
 

@@ -62,15 +62,16 @@ namespace PAUTViewer.Models
             int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
             _st.SetSampleIndex(sample);
             _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (sample / (double)(_ctx.Samples - 1)));
-            UpdateBscan();
+            UpdateBscan(); UpdateAscan();
         }
 
         private void OnCscanIndexMoved(object? sender, float yWorld, int _)
         {
             int sample = WorldToNearestSample(yWorld, _ctx.Xlims, _ctx.Samples);
             _st.SetSampleIndex(sample);
-            _d.UpdateIndexLinePosition(sample);
-            UpdateBscan();
+            double yWorldAligned = _ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (sample / (double)(_ctx.Samples - 1));
+            _d.UpdateIndexLinePosition(yWorldAligned);
+            UpdateBscan(); UpdateAscan();
         }
 
         private void OnAscanGateMinMoved(object? sender, float yWorld, int _)
