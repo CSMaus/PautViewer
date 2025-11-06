@@ -175,9 +175,6 @@ namespace PAUTViewer.Views
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            // color encodes DEPTH WORLD, axes stay scans/index
-            HeatmapSeries.ColorMap.Minimum = depthW0;
-            HeatmapSeries.ColorMap.Maximum = depthW1;
 
             XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);   // scans
             YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);    // index

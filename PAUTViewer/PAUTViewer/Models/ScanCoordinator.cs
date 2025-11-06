@@ -96,17 +96,32 @@ namespace PAUTViewer.Models
             UpdateBscan(); UpdateAscan();
         }
 
-        private void OnAscanGateMinMoved(object? sender, float yWorld, int _)
+
+        private static int WorldDepthToIndex_FromX(double xWorld, float[] xlims, int depthSamples)
         {
-            var g0 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.DepthSamples);
+            double t = (xWorld - xlims[0]) / (xlims[1] - xlims[0]);
+            return (int)Math.Clamp(Math.Round(t * (depthSamples - 1)), 0, depthSamples - 1);
+        }
+        private static double DepthIndexToWorldX(int d, float[] xlims, int depthSamples)
+        {
+            if (depthSamples <= 1) return xlims[0];
+            double t = d / (double)(depthSamples - 1);
+            return xlims[0] + t * (xlims[1] - xlims[0]);
+        }
+
+        private void OnAscanGateMinMoved(object? sender, float xWorld, int _)
+        {
+            int g0 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
             _st.SetDepthGate(g0, _st.GateDepthMax);
+            _a.VLineMin.X1 = DepthIndexToWorldX(g0, _ctx.MpsLim, _ctx.DepthSamples);
             UpdateCscan(); UpdateDscan();
         }
 
-        private void OnAscanGateMaxMoved(object? sender, float yWorld, int _)
+        private void OnAscanGateMaxMoved(object? sender, float xWorld, int _)
         {
-            var g1 = WorldDepthToIndex(yWorld, _ctx.Ylims, _ctx.DepthSamples);
+            int g1 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
             _st.SetDepthGate(_st.GateDepthMin, g1);
+            _a.VLineMax.X1 = DepthIndexToWorldX(g1, _ctx.MpsLim, _ctx.DepthSamples);
             UpdateCscan(); UpdateDscan();
         }
 
@@ -151,18 +166,7 @@ namespace PAUTViewer.Models
         private static int ClampToIndex(double worldX, int min, int max)
             => (int)Math.Clamp(Math.Round(worldX), min, max);
 
-        private static int WorldDepthToIndex(double yWorld, float[] ylims, int depths)
-        {
-            double t = (yWorld - ylims[0]) / (ylims[1] - ylims[0]);
-            return (int)Math.Clamp(Math.Round(t * (depths - 1)), 0, depths - 1);
-        }
-
-        private static int WorldToNearestSample(double xWorld, float[] xlims, int samples)
-        {
-            double t = (xWorld - xlims[0]) / (xlims[1] - xlims[0]);
-            return (int)Math.Clamp(Math.Round(t * (samples - 1)), 0, samples - 1);
-        }
-
+        
         // ---- clean unhook ----
         public void Dispose()
         {

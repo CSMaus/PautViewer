@@ -36,6 +36,7 @@ namespace PAUTViewer.Views
 
         private int _channel;
         double _xStart, _xStep, _yStart, _yStep;
+        double maxAmp;
 
         public Dictionary<string, (int startIdx, int endIdx, float yMinWorld, float yMaxWorld)> Gates { get; set; }
                  = new Dictionary<string, (int, int, float, float)>();
@@ -110,9 +111,9 @@ namespace PAUTViewer.Views
 
         // currentData[d][s][b]
         public void UpdateScanPlotModel(
-    float[][][] currentData,
-    int depthMin, int depthMax,
-    float softGain = 1f)
+                float[][][] currentData,
+                int depthMin, int depthMax,
+                float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0) return;
 
@@ -138,7 +139,10 @@ namespace PAUTViewer.Views
 
             // Clamp depth window
             int d0 = (depthMin < 0) ? 0 : Math.Clamp(depthMin, 0, depth - 1);
-            int d1 = (depthMax < 0) ? depth : Math.Clamp(depthMax, d0 + 1, depth);
+            //int d1 = (depthMax < 0) ? depth : Math.Clamp(depthMax, d0 + 1, depth);
+            int d1 = depthMax < 0 ? depth : Math.Min(Math.Max(depthMax, 0), depth);
+
+            if (d1 <= d0) d1 = Math.Min(d0 + 1, depth);
 
             var z = new double[_samples, _scans];   // z[index, scan]
 
@@ -158,30 +162,11 @@ namespace PAUTViewer.Views
                 }
             });
 
-            // Update heatmap
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(
                 z, _xStart, _xStep, _yStart, _yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            // auto amplitude palette
-            double mn = 0, mx = 1;
-            {
-                double lo = double.PositiveInfinity, hi = double.NegativeInfinity;
-                for (int i = 0; i < _samples; i++)
-                    for (int j = 0; j < _scans; j++)
-                    {
-                        double v = z[i, j];
-                        if (v < lo) lo = v;
-                        if (v > hi) hi = v;
-                    }
-                if (double.IsFinite(lo) && double.IsFinite(hi) && lo < hi)
-                { mn = lo; mx = hi; }
-            }
 
-            HeatmapSeries.ColorMap.Minimum = mn;
-            HeatmapSeries.ColorMap.Maximum = mx;
-
-            // ✅ AXES FIXED: SCAN + INDEX ONLY
             XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);  // scans
             YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);    // index
 
