@@ -35,10 +35,12 @@
                            BorderThickness="0">
             <s:SciChartSurface.XAxis>
                 <s:NumericAxis x:Name="XAxis"
+                               AxisTitle="Depth, mm"
                                DrawMajorBands="False"/>
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis x:Name="YAxis" FlipCoordinates="True"
+                               AxisTitle="Index, mm"
                                DrawMajorBands="False"/>
             </s:SciChartSurface.YAxis>
 
@@ -47,6 +49,16 @@
                                                       Opacity="0.95"
                                                       ColorMap="{StaticResource BscanColorPalette}"/>
             </s:SciChartSurface.RenderableSeries>
+            <s:SciChartSurface.Annotations>
+                <s:VerticalLineAnnotation x:Name="IndexLine"
+                                  Stroke="Black"
+                                  StrokeThickness="2"
+                                  X1="0"
+                                  IsEditable="True"
+                                  LabelTextFormatting="0.00"
+                                  ShowLabel="True"
+                                  DragDelta="IndexLine_OnDragDelta" />
+            </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
         <s:HeatmapColorMap Grid.Column="1"
                            Margin="0"

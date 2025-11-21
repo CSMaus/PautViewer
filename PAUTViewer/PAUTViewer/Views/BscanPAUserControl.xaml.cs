@@ -18,6 +18,9 @@ namespace PAUTViewer.Views
         private double[] _xlims = new double[2];
         private double[] _ylims = new double[2];
 
+        private int _channel;
+        public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
+        public event LineMovedEventHandler LineMovedIndex;
 
         public BscanPAUserControl()
         {
@@ -26,19 +29,25 @@ namespace PAUTViewer.Views
 
         public void CreateScanPlotModel(int channel, float[] Ylims, float[] Xlims, float maxVal)
         {
+            _channel = channel;
+
             _xlims[0] = Xlims[0]; _xlims[1] = Xlims[1];
             _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
 
-            // Visible ranges only (no extra manipulation)
             XAxis.VisibleRange = new DoubleRange(_xlims[0], _xlims[1]);
             YAxis.VisibleRange = new DoubleRange(_ylims[0], _ylims[1]);
 
-            // Color bar range
             HeatmapSeries.ColorMap.Minimum = 0.0;
             HeatmapSeries.ColorMap.Maximum = Math.Max(1e-9, maxVal);
 
             _dataSeries = null;
             HeatmapSeries.DataSeries = null;
+
+            if (_xlims[1] > _xlims[0])
+                IndexLine.X1 = (_xlims[0] + _xlims[1]) * 0.5;
+            else
+                IndexLine.X1 = _xlims[0];
+
         }
 
         public void UpdateScanPlotModel(float[][][] currentData,
@@ -88,7 +97,22 @@ namespace PAUTViewer.Views
             YAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_ylims[0], _ylims[1]);
         }
 
+        public void UpdateIndexLinePosition(double newIndex)
+        {
+            IndexLine.X1 = newIndex;
+        }
 
+        private void IndexLine_OnDragDelta(object sender, SciChart.Charting.Visuals.Events.AnnotationDragDeltaEventArgs e)
+        {
+            double x = IndexLine.X1 is double dx ? dx : Convert.ToDouble(IndexLine.X1);
+
+            if (x < _xlims[0]) x = _xlims[0];
+            if (x > _xlims[1]) x = _xlims[1];
+
+            IndexLine.X1 = x;
+
+            LineMovedIndex?.Invoke(this, (float)x, _channel);
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

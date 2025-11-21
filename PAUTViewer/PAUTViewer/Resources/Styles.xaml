@@ -4,7 +4,7 @@
     <FontFamily x:Key="StyleFontFamily">Palatino</FontFamily>
     <sys:Double x:Key="StandardFontSize">12</sys:Double>
 
-
+    <!-- Slim UI based on MahApps -->
     <Style x:Key="SlimTextBox"
            TargetType="TextBox"
            BasedOn="{StaticResource MahApps.Styles.TextBox}">
@@ -15,7 +15,6 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
-    <!-- Slim Button based on MahApps -->
     <Style x:Key="SlimButton"
            TargetType="Button"
            BasedOn="{StaticResource MahApps.Styles.Button}">
@@ -25,7 +24,7 @@
         <Setter Property="Height" Value="18" />
     </Style>
     
-    <!-- GridSplitter -->
+    
     <Style x:Key="GradientGridSplitterStyleH" TargetType="{x:Type GridSplitter}">
         <Setter Property="Template">
             <Setter.Value>

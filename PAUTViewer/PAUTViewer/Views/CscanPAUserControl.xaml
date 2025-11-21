@@ -37,10 +37,10 @@
     </s:SciChartSurface.RenderableSeries>
 
     <s:SciChartSurface.XAxis>
-        <s:NumericAxis x:Name="XAxis" />
+        <s:NumericAxis x:Name="XAxis" AxisTitle="Scan, mm"/>
     </s:SciChartSurface.XAxis>
     <s:SciChartSurface.YAxis>
-        <s:NumericAxis x:Name="YAxis" />
+        <s:NumericAxis x:Name="YAxis" AxisTitle="Index, mm" />
     </s:SciChartSurface.YAxis>
 
     <!-- Correct -->
@@ -50,12 +50,16 @@
                                   StrokeThickness="2"
                                   X1="0"
                                   IsEditable="True"
+                                  LabelTextFormatting="0.00"
+                                  ShowLabel="True"
                                   DragDelta="ScanLine_OnDragDelta" />
         <s:HorizontalLineAnnotation x:Name="IndexLine"
                                     Stroke="Black"
                                     StrokeThickness="2"
                                     Y1="0"
                                     IsEditable="True"
+                                    LabelTextFormatting="0.00"
+                                    ShowLabel="True"
                                     DragDelta="IndexLine_OnDragDelta" />
     </s:SciChartSurface.Annotations>
 </s:SciChartSurface>

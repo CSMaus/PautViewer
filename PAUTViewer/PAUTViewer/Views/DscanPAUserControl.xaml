@@ -38,11 +38,11 @@
             <!-- Axes -->
             <s:SciChartSurface.XAxis>
                 <!-- scans (kept same as C-scan) -->
-                <s:NumericAxis x:Name="XAxis" DrawMajorBands="True"/>
+                <s:NumericAxis x:Name="XAxis" DrawMajorBands="True" AxisTitle="Scan, mm"/>
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
                 <!-- index (kept same as C-scan) -->
-                <s:NumericAxis x:Name="YAxis" DrawMajorBands="True"/>
+                <s:NumericAxis x:Name="YAxis" DrawMajorBands="True" AxisTitle="Index, mm"/>
             </s:SciChartSurface.YAxis>
 
             <!-- Draggable scan & index lines -->
@@ -52,12 +52,16 @@
                                           StrokeThickness="2"
                                           X1="0"
                                           IsEditable="True"
+                                          LabelTextFormatting="0.00"
+                                          ShowLabel="True"
                                           DragDelta="ScanLine_OnDragDelta"/>
                 <s:HorizontalLineAnnotation x:Name="IndexLine"
                                             Stroke="Black"
                                             StrokeThickness="2"
                                             Y1="0"
                                             IsEditable="True"
+                                            LabelTextFormatting="0.00"
+                                            ShowLabel="True"
                                             DragDelta="IndexLine_OnDragDelta"/>
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
