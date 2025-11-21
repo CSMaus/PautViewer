@@ -4,34 +4,150 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PAUTViewer.Views"
+             xmlns:resources="clr-namespace:PAUTViewer.Resources"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <resources:ZeroToCollapsedConverter x:Key="ZeroToCollapsed"/>
+    </UserControl.Resources>
+    
     <Grid>
         <Grid Margin="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Top-Left: C-scan -->
+            <TabControl x:Name="TabsList" ItemsSource="{Binding ChannelTabs}" 
+                SelectedIndex="{Binding SelectedConfigIndex, Mode=TwoWay}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <!--<RowDefinition Height="{Binding RowHeightBottom}"/>-->
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding ColumnWidth1}"/>
+                            <ColumnDefinition Width="{Binding ColumnWidth2}"/>
+                            <ColumnDefinition Width="{Binding ColumnWidth3}"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource BordersBrush}" Grid.Row="0" Margin="1" MinWidth="120" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" >
+                                <TextBlock Text=" SoftGain  " VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding SoftGaindB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
+                                <TextBlock Text="  dB" VerticalAlignment="Center"/>
+                                <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" VerticalAlignment="Center" Margin="5, 0, 0,0"/>
+                                <Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" VerticalAlignment="Center" Margin="15, 0, 0,0"  
+                        ToolTip="Change depth gates in A-scan and press this button to update"/>
+                            </StackPanel>
+                        </Border>
+
+                        <GridSplitter Grid.Row="1"  Grid.RowSpan="3" Grid.Column="1" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleH}"/>
+
+                        <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="{Binding RowHeight1}"/>
+                                <RowDefinition Height="{Binding RowHeight2}"/>
+                                <RowDefinition Height="{Binding RowHeight3}"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Background="{DynamicResource Background}" Grid.Row="0" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <ContentControl Content="{Binding LTopScan}" Grid.Row="1" />
+                            </Grid>
+
+                            <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
+
+                            <Grid Background="{DynamicResource Background}" Grid.Row="2" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <ContentControl Content="{Binding LBottomScan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                            </Grid>
+
+                        </Grid>
+
+
+                        <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="3">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="{Binding RowHeight1}"/>
+                                <RowDefinition Height="{Binding RowHeight2}"/>
+                                <RowDefinition Height="{Binding RowHeight3}"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Background="{DynamicResource Background}" Grid.Row="0" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <ContentControl Content="{Binding RTopScan}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                            </Grid>
+                            <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
+
+
+                            <Grid Background="{DynamicResource Background}" Grid.Row="2" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <ContentControl Content="{Binding RBottomScan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                            </Grid>
+
+                        </Grid>
+
+                    </Grid>
+
+                </Grid>
+
+            </TabControl>
+
+            <!--
             <ContentPresenter Grid.Row="0" Grid.Column="0"
                           Content="{Binding Current.Cscan}" />
 
-            <!-- Top-Right: D-scan -->
+            
             <ContentPresenter Grid.Row="0" Grid.Column="1"
                           Content="{Binding Current.Dscan}" />
 
-            <!-- Bottom-Left: A-scan -->
+            
             <ContentPresenter Grid.Row="1" Grid.Column="0"
                           Content="{Binding Current.Ascan}" />
 
-            <!-- Bottom-Right: B-scan -->
+            
             <ContentPresenter Grid.Row="1" Grid.Column="1"
                           Content="{Binding Current.Bscan}" />
+                -->
         </Grid>
     </Grid>
 </UserControl>

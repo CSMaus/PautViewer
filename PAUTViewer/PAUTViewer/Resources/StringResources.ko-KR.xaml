@@ -1,0 +1,249 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Application Title -->
+    <system:String x:Key="AppTitle">PAUT 리더</system:String>
+
+    <!-- Common Actions -->
+    <system:String x:Key="open">열기</system:String>
+    <system:String x:Key="close">닫기</system:String>
+    <system:String x:Key="save">저장</system:String>
+    <system:String x:Key="cancel">취소</system:String>
+    <system:String x:Key="ok">확인</system:String>
+    <system:String x:Key="apply">적용</system:String>
+    <system:String x:Key="reset">재설정</system:String>
+    <system:String x:Key="back">뒤로</system:String>
+    <system:String x:Key="next">다음</system:String>
+    <system:String x:Key="finish">완료</system:String>
+
+    <!-- Menu Items -->
+    <system:String x:Key="fileMenu">파일</system:String>
+    <system:String x:Key="toolsMenu">도구 창</system:String>
+    <system:String x:Key="layoutsMenu">레이아웃</system:String>
+    <system:String x:Key="dataMenu">데이터</system:String>
+
+    <!-- File Menu -->
+    <system:String x:Key="openFile">열기...</system:String>
+    <system:String x:Key="fileInfo">파일 정보</system:String>
+    <system:String x:Key="isDisplayControlsPanel">제어판</system:String>
+    <system:String x:Key="settings">설정</system:String>
+
+    <!-- Window Menu -->
+    <system:String x:Key="fileExplorer">파일 탐색기</system:String>
+    <system:String x:Key="flawsInformation">검사 결과</system:String>
+    <system:String x:Key="snrAnalysis">SNR</system:String>
+    <system:String x:Key="aiDefectDetection">AI 결함 탐지</system:String>
+
+    <!-- Data Menu -->
+    <system:String x:Key="openDataLabelingWindow">데이터 라벨링</system:String>
+
+    <!-- Buttons and Controls -->
+    <system:String x:Key="clearAll">모두 지우기</system:String>
+    <system:String x:Key="retrieve">검색</system:String>
+    <system:String x:Key="calculate">계산</system:String>
+    <system:String x:Key="predict">예측</system:String>
+    <system:String x:Key="predictAndDisplayDefects">결함 영역 예측</system:String>
+    <system:String x:Key="displayPre4dictedDefectsArea">예상 결함 영역 표시</system:String>
+    <system:String x:Key="addSNRMarker">SNR 마커 추가</system:String>
+    <system:String x:Key="hideSNRMarker">SNR 마커 숨기기</system:String>
+    <system:String x:Key="calculateGates">게이트 계산</system:String>
+    <system:String x:Key="autoSNRautoSNR">Auto SNR</system:String>
+    <system:String x:Key="saveSignals">신호 저장</system:String>
+    <system:String x:Key="excelReport">엑셀 보고서</system:String>
+    <system:String x:Key="calculatePredictionMetrics">예측 메트릭 계산</system:String>
+    <system:String x:Key="applySoftGain">확인</system:String>
+
+    <!-- Labels and Text -->
+    <system:String x:Key="channel">채널</system:String>
+    <system:String x:Key="load">로드</system:String>
+    <system:String x:Key="note">메모</system:String>
+    <system:String x:Key="depthMin">최소 깊이</system:String>
+    <system:String x:Key="depthMax">최대 깊이</system:String>
+    <system:String x:Key="scanStep1">스캔 단계1</system:String>
+    <system:String x:Key="scanStep2">스캔 단계2</system:String>
+    <system:String x:Key="x1">X1</system:String>
+    <system:String x:Key="x2">X2</system:String>
+    <system:String x:Key="defectType">결함 유형</system:String>
+    <!-- Add for new defects table -->
+    <system:String x:Key="Threshold">임계값</system:String>
+    <system:String x:Key="index">결함 번호</system:String>
+    <system:String x:Key="inspectionMethod">검사 방법</system:String>
+    <system:String x:Key="attenuation">감쇠</system:String>
+    <system:String x:Key="thicknessOfPart">부품 두께</system:String>
+    <system:String x:Key="depthFrom">깊이</system:String>
+    <system:String x:Key="positionScan">스캔 위치</system:String>
+    <system:String x:Key="positionIndex">인덱스 위치</system:String>
+    <system:String x:Key="size">크기</system:String>
+    <system:String x:Key="tooltipsizeOfDefect">스캔 축을 따라 결함의 크기</system:String>
+    <system:String x:Key="pictureName">사진 번호 보기</system:String>
+    <system:String x:Key="tooltiplocatedIn">부품 이름 ("용접 1", "플레이트 B", "웹 플랜지") 및 영역 ("루트"는 얕음; "캡"은 위쪽; "HAZ"는 용융선 근처)</system:String>
+    <system:String x:Key="locatedIn">위치</system:String>
+    <system:String x:Key="tooltipposition">기준점에서 거리 (결함 시작의 스캔 축 위치) / 빔 인덱스 또는 X축</system:String>
+
+    <system:String x:Key="remark">비고</system:String>
+
+    <!-- Form Fields -->
+    <system:String x:Key="folderPath">폴더 경로</system:String>
+    <system:String x:Key="fileName">파일 이름</system:String>
+    <system:String x:Key="specimenName">시편 이름</system:String>
+    <system:String x:Key="companyName">회사 이름</system:String>
+    <system:String x:Key="dateOfInspection">검사 날짜</system:String>
+    <system:String x:Key="dateOfAnalysis">분석 날짜</system:String>
+
+    <!-- Theme Window -->
+    <system:String x:Key="updateColorTheme">색상 테마 업데이트</system:String>
+    <system:String x:Key="colorThemes">색상 테마</system:String>
+    <system:String x:Key="language">언어</system:String>
+    <system:String x:Key="fontSize">글꼴 크기</system:String>
+    <system:String x:Key="turnOffNotifications">알림 끄기</system:String>
+    <system:String x:Key="saveCurrentWindowsSettings">현재 창 설정 저장</system:String>
+    <system:String x:Key="resetTheme">테마 재설정</system:String>
+
+    <!-- Analysis Window -->
+    <system:String x:Key="analysisWindow">분석 창</system:String>
+    <system:String x:Key="referenceArea">참조 영역</system:String>
+    <system:String x:Key="evaluation">평가</system:String>
+    <system:String x:Key="meanValue">평균값:</system:String>
+    <system:String x:Key="standardDeviation">표준 편차:</system:String>
+    <system:String x:Key="excludeValuesFromBelowGate">하위 게이트 값 제외 (탐지 없음)</system:String>
+    <system:String x:Key="displayDefectArea">결함 영역 표시</system:String>
+    <system:String x:Key="snrDefectsInDeveloperTable">결함 보고서 테이블에 추가</system:String>
+    <system:String x:Key="defectArea">결함 영역 (A1 + A2):</system:String>
+    <system:String x:Key="signalToNoiseRatio">신호 대 잡음비:</system:String>
+    <system:String x:Key="totalArea">전체 영역:</system:String>
+    <system:String x:Key="defectAreaTotalArea">결함 영역/전체 영역:</system:String>
+    <system:String x:Key="automaticSNR">Auto SNR</system:String>
+    <system:String x:Key="smoothSignal">신호 부드럽게 처리</system:String>
+    <system:String x:Key="displayGates">게이트 표시</system:String>
+
+
+    <!-- Flaws Table and report Items-->
+    <system:String x:Key="flawsReportWindow">검사 보고서</system:String>
+    <system:String x:Key="export">내보내기</system:String>
+    <system:String x:Key="import">가져오기</system:String>
+    <system:String x:Key="generateReport">보고서 생성</system:String>
+    <system:String x:Key="dialogueReportPathChoose">보고서를 저장할 폴더를 선택하세요...</system:String>
+    <system:String x:Key="dialogueReportNameTag">보고서 이름</system:String>
+    <system:String x:Key="dialogueSelectRelatedFiles">관련 Excel 문서 선택</system:String>
+    <system:String x:Key="dialogueAcquisitionFileName">획득 파일 선택</system:String>
+
+
+
+
+
+    <!-- AI Defect Detection -->
+    <system:String x:Key="scanStartEnd">스캔 시작/끝:</system:String>
+    <system:String x:Key="beamStartEnd">빔 시작/끝:</system:String>
+    <system:String x:Key="depthStartEnd">깊이 시작/끝:</system:String>
+
+    <!-- Tooltips -->
+    <system:String x:Key="tooltipBack">뒤로</system:String>
+    <system:String x:Key="tooltipOpenExplorer">탐색기 열기</system:String>
+    <system:String x:Key="tooltipClearAll">모두 지우기</system:String>
+    <system:String x:Key="tooltipCreateJsonDataset">(개발자 전용!) 정보 파일 및 결함 정보를 기반으로 Json 데이터셋 생성</system:String>
+    <system:String x:Key="tooltipOpenFlawTableFileInfo">새 창에서 결함 테이블 및 파일 정보 열기</system:String>
+    <system:String x:Key="tooltipColorMaps">색상 맵</system:String>
+    <system:String x:Key="tooltipDateOfInspection">검사 날짜 (yyyy-MM-dd)</system:String>
+    <system:String x:Key="tooltipDateOfAnalysis">분석 날짜 (현재)</system:String>
+    <system:String x:Key="tooltipDatabaseUserName">데이터베이스 사용자 이름</system:String>
+    <system:String x:Key="tooltipPassword">비밀번호</system:String>
+    <system:String x:Key="tooltipDatabaseName">데이터베이스 이름</system:String>
+    <system:String x:Key="tooltipPressDelToRemove">행을 제거하려면 Del 버튼을 누르세요</system:String>
+    <system:String x:Key="tooltipOpenScanInNewWindow">새 창에서 스캔 열기</system:String>
+    <system:String x:Key="tooltipSwapVertically">세로로 교체</system:String>
+    <system:String x:Key="tooltipSwapHorizontally">가로로 교체</system:String>
+    <system:String x:Key="tooltipOpenAdditionalWindows">추가 창 열기</system:String>
+    <system:String x:Key="tooltipDifferentLayoutConfigurations">스캔을 표시하는 다양한 레이아웃 구성</system:String>
+    <system:String x:Key="tooltipOpenAnalysisPanel">분석 패널을 열거나 메뉴에서 분석 도구를 선택하세요</system:String>
+    <system:String x:Key="tooltipDeveloperModeInstruments">개발자 모드 도구입니다. 나중에 제거될 예정입니다</system:String>
+    <system:String x:Key="tooltipBilateralFilterAscan">누적 D-스캔 신호에 양방향 필터 적용</system:String>
+    <system:String x:Key="tooltipDisplayGatesLines">D-스캔에서 게이트 라인 표시</system:String>
+    <system:String x:Key="tooltipSNRFormula">SNR = 20 * Log10(K)</system:String>
+    <system:String x:Key="tooltipScanIndexStart">스캔 인덱스 시작</system:String>
+    <system:String x:Key="tooltipScanIndexEnd">스캔 인덱스 끝</system:String>
+    <system:String x:Key="tooltipBeamIndexStart">빔 인덱스 시작</system:String>
+    <system:String x:Key="tooltipBeamIndexEnd">빔 인덱스 끝</system:String>
+    <system:String x:Key="tooltipDepthIndexStart">깊이 인덱스 시작</system:String>
+    <system:String x:Key="tooltipDepthIndexEnd">깊이 인덱스 끝</system:String>
+    <system:String x:Key="tooltipAutoSNRBtn">SNR로 결함을 표시하기 위해 A-스캔 게이트를 자동으로 계산하고 기반으로 C-스캔을 플로팅합니다</system:String>
+
+
+    <!-- CheckBox Content -->
+    <system:String x:Key="displaySelectedDefect">선택된 결함 표시</system:String>
+
+    <!-- Units -->
+    <system:String x:Key="mm">mm</system:String>
+    <system:String x:Key="mm2">mm²</system:String>
+    <system:String x:Key="percent">%</system:String>
+    <system:String x:Key="dB">dB</system:String>
+
+    <!-- Gates, Scans names -->
+    <system:String x:Key="gateFullDepth">전체 깊이</system:String>
+    <system:String x:Key="gateWater">물</system:String>
+    <system:String x:Key="gateFirstReflection">첫 반사</system:String>
+    <system:String x:Key="gateSpecimenThickness">시편 두께</system:String>
+    <system:String x:Key="gateSecondReflection">두 번째 반사</system:String>
+    <system:String x:Key="gateBeforeReflection">반사 전</system:String>
+    <system:String x:Key="gateReflection">반사</system:String>
+    <system:String x:Key="gateBelowLastReflection">마지막 반사 아래</system:String>
+
+    <!-- Notifications -->
+    <system:String x:Key="notificationChannelParseError">채널 인덱스를 파싱할 수 없습니다. 선택된 채널이 0으로 설정됩니다.</system:String>
+    <system:String x:Key="notificationDataNotLoaded">데이터가 로드되지 않았습니다. OlympusNDT의 OpenView SDK가 설치되지 않았거나 지원되지 않는 형식으로 데이터가 저장되어 발생할 수 있습니다</system:String>
+    <system:String x:Key="notificationFlawTableExportCanceled">결함 테이블 내보내기가 취소되었습니다.</system:String>
+    <system:String x:Key="notificationFlawTableExported">결함 테이블이 다음 위치로 내보내졌습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorGeneratingReport">보고서 생성 오류: {0}</system:String>
+    <system:String x:Key="notificationOpenDataFileFirst">데이터 도구를 열기 전에 데이터 파일을 먼저 열어주세요</system:String>
+    <system:String x:Key="notificationSetupSNRAreaFirst">먼저 C-Scan에서 SNR 분석 영역을 설정해주세요</system:String>
+    <system:String x:Key="notificationSelectDefectRowToRemove">제거할 결함 정보 행을 선택해주세요</system:String>
+    <system:String x:Key="notificationDatasetSavingStarted">데이터셋 수집 및 저장이 시작되었습니다...</system:String>
+    <system:String x:Key="notificationChooseAnotherDirectory">데이터를 저장할 다른 디렉토리를 선택해주세요.\n액세스 거부됨: {0}</system:String>
+    <system:String x:Key="notificationErrorOccurred">오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationAllDataSaved">모든 데이터가 다음 위치에 저장되었습니다: {0}</system:String>
+    <system:String x:Key="notificationJSONFileSaved">신호 데이터가 포함된 JSON 파일이 다음 위치에 저장되었습니다: {0}</system:String>
+    <system:String x:Key="notificationSearchForDefectsStarted">결함 검색이 시작되었습니다...</system:String>
+    <system:String x:Key="notificationSetCorrectScanRanges">올바른 스캔 범위를 설정해주세요.</system:String>
+    <system:String x:Key="notificationFileExtensionIncorrect">파일 확장자가 잘못 정의되었습니다: {0}</system:String>
+    <system:String x:Key="notificationAllDefectsDisplayed">모든 결함이 C-Scan에서 빨간색으로 표시됩니다</system:String>
+    <system:String x:Key="notificationScanLimsReaded">스캔 제한이 [{0} : {1}]로 읽혔습니다</system:String>
+    <system:String x:Key="notificationPredictionsNotMade">예측이 수행되지 않았습니다. 먼저 '예측' 버튼을 누르세요.</system:String>
+    <system:String x:Key="notificationRealDefectsLoaded">실제 결함 정보가 개발자 도구 테이블에 로드되었습니다.</system:String>
+    <system:String x:Key="notificationNoDefectInformation">파일에 실제 결함에 대한 정보가 없거나 잘못된 결함 정보 형식입니다.</system:String>
+    <system:String x:Key="notificationDefectsFileNotFound">실제 결함에 대한 정보가 포함된 파일을 찾을 수 없습니다.</system:String>
+    <system:String x:Key="notificationDefectsInformationSaved">결함 정보가 다음 위치에 저장되었습니다: {0}</system:String>
+    <system:String x:Key="notificationLoadDataFirst">먼저 데이터를 로드하세요</system:String>
+    <system:String x:Key="notificationFlawTableNotFound">오류: 결함 테이블을 찾을 수 없습니다.</system:String>
+    <system:String x:Key="notificationFlawTableImportCanceled">결함 테이블 가져오기가 취소되었습니다.</system:String>
+    <system:String x:Key="notificationErrorLoadingONNXModel">ONNX 모델을 리소스로 로드하는 중 오류가 발생했습니다. 오류 메시지: {0}</system:String>
+    <system:String x:Key="notificationErrorLoadingONNXModelPath">ONNX 모델 로드 중 오류가 발생했습니다. 오류 메시지: {0}</system:String>
+    <system:String x:Key="notificationErrorModelInference">모델 추론 중 오류가 발생했습니다. 오류 메시지: {0}</system:String>
+    <system:String x:Key="notificationUnexpectedOutputs">예상치 못한 출력 수: {0}, 예상값 3.</system:String>
+    <system:String x:Key="notificationImportedFromDatabase">데이터베이스에서 RectangleInfos를 성공적으로 가져왔습니다.</system:String>
+    <system:String x:Key="notificationExportedToDatabase">RectangleInfos를 데이터베이스로 성공적으로 내보냈습니다.</system:String>
+    <system:String x:Key="notificationFileAlreadyOpened">이 파일은 이미 열려 있습니다</system:String>
+    <system:String x:Key="notificationErrorReadingFile">파일에서 데이터를 읽는 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorWritingData">로드된 데이터를 변수에 쓰는 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorPlottingData">데이터 플롯 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorHidingPanel">폴더 내용 패널을 숨기는 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationDataLoadedSuccessfully">파일 {0}의 데이터가 성공적으로 로드되었습니다.</system:String>
+    <system:String x:Key="notificationErrorSettingConfig">구성 파일 설정 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorLoadDataCompleted">LoadDataCompleted 호출 중 오류가 발생했습니다 (API 기능): {0}</system:String>
+    <system:String x:Key="notificationErrorLoadingOPDData">OPD 데이터 로드 중 오류가 발생했습니다: {0}</system:String>
+    <system:String x:Key="notificationErrorUpdatingDataContext">mainWindow.UpdatePAPlotDataContext(plotPAViewModel)에서 오류:\n{0}</system:String>
+    <system:String x:Key="notificationSavedFileSignals">반복 {1}에 대한 파일 신호 {0} 저장됨\n총 {2}개</system:String>
+    <system:String x:Key="notificationFailedToLoad">{0} 로드에 실패했습니다</system:String>
+    <system:String x:Key="notificationFileTypeNotSupported">지원되지 않는 파일 형식입니다.</system:String>
+    <system:String x:Key="notificationWorkingDirectoryChanged">작업 디렉토리가 {0}로 변경되었습니다</system:String>
+    <system:String x:Key="notificationPathDoesNotExist">지정된 경로가 존재하지 않습니다.</system:String>
+    <system:String x:Key="notificationNoParentDirectory">사용 가능한 상위 디렉토리가 없습니다.</system:String>
+    <system:String x:Key="notificationForwardNavigationNotImplemented">앞으로 탐색이 구현되지 않았습니다.</system:String>
+    <system:String x:Key="notificationAtRootDirectory">루트 디렉토리에 있습니다.</system:String>
+    <system:String x:Key="notificationSelectedItemDoesNotExist">선택된 항목이 존재하지 않습니다.</system:String>
+    <system:String x:Key="notificationSelectItemToOpen">열 항목을 선택해주세요.</system:String>
+    <system:String x:Key="notificationItemNameCopied">선택된 '{0}' 항목의 이름이 클립보드에 복사되었습니다</system:String>
+    <system:String x:Key="notificationThemeColorsSaved">테마 색상이 {0}에 저장되었습니다</system:String>
+    <system:String x:Key="notificationBeamsLimsPrediction">실제 빔 범위에서 최대 및 최소 빔 인덱스 설정</system:String>
+
+
+</ResourceDictionary>

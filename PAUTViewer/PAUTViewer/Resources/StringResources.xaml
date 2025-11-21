@@ -1,0 +1,249 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Application Title -->
+    <system:String x:Key="AppTitle">PAUTReader</system:String>
+
+    <!-- Common Actions -->
+    <system:String x:Key="open">Open</system:String>
+    <system:String x:Key="close">Close</system:String>
+    <system:String x:Key="save">Save</system:String>
+    <system:String x:Key="cancel">Cancel</system:String>
+    <system:String x:Key="ok">OK</system:String>
+    <system:String x:Key="apply">Apply</system:String>
+    <system:String x:Key="reset">Reset</system:String>
+    <system:String x:Key="back">Back</system:String>
+    <system:String x:Key="next">Next</system:String>
+    <system:String x:Key="finish">Finish</system:String>
+
+    <!-- Menu Items -->
+    <system:String x:Key="fileMenu">File</system:String>
+    <system:String x:Key="toolsMenu">Tools</system:String>
+    <system:String x:Key="layoutsMenu">Layouts</system:String>
+    <system:String x:Key="dataMenu">Data</system:String>
+
+    <!-- File Menu -->
+    <system:String x:Key="openFile">Open...</system:String>
+    <system:String x:Key="fileInfo">File Info</system:String>
+    <system:String x:Key="isDisplayControlsPanel">Controls Panel</system:String>
+    <system:String x:Key="settings">Settings</system:String>
+
+    <!-- Tools Menu -->
+    <system:String x:Key="fileExplorer">File Explorer</system:String>
+    <system:String x:Key="flawsInformation">Inspection Results</system:String>
+    <system:String x:Key="snrAnalysis">SNR Analysis</system:String>
+    <system:String x:Key="aiDefectDetection">AI Analysis</system:String>
+
+    <!-- Data Menu -->
+    <system:String x:Key="openDataLabelingWindow">Data Labeling</system:String>
+
+    <!-- Buttons and Controls -->
+    <system:String x:Key="clearAll">Clear All</system:String>
+    <system:String x:Key="retrieve">Retrieve</system:String>
+    <system:String x:Key="calculate">Calculate</system:String>
+    <system:String x:Key="predict">Predict</system:String>
+    <system:String x:Key="predictAndDisplayDefects">Predict Defects</system:String>
+    <system:String x:Key="displayPre4dictedDefectsArea">Display defective area</system:String>
+    <system:String x:Key="addSNRMarker">Add SNR Marker</system:String>
+    <system:String x:Key="hideSNRMarker">Hide SNR Marker</system:String>
+    <system:String x:Key="calculateGates">Recalculate Gates</system:String>
+    <system:String x:Key="autoSNR">AutoSNR</system:String>
+    <system:String x:Key="saveSignals">Save Signals</system:String>
+    <system:String x:Key="excelReport">Excel Report</system:String>
+    <system:String x:Key="calculatePredictionMetrics">Calculate Prediction Metrics</system:String>
+    <system:String x:Key="applySoftGain">Apply</system:String>
+
+    <!-- Labels and Text -->
+    <system:String x:Key="channel">Channel</system:String>
+    <system:String x:Key="load">Load</system:String>
+    <!--<system:String x:Key="index">Defect Number</system:String>  TODO: REMOVE IT AND PASTE CORRECT ONE!!! -->
+    <system:String x:Key="note">Note</system:String>
+    <system:String x:Key="depthMin">DepthMin</system:String>
+    <system:String x:Key="depthMax">DepthMax</system:String>
+    <system:String x:Key="scanStep1">Scan Step1</system:String>
+    <system:String x:Key="scanStep2">Scan Step2</system:String>
+    <system:String x:Key="x1">X1</system:String>
+    <system:String x:Key="x2">X2</system:String>
+    <system:String x:Key="defectType">Type of defect</system:String>
+    <!-- Add to others dicts too -->
+    <system:String x:Key="Threshold">Threshold</system:String>
+    <system:String x:Key="index">Defect Number</system:String>
+    <system:String x:Key="inspectionMethod">Inspection Method</system:String>
+    <system:String x:Key="attenuation">Attenuation</system:String>
+    <system:String x:Key="thicknessOfPart">Thickness of the part</system:String>
+    <system:String x:Key="depthFrom">Depth</system:String>
+    <system:String x:Key="positionScan">Scan</system:String>
+    <system:String x:Key="positionIndex">Index</system:String>
+    <system:String x:Key="size">Size</system:String>
+    <system:String x:Key="tooltipsizeOfDefect">Size of defect along scanning axis</system:String>
+    <!-- Not used -->
+    <system:String x:Key="pictureName">See picture number</system:String>
+    <!-- Not used -->
+    <system:String x:Key="tooltiplocatedIn">Part name ("Weld 1", "Plate B", "Web flange") and  Zone ( "Root" if shallow; "Cap" if near top; "HAZ" if near fusion line)</system:String>
+    <system:String x:Key="locatedIn">Located In</system:String>
+    <!-- Not used -->
+    <system:String x:Key="tooltipposition">Distance from datum (scan axis position of defect start) / Beam index or X-axis</system:String>
+    <system:String x:Key="remark">Remark</system:String>
+
+
+    <!-- Form Fields -->
+    <system:String x:Key="folderPath">Folder Path</system:String>
+    <system:String x:Key="fileName">File Name</system:String>
+    <system:String x:Key="specimenName">Specimen Name</system:String>
+    <system:String x:Key="companyName">Company Name</system:String>
+    <system:String x:Key="dateOfInspection">Date of Inspection</system:String>
+    <system:String x:Key="dateOfAnalysis">Date of Analysis</system:String>
+
+    <!-- Theme Window -->
+    <system:String x:Key="updateColorTheme">Update Color Theme</system:String>
+    <system:String x:Key="colorThemes">Color Themes</system:String>
+    <system:String x:Key="language">Language</system:String>
+    <system:String x:Key="fontSize">Font Size</system:String>
+    <system:String x:Key="turnOffNotifications">Turn Off Notifications</system:String>
+    <system:String x:Key="saveCurrentWindowsSettings">Save current windows settings</system:String>
+    <system:String x:Key="resetTheme">Reset Theme</system:String>
+
+    <!-- Analysis Window -->
+    <system:String x:Key="analysisWindow">Analysis Window</system:String>
+    <system:String x:Key="referenceArea">Reference Area</system:String>
+    <system:String x:Key="evaluation">Evaluation</system:String>
+    <system:String x:Key="meanValue">Mean value:</system:String>
+    <system:String x:Key="standardDeviation">Standard deviation:</system:String>
+    <system:String x:Key="excludeValuesFromBelowGate">Exclude values from below gate (no detection)</system:String>
+    <system:String x:Key="displayDefectArea">Display Defect area</system:String>
+    <system:String x:Key="snrDefectsInDeveloperTable">Add to Report</system:String>
+    <system:String x:Key="defectArea">Defect area (A1 + A2):</system:String>
+    <system:String x:Key="signalToNoiseRatio">Signal-to-noise ratio:</system:String>
+    <system:String x:Key="totalArea">Total area:</system:String>
+    <system:String x:Key="defectAreaTotalArea">Defect area/Total area:</system:String>
+    <system:String x:Key="automaticSNR">Automatic SNR</system:String>
+    <system:String x:Key="smoothSignal">Smooth Signal</system:String>
+    <system:String x:Key="displayGates">Display Gates</system:String>
+
+
+    <!-- Flaws Table and report Items-->
+    <system:String x:Key="flawsReportWindow">Inspection Report</system:String>
+    <system:String x:Key="export">Export</system:String>
+    <system:String x:Key="import">Import</system:String>
+    <system:String x:Key="generateReport">Generate Report</system:String>
+    <system:String x:Key="dialogueReportPathChoose">Select folder to save the report...</system:String>
+    <system:String x:Key="dialogueReportNameTag">Report name</system:String>
+    <system:String x:Key="dialogueSelectRelatedFiles">Select related Excel documents</system:String>
+    <system:String x:Key="dialogueAcquisitionFileName">Choose Acquisition file</system:String>
+
+
+
+    <!-- AI Defect Detection -->
+    <system:String x:Key="scanStartEnd">Scan start/end:</system:String>
+    <system:String x:Key="beamStartEnd">Beam start/end:</system:String>
+    <system:String x:Key="depthStartEnd">Depth start/end:</system:String>
+
+    <!-- Tooltips -->
+    <system:String x:Key="tooltipBack">Back</system:String>
+    <system:String x:Key="tooltipOpenExplorer">Open Explorer</system:String>
+    <system:String x:Key="tooltipClearAll">Clear All</system:String>
+    <system:String x:Key="tooltipCreateJsonDataset">(DEV ONLY!) Create Json dataset based on info file and defect info</system:String>
+    <system:String x:Key="tooltipOpenFlawTableFileInfo">Open FlawTable and File Info in new window</system:String>
+    <system:String x:Key="tooltipColorMaps">Color maps</system:String>
+    <system:String x:Key="tooltipDateOfInspection">Date of Inspection (yyyy-MM-dd)</system:String>
+    <system:String x:Key="tooltipDateOfAnalysis">Date of Analysis (current)</system:String>
+    <system:String x:Key="tooltipDatabaseUserName">DataBase User Name</system:String>
+    <system:String x:Key="tooltipPassword">Password</system:String>
+    <system:String x:Key="tooltipDatabaseName">DataBase Name</system:String>
+    <system:String x:Key="tooltipPressDelToRemove">Press Del button to remove the row</system:String>
+    <system:String x:Key="tooltipOpenScanInNewWindow">Open Scan in New Window</system:String>
+    <system:String x:Key="tooltipSwapVertically">Swap Vertically</system:String>
+    <system:String x:Key="tooltipSwapHorizontally">Swap Horizontally</system:String>
+    <system:String x:Key="tooltipOpenAdditionalWindows">Open additional windows</system:String>
+    <system:String x:Key="tooltipDifferentLayoutConfigurations">Different Layout configurations to display scans</system:String>
+    <system:String x:Key="tooltipOpenAnalysisPanel">Open Analysis panel or choose analysis instrument from menu</system:String>
+    <system:String x:Key="tooltipDeveloperModeInstruments">This is developer mode instruments. It will be removed later</system:String>
+    <system:String x:Key="tooltipBilateralFilterAscan">Apply Bilateral filtering to Accumulative D-scan signal</system:String>
+    <system:String x:Key="tooltipDisplayGatesLines">Display Gates Lines in D-scan</system:String>
+    <system:String x:Key="tooltipSNRFormula">SNR = 20 * Log10(K)</system:String>
+    <system:String x:Key="tooltipScanIndexStart">Scan index start</system:String>
+    <system:String x:Key="tooltipScanIndexEnd">Scan index end</system:String>
+    <system:String x:Key="tooltipBeamIndexStart">Beam index start</system:String>
+    <system:String x:Key="tooltipBeamIndexEnd">Beam index end</system:String>
+    <system:String x:Key="tooltipDepthIndexStart">Depth index start</system:String>
+    <system:String x:Key="tooltipDepthIndexEnd">Depth index end</system:String>
+    <system:String x:Key="tooltipAutoSNRBtn">Automatically calculate A-scan gates to plot C-scan and mark defects based on SNR</system:String>
+
+    <!-- CheckBox Content -->
+    <system:String x:Key="displaySelectedDefect">Display Selected Defect</system:String>
+
+    <!-- Units -->
+    <system:String x:Key="mm">mm</system:String>
+    <system:String x:Key="mm2">mm²</system:String>
+    <system:String x:Key="percent">%</system:String>
+    <system:String x:Key="dB">dB</system:String>
+
+    <!-- Gates, Scans names -->
+    <system:String x:Key="gateFullDepth">Full Depth</system:String>
+    <system:String x:Key="gateWater">Water</system:String>
+    <system:String x:Key="gateFirstReflection">First Reflection</system:String>
+    <system:String x:Key="gateSpecimenThickness">Specimen Thickness</system:String>
+    <system:String x:Key="gateSecondReflection">Second Reflection</system:String>
+    <system:String x:Key="gateBeforeReflection">Before Reflection</system:String>
+    <system:String x:Key="gateReflection">Reflection</system:String>
+    <system:String x:Key="gateBelowLastReflection">Below Last Reflection</system:String>
+
+    <!-- Notifications -->
+    <system:String x:Key="notificationChannelParseError">Couldn't parce channel index. Selected channel is set to 0.</system:String>
+    <system:String x:Key="notificationDataNotLoaded">The data wasn't loaded. This may occur because OpenView SDK by OlympusNDT was not installed or the data stored in unsupported format</system:String>
+    <system:String x:Key="notificationFlawTableExportCanceled">Flaw table export was canceled.</system:String>
+    <system:String x:Key="notificationFlawTableExported">Flaw Table was exported to: {0}</system:String>
+    <system:String x:Key="notificationErrorGeneratingReport">Error generating report: {0}</system:String>
+    <system:String x:Key="notificationOpenDataFileFirst">Please, open data file before opening data tools</system:String>
+    <system:String x:Key="notificationSetupSNRAreaFirst">Please, setup SNR analysis area in C-Scan first</system:String>
+    <system:String x:Key="notificationSelectDefectRowToRemove">Please, select defect information row to remove</system:String>
+    <system:String x:Key="notificationDatasetSavingStarted">Dataset collecting and saving started...</system:String>
+    <system:String x:Key="notificationChooseAnotherDirectory">Please, choose another deirectory to save data.\nAccess denied: {0}</system:String>
+    <system:String x:Key="notificationErrorOccurred">An error occurred: {0}</system:String>
+    <system:String x:Key="notificationAllDataSaved">All data was saved at: {0}</system:String>
+    <system:String x:Key="notificationJSONFileSaved">JSON file with signals data was saved at: {0}</system:String>
+    <system:String x:Key="notificationSearchForDefectsStarted">Search for defects started...</system:String>
+    <system:String x:Key="notificationSetCorrectScanRanges">Please, set correct scan ranges.</system:String>
+    <system:String x:Key="notificationFileExtensionIncorrect">File extension was defined incorrectly as: {0}</system:String>
+    <system:String x:Key="notificationAllDefectsDisplayed">All defects displayed in C-Scan in red color</system:String>
+    <system:String x:Key="notificationScanLimsReaded">Scan Lims readed as [{0} : {1}]</system:String>
+    <system:String x:Key="notificationPredictionsNotMade">Predictions wasn't made. Press 'Predict' button first.</system:String>
+    <system:String x:Key="notificationRealDefectsLoaded">Real defects information was loaded into Developer Tool table.</system:String>
+    <system:String x:Key="notificationNoDefectInformation">File do not contain information about real defect or it has incorrect defect information format.</system:String>
+    <system:String x:Key="notificationDefectsFileNotFound">File with information about real defects not found.</system:String>
+    <system:String x:Key="notificationDefectsInformationSaved">Defects information saved to: {0}</system:String>
+    <system:String x:Key="notificationLoadDataFirst">Load the data first</system:String>
+    <system:String x:Key="notificationFlawTableNotFound">Error: Flaw table not found.</system:String>
+    <system:String x:Key="notificationFlawTableImportCanceled">Flaw table import was canceled.</system:String>
+    <system:String x:Key="notificationErrorLoadingONNXModel">Error loading ONNX model as resource. Error message: {0}</system:String>
+    <system:String x:Key="notificationErrorLoadingONNXModelPath">Error loading ONNX model. Error message: {0}</system:String>
+    <system:String x:Key="notificationErrorModelInference">Error during model inference. Error message: {0}</system:String>
+    <system:String x:Key="notificationUnexpectedOutputs">Unexpected number of outputs: {0}, expected 3.</system:String>
+    <system:String x:Key="notificationImportedFromDatabase">Imported RectangleInfos from Database successfully.</system:String>
+    <system:String x:Key="notificationExportedToDatabase">Exported RectangleInfos to Database successfully.</system:String>
+    <system:String x:Key="notificationFileAlreadyOpened">This file is already opened</system:String>
+    <system:String x:Key="notificationErrorReadingFile">Error reading data from file: {0}</system:String>
+    <system:String x:Key="notificationErrorWritingData">Error writing loaded data into variables: {0}</system:String>
+    <system:String x:Key="notificationErrorPlottingData">Error plotting data: {0}</system:String>
+    <system:String x:Key="notificationErrorHidingPanel">Error hiding folder content panel: {0}</system:String>
+    <system:String x:Key="notificationDataLoadedSuccessfully">Data from file {0} loaded successfully.</system:String>
+    <system:String x:Key="notificationErrorSettingConfig">Error in setting up config file: {0}</system:String>
+    <system:String x:Key="notificationErrorLoadDataCompleted">Error invoking LoadDataCompleted (API feature): {0}</system:String>
+    <system:String x:Key="notificationErrorLoadingOPDData">An error occurred while loading OPD data: {0}</system:String>
+    <system:String x:Key="notificationErrorUpdatingDataContext">Error in mainWindow.UpdatePAPlotDataContext(plotPAViewModel):\n{0}</system:String>
+    <system:String x:Key="notificationSavedFileSignals">Saved file signals {0} for the iteration {1}\nTotal {2}</system:String>
+    <system:String x:Key="notificationFailedToLoad">Failed to load {0}</system:String>
+    <system:String x:Key="notificationFileTypeNotSupported">File type not supported.</system:String>
+    <system:String x:Key="notificationWorkingDirectoryChanged">Working Directory changed to {0}</system:String>
+    <system:String x:Key="notificationPathDoesNotExist">The specified path does not exist.</system:String>
+    <system:String x:Key="notificationNoParentDirectory">No parent directory available.</system:String>
+    <system:String x:Key="notificationForwardNavigationNotImplemented">Forward navigation not implemented.</system:String>
+    <system:String x:Key="notificationAtRootDirectory">You are at the root directory.</system:String>
+    <system:String x:Key="notificationSelectedItemDoesNotExist">The selected item does not exist.</system:String>
+    <system:String x:Key="notificationSelectItemToOpen">Please select an item to open.</system:String>
+    <system:String x:Key="notificationItemNameCopied">The name of the selected '{0}'item was copied to clipboard</system:String>
+    <system:String x:Key="notificationThemeColorsSaved">Theme colors saved to {0}</system:String>
+    <system:String x:Key="notificationBeamsLimsPrediction">Set Max and Min beam indexes in actual beams range</system:String>
+
+</ResourceDictionary>

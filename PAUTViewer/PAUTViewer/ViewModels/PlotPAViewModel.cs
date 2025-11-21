@@ -266,6 +266,7 @@ namespace PAUTViewer.ViewModels
                 MpsLim.Add(new float[] { mps[0], mps[mps.Length - 1] });
                 TofLim.Add(new float[] { Tofs[ichan][0], Tofs[ichan][Tofs[ichan].GetLength(0) - 1] });
 
+                // check the ranges
                 EnsureAscending(xlims);
                 EnsureAscending(ylims);
                 EnsureAscending(MpsLim[ichan]);
@@ -375,7 +376,16 @@ namespace PAUTViewer.ViewModels
                     Dscan = d,
                     Context = ctx,
                     State = st,
-                    Coordinator = coord
+                    Coordinator = coord,
+                    RowHeight1 = new GridLength(3, GridUnitType.Star), // left top
+                    RowHeight2 = new GridLength(15),                   // left horiz splitter
+                    RowHeight3 = new GridLength(1, GridUnitType.Star), // left bottom
+                    RowHeightBottom = GridLength.Auto,
+                    ColumnWidth1 = new GridLength(1, GridUnitType.Star), // left
+                    ColumnWidth2 = new GridLength(15),                   // vert splitter
+                    ColumnWidth3 = new GridLength(1, GridUnitType.Star), // right
+
+
                 });
             }
 
@@ -862,6 +872,94 @@ namespace PAUTViewer.ViewModels
         public ChannelContext Context { get; init; }
         public ScanState State { get; init; }
         public ScanCoordinator Coordinator { get; init; }
+
+        #region Rows Heights and Collumn width
+
+        private GridLength _rowHeight1;
+        private GridLength _rowHeight2;
+        private GridLength _rowHeight3;
+        private GridLength _rowHeight4;
+        private GridLength _rowHeight5;
+        private GridLength _rowHeight6;
+        private GridLength _rowHeightBottom;
+
+        public GridLength RowHeight1
+        {
+            get => _rowHeight1;
+            set
+            {
+                _rowHeight1 = value;
+                OnPropertyChanged(nameof(RowHeight1));
+            }
+        }
+
+        public GridLength RowHeight2
+        {
+            get => _rowHeight2;
+            set
+            {
+                _rowHeight2 = value;
+                OnPropertyChanged(nameof(RowHeight2));
+            }
+        }
+
+        public GridLength RowHeight3
+        {
+            get => _rowHeight3;
+            set
+            {
+                _rowHeight3 = value;
+                OnPropertyChanged(nameof(RowHeight3));
+            }
+        }
+
+        public GridLength RowHeightBottom
+        {
+            get => _rowHeightBottom;
+            set
+            {
+                _rowHeightBottom = value;
+                OnPropertyChanged(nameof(RowHeightBottom));
+            }
+        }
+
+        // 0 - left, 1 - splitter, 2 - right width
+        private GridLength _columnWidth1;
+        private GridLength _columnWidth2;
+        private GridLength _columnWidth3;
+        public GridLength ColumnWidth1
+        {
+            get => _columnWidth1;
+            set
+            {
+                _columnWidth1 = value;
+                OnPropertyChanged(nameof(ColumnWidth1));
+            }
+        }
+        public GridLength ColumnWidth2
+        {
+            get => _columnWidth2;
+            set
+            {
+                _columnWidth2 = value;
+                OnPropertyChanged(nameof(ColumnWidth2));
+            }
+        }
+        public GridLength ColumnWidth3
+        {
+            get => _columnWidth3;
+            set
+            {
+                _columnWidth3 = value;
+                OnPropertyChanged(nameof(ColumnWidth3));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        #endregion
+
 
     }
 }
