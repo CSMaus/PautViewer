@@ -13,14 +13,14 @@
 
             <s:SciChartSurface.XAxes>
                 <s:NumericAxis x:Name="XAxis"
-                       AxisTitle="X"
+                       AxisTitle="Depth, mm"
                        AutoRange="Never"
                        VisibleRange="0,10"/>
             </s:SciChartSurface.XAxes>
 
             <s:SciChartSurface.YAxis>
                 <s:NumericAxis x:Name="YAxis"
-                       AxisTitle="Y"
+                       AxisTitle="Amplitude"
                        AutoRange="Never"
                        VisibleRange="0,1"/>
             </s:SciChartSurface.YAxis>
@@ -28,8 +28,7 @@
             <s:SciChartSurface.RenderableSeries>
                 <s:FastLineRenderableSeries x:Name="LineSeries"
                                     StrokeThickness="2"
-                                    Stroke="DodgerBlue"
-                                    DataSeries="{Binding LineDataSeries, ElementName=Ascan}"/>
+                                    Stroke="DodgerBlue"/>
             </s:SciChartSurface.RenderableSeries>
 
             <s:SciChartSurface.Annotations>

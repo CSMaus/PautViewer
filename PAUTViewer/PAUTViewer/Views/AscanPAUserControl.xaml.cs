@@ -31,6 +31,7 @@ namespace PAUTViewer.Views
         {
             InitializeComponent();
             DataContext = this;
+            LineSeries.DataSeries = LineDataSeries;
         }
         public void CreateAscanPlotModel(float[] xLims, float[] yLims, int channel)
         {
