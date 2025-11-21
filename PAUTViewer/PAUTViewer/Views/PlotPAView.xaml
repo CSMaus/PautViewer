@@ -11,31 +11,19 @@
     <UserControl.Resources>
         <resources:ZeroToCollapsedConverter x:Key="ZeroToCollapsed"/>
     </UserControl.Resources>
-    
-    <Grid>
-        <Grid Margin="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
 
-            <TabControl x:Name="TabsList" ItemsSource="{Binding ChannelTabs}" 
+    <Grid>
+        <TabControl x:Name="TabsList" ItemsSource="{Binding Channels}" 
                 SelectedIndex="{Binding SelectedConfigIndex, Mode=TwoWay}">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Title}" />
+                        <TextBlock Text="{Binding Title}" Height="0" Margin="0"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Column="0">
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                    <Grid>
+                        <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -43,19 +31,22 @@
                             <!--<RowDefinition Height="{Binding RowHeightBottom}"/>-->
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding ColumnWidth1}"/>
-                            <ColumnDefinition Width="{Binding ColumnWidth2}"/>
-                            <ColumnDefinition Width="{Binding ColumnWidth3}"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border BorderThickness="1" BorderBrush="{DynamicResource BordersBrush}" Grid.Row="0" Margin="1" MinWidth="120" HorizontalAlignment="Left">
-                            <StackPanel Orientation="Horizontal" >
+                        <Border BorderThickness="0" BorderBrush="DarkGray" Grid.Row="0" Margin="1" MinWidth="120" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
                                 <TextBlock Text=" SoftGain  " VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding SoftGaindB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
-                                <TextBlock Text="  dB" VerticalAlignment="Center"/>
-                                <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" VerticalAlignment="Center" Margin="5, 0, 0,0"/>
-                                <Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" VerticalAlignment="Center" Margin="15, 0, 0,0"  
-                        ToolTip="Change depth gates in A-scan and press this button to update"/>
+                                <TextBox Text="{Binding SoftGaindB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         VerticalAlignment="Center" Style="{StaticResource SlimTextBox}"/>
+                                <TextBlock Text="  dB" VerticalAlignment="Center" />
+                                <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" 
+                                        VerticalAlignment="Center" Margin="5, 0, 0,0" Style="{StaticResource SlimButton}"/>
+                                <Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" 
+                                        VerticalAlignment="Center" Margin="15, 0, 0,0" Style="{StaticResource SlimButton}"
+                                        ToolTip="Change depth gates in A-scan and press this button to update"/>
                             </StackPanel>
                         </Border>
 
@@ -63,9 +54,9 @@
 
                         <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="{Binding RowHeight1}"/>
-                                <RowDefinition Height="{Binding RowHeight2}"/>
-                                <RowDefinition Height="{Binding RowHeight3}"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -77,7 +68,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <ContentControl Content="{Binding LTopScan}" Grid.Row="1" />
+                                <ContentControl Content="{Binding Cscan}" Grid.Row="1" />
                             </Grid>
 
                             <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
@@ -88,7 +79,7 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <ContentControl Content="{Binding LBottomScan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                                <ContentControl Content="{Binding Ascan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             </Grid>
 
                         </Grid>
@@ -96,9 +87,9 @@
 
                         <Grid Grid.Row="1" Grid.Column="2" Grid.RowSpan="3">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="{Binding RowHeight1}"/>
-                                <RowDefinition Height="{Binding RowHeight2}"/>
-                                <RowDefinition Height="{Binding RowHeight3}"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -110,18 +101,18 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <ContentControl Content="{Binding RTopScan}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                                <ContentControl Content="{Binding Dscan}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             </Grid>
                             <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
 
 
-                            <Grid Background="{DynamicResource Background}" Grid.Row="2" >
+                                <Grid Background="{DynamicResource Background}" Grid.Row="2" >
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
                                 
-                                <ContentControl Content="{Binding RBottomScan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                                <ContentControl Content="{Binding Bscan}"  Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             </Grid>
 
                         </Grid>
@@ -130,6 +121,8 @@
 
                 </Grid>
 
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
             </TabControl>
 
             <!--
@@ -148,6 +141,5 @@
             <ContentPresenter Grid.Row="1" Grid.Column="1"
                           Content="{Binding Current.Bscan}" />
                 -->
-        </Grid>
     </Grid>
 </UserControl>

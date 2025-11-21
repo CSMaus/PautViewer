@@ -384,8 +384,6 @@ namespace PAUTViewer.ViewModels
                     ColumnWidth1 = new GridLength(1, GridUnitType.Star), // left
                     ColumnWidth2 = new GridLength(15),                   // vert splitter
                     ColumnWidth3 = new GridLength(1, GridUnitType.Star), // right
-
-
                 });
             }
 
@@ -754,6 +752,9 @@ namespace PAUTViewer.ViewModels
 
         public void ClearData()
         {
+            Channels.Clear();
+            _coordinators.Clear();
+
             Tofs?.Clear(); Tofs = null;
             SigDps?.Clear(); SigDps = null;
             CscanSig?.Clear(); CscanSig = null;
