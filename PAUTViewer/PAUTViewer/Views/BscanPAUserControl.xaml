@@ -28,7 +28,6 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <!-- SciChart Surface -->
         <s:SciChartSurface x:Name="Surface"
                            Grid.Column="0"
                            Padding="0"
@@ -49,6 +48,19 @@
                                                       Opacity="0.95"
                                                       ColorMap="{StaticResource BscanColorPalette}"/>
             </s:SciChartSurface.RenderableSeries>
+
+            <s:SciChartSurface.ChartModifier>
+                <s:ModifierGroup>
+                    <s:ZoomPanModifier ExecuteOn="MouseRightButton"/>
+                    <s:MouseWheelZoomModifier />
+                    <s:RubberBandXyZoomModifier x:Name="BoxZoom"
+                            IsEnabled="True"
+                            ExecuteOn="MouseLeftButton"/>
+
+                    <s:ZoomExtentsModifier />
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier>
+
             <s:SciChartSurface.Annotations>
                 <s:VerticalLineAnnotation x:Name="IndexLine"
                                   Stroke="Black"

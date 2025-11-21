@@ -35,17 +35,25 @@
                                                       ColorMap="{StaticResource DscanColorPalette}" />
             </s:SciChartSurface.RenderableSeries>
 
-            <!-- Axes -->
             <s:SciChartSurface.XAxis>
-                <!-- scans (kept same as C-scan) -->
                 <s:NumericAxis x:Name="XAxis" DrawMajorBands="True" AxisTitle="Scan, mm"/>
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
-                <!-- index (kept same as C-scan) -->
                 <s:NumericAxis x:Name="YAxis" DrawMajorBands="True" AxisTitle="Index, mm"/>
             </s:SciChartSurface.YAxis>
 
-            <!-- Draggable scan & index lines -->
+            <s:SciChartSurface.ChartModifier>
+                <s:ModifierGroup>
+                    <s:ZoomPanModifier ExecuteOn="MouseRightButton"/>
+                    <s:MouseWheelZoomModifier />
+                    <s:RubberBandXyZoomModifier x:Name="BoxZoom"
+                            IsEnabled="True"
+                            ExecuteOn="MouseLeftButton"/>
+
+                    <s:ZoomExtentsModifier />
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier>
+
             <s:SciChartSurface.Annotations>
                 <s:VerticalLineAnnotation x:Name="ScanLine"
                                           Stroke="Black"

@@ -17,7 +17,7 @@
                 SelectedIndex="{Binding SelectedConfigIndex, Mode=TwoWay}">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Title}" Height="0" Margin="0"/>
+                        <TextBlock Text="" Height="0" Margin="0"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
@@ -44,9 +44,10 @@
                                 <TextBlock Text="  dB" VerticalAlignment="Center" />
                                 <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" 
                                         VerticalAlignment="Center" Margin="5, 0, 0,0" Style="{StaticResource SlimButton}"/>
-                                <Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" 
+                                <!--<Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" 
                                         VerticalAlignment="Center" Margin="15, 0, 0,0" Style="{StaticResource SlimButton}"
                                         ToolTip="Change depth gates in A-scan and press this button to update"/>
+                                -->
                             </StackPanel>
                         </Border>
 

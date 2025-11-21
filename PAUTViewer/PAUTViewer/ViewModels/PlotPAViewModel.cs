@@ -874,6 +874,49 @@ namespace PAUTViewer.ViewModels
         public ScanState State { get; init; }
         public ScanCoordinator Coordinator { get; init; }
 
+        #region Softgan
+
+        public ICommand RecalculateSoftGain { get; set; }
+
+        private string _softGaindB = "0";
+        public string SoftGaindB
+        {
+            get => _softGaindB;
+            set
+            {
+                _softGaindB = value;
+                UpdateSGdbRatio();
+                OnPropertyChanged(nameof(SoftGaindB));
+            }
+        }
+        private float _softGain = 1;
+        public float SoftGain
+        {
+            get => _softGain;
+            set
+            {
+                _softGain = value;
+                OnPropertyChanged(nameof(SoftGain));
+            }
+        }
+
+        private void UpdateSGdbRatio()
+        {
+            float sgdB = 0;
+            var normalizedValue = SoftGaindB.Replace('.', ',');
+            if (float.TryParse(SoftGaindB, out float parsedSGdB))
+            {
+                sgdB = parsedSGdB;
+            }
+            else if (float.TryParse(normalizedValue, out parsedSGdB))
+            {
+                sgdB = parsedSGdB;
+            }
+
+            SoftGain = (float)Math.Pow(10, sgdB / 20);
+        }
+        #endregion
+
         #region Rows Heights and Collumn width
 
         private GridLength _rowHeight1;

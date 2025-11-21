@@ -37,22 +37,18 @@ namespace PAUTViewer.Views
         {
             _channel = channel;
 
-            // axis ranges
             XAxis.VisibleRange = new DoubleRange(xLims[0], xLims[1]);
             YAxis.VisibleRange = new DoubleRange(yLims[0], yLims[1]);
 
-            // place line inside range (center)
             double xMin = xLims[0] + 0.1 * (xLims[1] - xLims[0]);
             VLineMin.X1 = xMin;
             double xMax = xLims[0] + 0.9 * (xLims[1] - xLims[0]);
             VLineMax.X1 = xMax;
 
-            // built-in drag event; IMPORTANT: X1 is IComparable → convert to double, clamp, assign back
             VLineMin.DragDelta += (_, __) =>
             {
                 var rx = (DoubleRange)XAxis.VisibleRange;      // IRange → DoubleRange (has Min/Max doubles)
                 double x = Convert.ToDouble(VLineMin.X1);         // IComparable → double
-                // Clamp to axis visible range
                 x = x < rx.Min ? rx.Min : (x > rx.Max ? rx.Max : x);
                 VLineMin.X1 = x;                                  // assign back as IComparable
                 LineMovedMin?.Invoke(this, (float)x, _channel);
@@ -63,7 +59,7 @@ namespace PAUTViewer.Views
                 double x = Convert.ToDouble(VLineMax.X1);         // IComparable → double
                 // Clamp to axis visible range
                 x = x < rx.Min ? rx.Min : (x > rx.Max ? rx.Max : x);
-                VLineMax.X1 = x;                                  // assign back as IComparable
+                VLineMax.X1 = x;
                 LineMovedMax?.Invoke(this, (float)x, _channel);
             };
         }
@@ -71,6 +67,19 @@ namespace PAUTViewer.Views
         public void UpdateAscanPlotModel(float[][][] currentData, int signalIndex, int scanIndex,
                                          float[] xLims, float softGain)
         {
+            // safety checks for zero data
+            if (currentData == null ||
+                currentData.Length == 0 ||
+                currentData[0] == null ||
+                currentData[0].Length == 0 ||
+                currentData[0][0] == null ||
+                currentData[0][0].Length == 0)
+            {
+                using (LineDataSeries.SuspendUpdates())
+                    LineDataSeries.Clear();
+                return;
+            }
+
             int length = currentData[0][0].Length;
             int numAngles = currentData.Length;
             int numScanSteps = currentData[0].Length;
@@ -83,7 +92,7 @@ namespace PAUTViewer.Views
             double dx = (xLims[1] - xLims[0]) / Math.Max(1, (length - 1));
             double gain = softGain == 0 ? 1.0 : softGain;
 
-            using (LineDataSeries.SuspendUpdates())   // required SciChart pattern
+            using (LineDataSeries.SuspendUpdates())
             {
                 LineDataSeries.Clear();
                 for (int i = 0; i < length; i++)

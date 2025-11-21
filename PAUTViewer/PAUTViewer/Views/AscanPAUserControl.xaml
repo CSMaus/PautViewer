@@ -30,6 +30,17 @@
                                     StrokeThickness="2"
                                     Stroke="DodgerBlue"/>
             </s:SciChartSurface.RenderableSeries>
+            <s:SciChartSurface.ChartModifier>
+                <s:ModifierGroup>
+                    <s:ZoomPanModifier ExecuteOn="MouseRightButton"/>
+                    <s:MouseWheelZoomModifier />
+                    <s:RubberBandXyZoomModifier x:Name="BoxZoom"
+                            IsEnabled="True"
+                            ExecuteOn="MouseLeftButton"/>
+
+                    <s:ZoomExtentsModifier />
+                </s:ModifierGroup>
+            </s:SciChartSurface.ChartModifier>
 
             <s:SciChartSurface.Annotations>
                 <s:VerticalLineAnnotation x:Name="VLineMin"

@@ -48,7 +48,7 @@ namespace PAUTViewer.Models
             int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
             _st.SetScanIndex(scan);
             _d.UpdateScanLinePosition(scan);
-            UpdateAscan(); UpdateBscan(); UpdateDscan();
+            UpdateAscan(); UpdateBscan(); // UpdateDscan();
         }
 
         private void OnDscanScanMoved(object? sender, float xWorld, int _)
@@ -56,7 +56,7 @@ namespace PAUTViewer.Models
             int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
             _st.SetScanIndex(scan);
             _c.UpdateScanLinePosition(scan);
-            UpdateAscan(); UpdateBscan(); UpdateDscan();
+            UpdateAscan(); UpdateBscan(); // UpdateDscan();
         }
         // C-scan handler
         private void OnCscanIndexMoved(object? sender, float yWorld, int _)

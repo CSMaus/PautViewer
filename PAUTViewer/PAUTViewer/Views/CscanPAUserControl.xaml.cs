@@ -72,19 +72,14 @@ namespace PAUTViewer.Views
             _scanStep = scanStep <= 0 ? 1.0 : scanStep;
             _idxStep = indexStep <= 0 ? 1.0 : indexStep;
 
-            // Axes visible ranges
-            // We keep the historical orientation: X axis = scans (top-down), so use negative step to flip.
             XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);
             YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);
 
-            // Color range
             HeatmapSeries.ColorMap.Minimum = 0.0;
             HeatmapSeries.ColorMap.Maximum = Math.Max(1e-9, maxVal);
 
-            // Empty initial Z array
             var z = new double[_scans, _samples];
 
-            // Map: X = scans (use negative step to have X decreasing if needed), Y = index
             double xStart = _scanMax;
             double xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0;
 
@@ -94,7 +89,6 @@ namespace PAUTViewer.Views
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, xStart, xStep, yStart, yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            // Init draggable lines
             ScanLine.X1 = _scanMin + _scanStep;
             IndexLine.Y1 = _idxMin + _idxStep;
 
@@ -117,27 +111,22 @@ namespace PAUTViewer.Views
         {
             if (currentData == null || currentData.Length == 0) return;
 
-            // REAL DATA SHAPE IN YOUR APP:
             int beams = currentData.Length;          // INDEX (Y-axis)
             int scans = currentData[0].Length;       // SCANS (X-axis)
             int depth = currentData[0][0].Length;    // DEPTH (projection dimension)
 
-            // Heatmap grid = [index(beams), scan]
             if (beams != _samples || scans != _scans)
             {
-                _samples = beams;            // rows = index
-                _scans = scans;            // columns = scans
+                _samples = beams;
+                _scans = scans;
 
-                // X = scans
                 _xStart = _scanMin;
                 _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
 
-                // Y = index (from Xlims!)
                 _yStart = _idxMin;
                 _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
             }
 
-            // Clamp depth window
             int d0 = (depthMin < 0) ? 0 : Math.Clamp(depthMin, 0, depth - 1);
             //int d1 = (depthMax < 0) ? depth : Math.Clamp(depthMax, d0 + 1, depth);
             int d1 = depthMax < 0 ? depth : Math.Min(Math.Max(depthMax, 0), depth);
@@ -167,8 +156,8 @@ namespace PAUTViewer.Views
             HeatmapSeries.DataSeries = _dataSeries;
 
 
-            XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);  // scans
-            YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);    // index
+            // XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);
+            // YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);
 
         }
 

@@ -58,7 +58,6 @@ namespace PAUTViewer.Views
         {
             if (currentData == null || currentData.Length == 0) return;
             
-            // wrong names - change them
             int numSignals = currentData.Length;          // rows (Y)
             int numScans = currentData[0].Length;
             int numDist = currentData[0][0].Length;    // cols (X)
@@ -73,28 +72,24 @@ namespace PAUTViewer.Views
             _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
             double gain = (softGain == 0f) ? 1.0 : softGain;
 
-            // Build Z [ny, nx]
             var data = new double[_nx, _ny];
             System.Threading.Tasks.Parallel.For(0, _ny, i =>
             {
-                var row = currentData[i][scanIdx]; // length = _nx
+                var row = currentData[i][scanIdx];
                 for (int j = 0; j < _nx; j++)
                     data[j, i] = row[j] * gain;
             });
 
-            // World mapping
             double xStart = _xlims[0];
             double xStep = (_ny > 1) ? (_xlims[1] - _xlims[0]) / (_ny - 1) : 1.0;
             double yStart = _ylims[0];
             double yStep = (_nx > 1) ? (_ylims[1] - _ylims[0]) / (_nx - 1) : 1.0;
 
-            // Recreate data series each update (no UpdateZValues / XStart / XStep setters in API)
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(data, xStart, xStep, yStart, yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            // Keep VisibleRange synced, no extra axis logic
-            XAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_xlims[0], _xlims[1]);
-            YAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_ylims[0], _ylims[1]);
+            // XAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_xlims[0], _xlims[1]);
+            // YAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_ylims[0], _ylims[1]);
         }
 
         public void UpdateIndexLinePosition(double newIndex)
