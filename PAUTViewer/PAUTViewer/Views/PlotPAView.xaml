@@ -50,7 +50,7 @@
                             </StackPanel>
                         </Border>
 
-                        <GridSplitter Grid.Row="1"  Grid.RowSpan="3" Grid.Column="1" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleH}"/>
+                        <GridSplitter Grid.Row="1"  Grid.RowSpan="3" Grid.Column="1" Width="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleH}"/>
 
                         <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="3">
                             <Grid.RowDefinitions>
@@ -71,7 +71,7 @@
                                 <ContentControl Content="{Binding Cscan}" Grid.Row="1" />
                             </Grid>
 
-                            <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
+                            <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
 
                             <Grid Background="{DynamicResource Background}" Grid.Row="2" >
                                 <Grid.RowDefinitions>
@@ -103,7 +103,7 @@
                                 
                                 <ContentControl Content="{Binding Dscan}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                             </Grid>
-                            <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
+                            <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Style="{StaticResource GradientGridSplitterStyleV}"/>
 
 
                                 <Grid Background="{DynamicResource Background}" Grid.Row="2" >

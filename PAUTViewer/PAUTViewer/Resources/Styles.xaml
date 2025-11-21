@@ -34,9 +34,7 @@
                         <Rectangle>
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="{DynamicResource Gradient1}" Offset="0.0" />
-                                    <GradientStop Color="{DynamicResource Gradient2}" Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource Gradient1}" Offset="1.0" />
+                                    <GradientStop Color="{DynamicResource MahApps.Colors.Gray8}" />
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
                         </Rectangle>
@@ -54,9 +52,9 @@
                         <Rectangle>
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="{DynamicResource Gradient1}" Offset="0.0" />
-                                    <GradientStop Color="{DynamicResource Gradient2}" Offset="0.5" />
-                                    <GradientStop Color="{DynamicResource Gradient1}" Offset="1.0" />
+                                    <GradientStop Color="{DynamicResource MahApps.Colors.Gray8}" Offset="0.0" />
+                                    <GradientStop Color="{DynamicResource MahApps.Colors.Gray8}" Offset="0.5" />
+                                    <GradientStop Color="{DynamicResource MahApps.Colors.Gray8}" Offset="1.0" />
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
                         </Rectangle>
