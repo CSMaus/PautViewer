@@ -13,6 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Icons\folder.png" />
+    <None Remove="Views\Icons\lock.png" />
+    <None Remove="Views\Icons\search.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="ControlzEx" Version="5.0.0" />
     <PackageReference Include="MahApps.Metro" Version="2.4.11" />
@@ -20,6 +26,7 @@
     <PackageReference Include="SciChart" Version="8.8.0.28567" />
     <PackageReference Include="ToastNotifications" Version="2.5.1" />
     <PackageReference Include="ToastNotifications.Messages" Version="2.5.1" />
+    <PackageReference Include="WindowsAPICodePack" Version="8.0.12" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,7 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Icons\" />
+    <Resource Include="Views\Icons\folder.png" />
+    <Resource Include="Views\Icons\lock.png" />
+    <Resource Include="Views\Icons\search.png" />
   </ItemGroup>
 
 </Project>

@@ -5,12 +5,57 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PAUTViewer.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="150" d:DesignWidth="800">
+             d:DesignHeight="150" d:DesignWidth="400">
     <Grid>
-        <Button x:Name="btnExplorer" Width="40" Height="40" 
-                Margin="1" Click="LoadViaExplorer_Click" 
-            ToolTip="{DynamicResource tooltipOpenExplorer}" >
-            <Image Source="Icons/folder.png"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <!--<RowDefinition Height="{Binding RowHeightBottom}"/>-->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+
+        <TextBlock Text="OPD/FPD File Path" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
+                   Foreground="WhiteSmoke" FontWeight="SemiBold"/>
+        <TextBox Text="{Binding FolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                 Grid.Row="1" Grid.Column="0" Height="20"
+                VerticalAlignment="Center" Style="{StaticResource SlimTextBox}" IsReadOnly="True"/>
+
+        <Button x:Name="btnExplorer" Width="20" Height="20" Grid.Row="1" Grid.Column="1"
+                Margin="1" Click="LoadViaExplorer_Click" Style="{StaticResource SlimButton}"
+                ToolTip="{DynamicResource tooltipOpenExplorer}">
+            <Image Source="Icons/folder.png" Margin="0"/>
+        </Button>
+
+
+        <TextBlock Text="Save Path" VerticalAlignment="Center" Grid.Row="0" Grid.Column="2"
+                   Foreground="WhiteSmoke" FontWeight="SemiBold"/>
+        <TextBox Text="{Binding SavePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                 Grid.Row="1" Grid.Column="2" Height="20" HorizontalAlignment="Stretch"
+                VerticalAlignment="Center" Style="{StaticResource SlimTextBox}" />
+
+        <Button x:Name="btnChoosePath" Width="20" Height="20" Grid.Row="1" Grid.Column="3"
+                Margin="1" Click="ChooseSavePath_Click" Style="{StaticResource SlimButton}" 
+                ToolTip="Choose path to save data file">
+            <Image Source="Icons/search.png" Margin="0"/>
+        </Button>
+        <ComboBox ItemsSource="{Binding Extension}"
+          SelectedItem="{Binding SelectedExtension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+          Style="{StaticResource SlimComboBox}"
+          Grid.Row="1" Grid.Column="4" Width="50" Height="20"/>
+
+        <Button x:Name="btnSave" Width="30" Height="20" Grid.Row="1" Grid.Column="5"
+                Margin="1" Click="SaveData_Click" Style="{StaticResource SlimButton}" 
+                Content="Save">
+            <!--<Image Source="Icons/search.png" Margin="0"/>-->
         </Button>
     </Grid>
 </UserControl>

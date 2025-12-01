@@ -19,9 +19,9 @@
            TargetType="Button"
            BasedOn="{StaticResource MahApps.Styles.Button}">
         <Setter Property="FontSize" Value="11" />
-        <Setter Property="Padding" Value="4,0,4,0" />
-        <Setter Property="MinHeight" Value="18" />
-        <Setter Property="Height" Value="18" />
+        <Setter Property="Padding" Value="0,0,0,0" />
+        <Setter Property="MinHeight" Value="14" />
+        <Setter Property="Height" Value="14" />
     </Style>
     
     
@@ -63,6 +63,19 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SlimComboBox"
+       TargetType="ComboBox"
+       BasedOn="{StaticResource MahApps.Styles.ComboBox}">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Height" Value="14"/>
+        <Setter Property="FontSize" Value="11"/>
+
+    </Style>
 
 
 </ResourceDictionary>

@@ -3,16 +3,17 @@ using PAUTViewer.Models;
 using PAUTViewer.ProjectUtilities;
 using PAUTViewer.ViewModels;
 using System;
-using System.Collections.Generic;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.IO;
 using ToastNotifications.Messages;
 
 namespace PAUTViewer.Views
 {
-    public partial class MenuUserControl : UserControl
+    public partial class MenuUserControl : UserControl, INotifyPropertyChanged
     {
         #region Fileds (???)
 
@@ -20,16 +21,66 @@ namespace PAUTViewer.Views
         private DataLoader loadedData;
         PlotPAViewModel plotPAViewModel;
 
+
+        private string _folderPath;
+        public string FolderPath
+        {
+            get { return _folderPath; }
+            set
+            {
+                _folderPath = value;
+                OnPropertyChanged(nameof(FolderPath));
+            }
+        }
+
+        // command to open
+        // choose path to save 
+
+        private string _savePath;
+        public string SavePath
+        {
+            get { return _savePath; }
+            set
+            {
+                _savePath = value;
+                OnPropertyChanged(nameof(SavePath));
+            }
+        }
+        // command to save path
+
+        public List<string> Extension { get; set; } = new List<string>
+        {
+            ".json",
+            ".txt",
+            ".csv",
+        };
+
+        private string _selectedExtension = ".json";
+        public string SelectedExtension
+        {
+            get => _selectedExtension;
+            set
+            {
+                if (_selectedExtension != value)
+                {
+                    _selectedExtension = value;
+                    SavePath = Path.ChangeExtension(SavePath, SelectedExtension);
+                    OnPropertyChanged(nameof(SelectedExtension));
+                }
+            }
+        }
+
+        
+
         #endregion
 
         public MenuUserControl(MainWindow mainWindow, DataLoader loadedData, PlotPAViewModel sharedPlotPAViewModel)
         {
             InitializeComponent();
-
             this.mainWindow = mainWindow;
             this.loadedData = loadedData;
             this.plotPAViewModel = sharedPlotPAViewModel;
-
+            DataContext = this;
         }
 
 
@@ -45,7 +96,30 @@ namespace PAUTViewer.Views
                 {
                     LoadOPDData(filePath);
                 }
+                FolderPath = Path.GetDirectoryName(filePath);
+                SavePath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath))+ SelectedExtension;
             }
+        }
+
+        public void ChooseSavePath_Click(object sender, RoutedEventArgs e)
+        {
+            string dialogueSavePath = "";
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Choose path to save data"
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                dialogueSavePath = dialog.FileName;
+            }
+        }
+
+        public void SaveData_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine($"Opened File FolerPath: {FolderPath}");
+            Console.WriteLine($"Save File Path: {SavePath}");
         }
 
         private async void LoadOPDData(string filePath)
@@ -158,5 +232,11 @@ namespace PAUTViewer.Views
 
 
         #endregion
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
