@@ -118,6 +118,8 @@ namespace PAUTViewer.Views
 
         public void SaveData_Click(object sender, RoutedEventArgs e)
         {
+            plotPAViewModel.SaveData2FileExt(SavePath, SelectedExtension);
+
             Console.WriteLine($"Opened File FolerPath: {FolderPath}");
             Console.WriteLine($"Save File Path: {SavePath}");
         }

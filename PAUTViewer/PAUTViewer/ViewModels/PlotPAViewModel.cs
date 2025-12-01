@@ -16,6 +16,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using ToastNotifications.Messages;
+using System.IO;
+using System.Text.Json;
 
 namespace PAUTViewer.ViewModels
 {
@@ -424,6 +426,210 @@ namespace PAUTViewer.ViewModels
 
             aiInspectionFileInfo = inf;
         }
+
+
+        #region Export data into text file (3 formats)
+
+        public void SaveData2FileExt(string saveFilePath, string extension)
+        {
+            // for each channel save all data file that we have
+            // saveFilePath already contains extension, but need to choose extension from "extension" variable, if there is a difference between json, csv and txt saving ways
+            if (string.IsNullOrWhiteSpace(saveFilePath) || numChannels <= 0 || SigDps == null) 
+            {
+                NotificationManager.Notifier.ShowWarning($"Save file path is not specified");
+                return;
+            }
+                
+
+            var ext = extension;
+            if (string.IsNullOrWhiteSpace(ext))
+                ext = Path.GetExtension(saveFilePath);
+
+            if (string.IsNullOrWhiteSpace(ext))
+                ext = ".json";
+
+            if (!ext.StartsWith(".")) ext = "." + ext;
+
+            string dir = Path.GetDirectoryName(saveFilePath);
+            if (string.IsNullOrEmpty(dir)) dir = Directory.GetCurrentDirectory();
+            string baseName = Path.GetFileNameWithoutExtension(saveFilePath);
+
+            for (int ichan = 0; ichan < numChannels; ichan++)
+            {
+                string cfgName = (configNames != null && ichan < configNames.Count)
+                    ? configNames[ichan]
+                    : $"CH{ichan}";
+
+                // sanitize config name for file name
+                foreach (var c in Path.GetInvalidFileNameChars())
+                    cfgName = cfgName.Replace(c, '_');
+
+                string chanFileName = $"{baseName}_CH{ichan}_{cfgName}{ext}";
+                string chanPath = Path.Combine(dir, chanFileName);
+
+                switch (ext.ToLowerInvariant())
+                {
+                    case ".json":
+                        SaveChannelAsJson(ichan, chanPath);
+                        break;
+                    case ".csv":
+                        SaveChannelAsCsv(ichan, chanPath, separator: ',');
+                        break;
+                    case ".txt":
+                        SaveChannelAsCsv(ichan, chanPath, separator: '\t');
+                        break;
+                    default:
+                        // fallback: json
+                        SaveChannelAsJson(ichan, chanPath);
+                        break;
+                }
+            }
+            NotificationManager.Notifier.ShowSuccess($"Data saved to: {saveFilePath}");
+        }
+        private void SaveChannelAsJson(int ichan, string path)
+        {
+            // Safeguards
+            if (SigDps == null || ichan < 0 || ichan >= SigDps.Count)
+                return;
+
+            var sig = SigDps[ichan];
+            int beams = sig.Length;
+            int scans = beams > 0 ? sig[0].Length : 0;
+            int depthSamples = (scans > 0) ? sig[0][0].Length : 0;
+
+            float[] xlims = (Xlims != null && ichan < Xlims.Count) ? Xlims[ichan] : null;
+            float[] ylims = (Ylims != null && ichan < Ylims.Count) ? Ylims[ichan] : null;
+            float[] mpsLim = (MpsLim != null && ichan < MpsLim.Count) ? MpsLim[ichan] : null;
+            float[] tofLim = (TofLim != null && ichan < TofLim.Count) ? TofLim[ichan] : null;
+            int[] scanLims = (ScanLims != null && ichan < ScanLims.Count) ? ScanLims[ichan] : null;
+
+            float[] tofs = (Tofs != null && ichan < Tofs.Count) ? Tofs[ichan] : null;
+            float[] mps = (Mps != null && ichan < Mps.Count) ? Mps[ichan] : null;
+            float[] depths = (Depths != null && ichan < Depths.Count) ? Depths[ichan] : null;
+            float[] dists = (Dists != null && ichan < Dists.Count) ? Dists[ichan] : null;
+            float[] angles = (Angles != null && ichan < Angles.Count) ? Angles[ichan] : null;
+            float[] alims = (Alims != null && ichan < Alims.Count) ? Alims[ichan] : null;
+            float[] indexes = (Indexes != null && ichan < Indexes.Count) ? Indexes[ichan] : null;
+
+            float[,] cscan = (CscanSig != null && ichan < CscanSig.Count) ? CscanSig[ichan] : null;
+            float[][] cscanJagged = cscan != null ? ToJagged2D(cscan) : null;
+
+            float scanStep = (ScanStep != null && ichan < ScanStep.Count) ? ScanStep[ichan] : 0f;
+
+            var channelName = (configNames != null && ichan < configNames.Count) ? configNames[ichan] : $"CH{ichan}";
+
+            // JSON object with clear keys
+            var obj = new
+            {
+                file_path = FilePath,
+                channel_index = ichan,
+                channel_name = channelName,
+
+                // geometry / limits
+                scan_limits = new { min_scan = scanLims?[0], max_scan = scanLims?[1] },
+                x_limits = new { min = xlims?[0], max = xlims?[1] },
+                y_limits = new { min = ylims?[0], max = ylims?[1] },
+                mps_limits = new { min = mpsLim?[0], max = mpsLim?[1] },
+                tof_limits = new { min = tofLim?[0], max = tofLim?[1] },
+
+                // 1D arrays
+                tofs = tofs,
+                mps = mps,
+                depths = depths,
+                dists = dists,
+                angles = angles,
+                amplitude_limits = new
+                {
+                    min = alims != null && alims.Length > 0 ? alims[0] : 0f,
+                    max = alims != null && alims.Length > 1 ? alims[1] : 0f
+                },
+                indexes = indexes,
+                scan_step = scanStep,
+
+                // shapes
+                sig_shape = new { beams = beams, scans = scans, depth_samples = depthSamples },
+
+                // main data
+                sig_dps = sig,          // float[beam][scan][depth]
+                cscan_signal = cscanJagged
+            };
+
+            var opts = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            string json = JsonSerializer.Serialize(obj, opts);
+            File.WriteAllText(path, json, Encoding.UTF8);
+        }
+
+        private void SaveChannelAsCsv(int ichan, string path, char separator)
+        {
+            if (SigDps == null || ichan < 0 || ichan >= SigDps.Count)
+                return;
+
+            var sig = SigDps[ichan];
+            int beams = sig.Length;
+            if (beams == 0) return;
+            int scans = sig[0].Length;
+            if (scans == 0) return;
+            int depthSamples = sig[0][0].Length;
+
+            var channelName = (configNames != null && ichan < configNames.Count) ? configNames[ichan] : $"CH{ichan}";
+
+            var sb = new StringBuilder();
+
+            // header
+            sb.Append("channel_index").Append(separator)
+              .Append("channel_name").Append(separator)
+              .Append("beam_index").Append(separator)
+              .Append("scan_index");
+
+            for (int d = 0; d < depthSamples; d++)
+            {
+                sb.Append(separator).Append("s").Append(d.ToString());
+            }
+            sb.AppendLine();
+
+            // data rows: one row per (beam, scan) with full A-scan
+            for (int b = 0; b < beams; b++)
+            {
+                for (int sIdx = 0; sIdx < scans; sIdx++)
+                {
+                    var row = sig[b][sIdx];
+                    sb.Append(ichan).Append(separator)
+                      .Append(channelName).Append(separator)
+                      .Append(b).Append(separator)
+                      .Append(sIdx);
+
+                    for (int d = 0; d < depthSamples; d++)
+                    {
+                        sb.Append(separator)
+                          .Append(row[d].ToString(CultureInfo.InvariantCulture));
+                    }
+                    sb.AppendLine();
+                }
+            }
+
+            File.WriteAllText(path, sb.ToString(), Encoding.UTF8);
+        }
+
+        private static float[][] ToJagged2D(float[,] src)
+        {
+            int n0 = src.GetLength(0);
+            int n1 = src.GetLength(1);
+            var result = new float[n0][];
+            for (int i = 0; i < n0; i++)
+            {
+                var row = new float[n1];
+                for (int j = 0; j < n1; j++)
+                    row[j] = src[i, j];
+                result[i] = row;
+            }
+            return result;
+        }
+
+        #endregion
 
         #region Gates
         private double[,] GatesMask { get; set; }
