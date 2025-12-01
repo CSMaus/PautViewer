@@ -1,30 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="PAUTFileConverter" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="908b7ecf-6afe-49d4-96e1-473394836f62">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+	<Product Id="*"
+			 Name="PAUTFileConverter"
+			 Language="1033"
+			 Version="1.0.0.0"
+			 Manufacturer="CWNU"
+			 UpgradeCode="908b7ecf-6afe-49d4-96e1-473394836f62">
+
+		<Package InstallerVersion="200"
+				 Compressed="yes"
+				 InstallScope="perMachine"
+				 InstallPrivileges="elevated"
+				 Manufacturer="CWNU" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<MediaTemplate EmbedCab="yes" />
 
 		<Feature Id="ProductFeature" Title="PAUTFileConverter" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
+			<ComponentRef Id="ApplicationShortcut" />
 		</Feature>
 	</Product>
 
+	<!-- MAIN APP FILES FROM PAUTViewer BUILD OUTPUT -->
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<Component Id="MainExeComponent" Guid="11111111-1111-1111-1111-111111111111">
+
+				<!-- host EXE (renamed in Program Files) -->
+				<File Id="PAUTFileConverterExe"
+					  Name="PAUTFileConverter.exe"
+					  Source="$(var.PAUTViewer.TargetDir)PAUTViewer.exe"
+					  KeyPath="yes" />
+
+				<!-- PAUTViewer assembly + runtime files -->
+				<File Source="$(var.PAUTViewer.TargetDir)PAUTViewer.dll" />
+				<File Source="$(var.PAUTViewer.TargetDir)PAUTViewer.deps.json" />
+				<File Source="$(var.PAUTViewer.TargetDir)PAUTViewer.runtimeconfig.json" />
+
+				<!-- Olympus SDK DLLs that are not embedded -->
+				<File Source="$(var.PAUTViewer.TargetDir)OlympusNDT.Instrumentation.NET.dll" />
+				<File Source="$(var.PAUTViewer.TargetDir)OlympusNDT.Storage.NET.dll" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+
+	<!-- INSTALL FOLDERS -->
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="PAUTFileConverter" />
+			</Directory>
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id="INSTALLFOLDER" Name="PAUTFileConverter" />
 			</Directory>
 		</Directory>
 	</Fragment>
 
+	<!-- START MENU SHORTCUT + REGISTRY -->
 	<Fragment>
-		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<!-- <Component Id="ProductComponent"> -->
-				<!-- TODO: Insert files, registry keys, and other resources here. -->
-			<!-- </Component> -->
-		</ComponentGroup>
+		<DirectoryRef Id="ApplicationProgramsFolder">
+			<Component Id="ApplicationShortcut" Guid="22222222-2222-2222-2222-222222222222">
+
+				<Shortcut Id="ApplicationStartMenuShortcut"
+						  Name="PAUTFileConverter"
+						  Description="PAUTFileConverter"
+						  Target="[#PAUTFileConverterExe]"
+						  WorkingDirectory="INSTALLFOLDER" />
+
+				<RemoveFolder Id="CleanUpShortCut"
+							  Directory="ApplicationProgramsFolder"
+							  On="uninstall" />
+
+				<RegistryValue Root="HKCU"
+							   Key="Software\CWNU\PAUTFileConverter"
+							   Name="owner"
+							   Type="string"
+							   Value="CWNU"
+							   KeyPath="yes" />
+
+				<RegistryValue Root="HKCU"
+							   Key="Software\CWNU\PAUTFileConverter"
+							   Name="creator"
+							   Type="string"
+							   Value="KseniiaB" />
+			</Component>
+		</DirectoryRef>
 	</Fragment>
+
 </Wix>

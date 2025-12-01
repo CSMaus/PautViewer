@@ -1,36 +1,60 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36603.0 d17.14
+VisualStudioVersion = 17.14.36603.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PAUTViewer", "PAUTViewer\PAUTViewer.csproj", "{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadDataFile.NET", "C:\OlympusNDT\OpenView SDK\1.0\CodeSnippets\ReadDataFile.NET\ReadDataFile.NET.csproj", "{220FD293-CE7C-448E-AC94-40B1B9603B5E}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PAUTFileConverter", "PAUTFileConverter\PAUTFileConverter.wixproj", "{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|x64.ActiveCfg = Debug|x64
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|x64.Build.0 = Debug|x64
+		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Debug|x86.Build.0 = Debug|Any CPU
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|x64.ActiveCfg = Release|x64
 		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|x64.Build.0 = Release|x64
+		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8B027F4-7476-4B9A-9B4B-2A172FE27B45}.Release|x86.Build.0 = Release|Any CPU
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|Any CPU.Build.0 = Debug|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|x64.ActiveCfg = Debug|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|x64.Build.0 = Debug|x64
+		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|x86.ActiveCfg = Debug|x86
+		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Debug|x86.Build.0 = Debug|x86
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|Any CPU.ActiveCfg = Release|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|Any CPU.Build.0 = Release|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|x64.ActiveCfg = Release|x64
 		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|x64.Build.0 = Release|x64
+		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|x86.ActiveCfg = Release|x86
+		{220FD293-CE7C-448E-AC94-40B1B9603B5E}.Release|x86.Build.0 = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|Any CPU.Build.0 = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|x64.ActiveCfg = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|x64.Build.0 = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|x86.ActiveCfg = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Debug|x86.Build.0 = Debug|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|Any CPU.ActiveCfg = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|Any CPU.Build.0 = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|x64.ActiveCfg = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|x64.Build.0 = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|x86.ActiveCfg = Release|x86
+		{1DAB4B3B-9BCB-49CB-ACFB-22B466DBF6F2}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

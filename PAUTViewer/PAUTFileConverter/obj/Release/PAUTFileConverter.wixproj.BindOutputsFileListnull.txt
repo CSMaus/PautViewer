@@ -1,0 +1,2 @@
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTFileConverter\bin\Release\PAUTFileConverter.msi
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTFileConverter\bin\Release\PAUTFileConverter.wixpdb

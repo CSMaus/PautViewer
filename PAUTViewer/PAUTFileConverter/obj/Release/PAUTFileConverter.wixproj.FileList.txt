@@ -1,0 +1,6 @@
+obj\Release\Product.wixobj
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTFileConverter\bin\Release\PAUTFileConverter.msi
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTFileConverter\bin\Release\PAUTFileConverter.wixpdb
+obj\Release\PAUTFileConverter.wixproj.BindContentsFileListnull.txt
+obj\Release\PAUTFileConverter.wixproj.BindOutputsFileListnull.txt
+obj\Release\PAUTFileConverter.wixproj.BindBuiltOutputsFileListnull.txt

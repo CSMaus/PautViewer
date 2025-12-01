@@ -10,6 +10,7 @@
     <StartupObject>PAUTViewer.App</StartupObject>
     <Platforms>AnyCPU;x64</Platforms>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>Views\Icons\app_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,14 +20,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Views\Icons\app_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="ControlzEx" Version="5.0.0" />
+    <PackageReference Include="Costura.Fody" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Fody" Version="6.9.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MahApps.Metro" Version="2.4.11" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="6.1.0" />
     <PackageReference Include="SciChart" Version="8.8.0.28567" />
     <PackageReference Include="ToastNotifications" Version="2.5.1" />
     <PackageReference Include="ToastNotifications.Messages" Version="2.5.1" />
     <PackageReference Include="WindowsAPICodePack" Version="8.0.12" />
+    <PackageReference Include="WixToolset.Netfx.wixext" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>

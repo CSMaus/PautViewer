@@ -1,0 +1,6 @@
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\OlympusNDT.Instrumentation.NET.dll
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\OlympusNDT.Storage.NET.dll
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\PAUTViewer.exe
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\PAUTViewer.deps.json
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\PAUTViewer.dll
+D:\ML_DL_AI_stuff\!!NaWoo\code\PautViewer\PAUTViewer\PAUTViewer\bin\x64\Release\net10.0-windows10.0.17763.0\PAUTViewer.runtimeconfig.json
