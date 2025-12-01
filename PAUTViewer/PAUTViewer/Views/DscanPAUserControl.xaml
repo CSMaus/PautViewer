@@ -32,7 +32,8 @@
             <!-- Renderable series -->
             <s:SciChartSurface.RenderableSeries>
                 <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries" Opacity="0.95"
-                                                      ColorMap="{StaticResource DscanColorPalette}" />
+                                                      ColorMap="{StaticResource DscanColorPalette}" 
+                                                      UseLinearTextureFiltering="True"/>
             </s:SciChartSurface.RenderableSeries>
 
             <s:SciChartSurface.XAxis>
