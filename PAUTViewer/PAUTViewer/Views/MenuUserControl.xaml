@@ -16,7 +16,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
@@ -35,7 +35,7 @@
             <Image Source="Icons/folder.png" Margin="0"/>
         </Button>
 
-
+        <!--
         <TextBlock Text="Save Path" VerticalAlignment="Center" Grid.Row="0" Grid.Column="2"
                    Foreground="WhiteSmoke" FontWeight="SemiBold"/>
         <TextBox Text="{Binding SavePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
@@ -55,7 +55,7 @@
         <Button x:Name="btnSave" Width="30" Height="20" Grid.Row="1" Grid.Column="5"
                 Margin="1" Click="SaveData_Click" Style="{StaticResource SlimButton}" 
                 Content="Save">
-            <!--<Image Source="Icons/search.png" Margin="0"/>-->
         </Button>
+        -->
     </Grid>
 </UserControl>

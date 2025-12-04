@@ -22,6 +22,8 @@
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
                     <DataTemplate>
+                    <!-- This grid should be used with displayin content of SelectedConfigIndex of Channels
+                        but it should be not as tab. SelectedConfigIndex variable will be changed in other place-->
                     <Grid>
                         <Grid>
                         <Grid.RowDefinitions>
