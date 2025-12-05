@@ -24,11 +24,53 @@
             Width="100"
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
-            Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2"
+            Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"
             ToolTip="Color maps"
             ItemsSource="{Binding configNames}"
             SelectedIndex="{Binding SelectedConfigIndex, UpdateSourceTrigger=PropertyChanged}"/>
 
+        <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Center">
+            <TabItem Header="View">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="SNR">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="AI">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </TabItem>
+
+
+        </TabControl>
 
 
     </Grid>

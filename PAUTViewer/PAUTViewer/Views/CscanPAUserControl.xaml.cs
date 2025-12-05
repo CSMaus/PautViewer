@@ -18,8 +18,8 @@ namespace PAUTViewer.Views
         // heatmap data (Z) shaped as [height=scans, width=samples]
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
         // sizing
-        private int _scans;    // height
-        private int _samples;  // width
+        private int _scans;    // width
+        private int _samples;  // height
 
         // world ranges
         private double _scanMin, _scanMax;   // from ScansLims
@@ -31,7 +31,8 @@ namespace PAUTViewer.Views
 
         // events for external listeners
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
-        public event LineMovedEventHandler LineMovedScan;
+        public event LineMovedEventHandler LineMovedScanMin;
+        public event LineMovedEventHandler LineMovedScanMax;
         public event LineMovedEventHandler LineMovedIndex;
 
         private int _channel;
@@ -89,7 +90,7 @@ namespace PAUTViewer.Views
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, xStart, xStep, yStart, yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            ScanLine.X1 = _scanMin + _scanStep;
+            ScanLineMax.X1 = _scanMin + _scanStep;
             IndexLine.Y1 = _idxMin + _idxStep;
 
             _xStart = _scanMin;
@@ -165,21 +166,31 @@ namespace PAUTViewer.Views
 
         public void UpdateScanLinePosition(double newScan)
         {
-            ScanLine.X1 = newScan;
+            ScanLineMax.X1 = newScan;
         }
         public void UpdateIndexLinePosition(double newIndex)
         {
             IndexLine.Y1 = newIndex;
         }
 
-        private void ScanLine_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        private void ScanLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
         {
-            double x = ScanLine.X1 is double dx ? dx : Convert.ToDouble(ScanLine.X1);
+            double x = ScanLineMax.X1 is double dx ? dx : Convert.ToDouble(ScanLineMax.X1);
             if (x < _scanMin) x = _scanMin;
             if (x > _scanMax) x = _scanMax;
-            ScanLine.X1 = x;
+            ScanLineMax.X1 = x;
 
-            LineMovedScan?.Invoke(this, (float)x, _channel);
+            LineMovedScanMax?.Invoke(this, (float)x, _channel);
+        }
+
+        private void ScanLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        {
+            double x = ScanLineMax.X1 is double dx ? dx : Convert.ToDouble(ScanLineMax.X1);
+            if (x < _scanMin) x = _scanMin;
+            if (x > _scanMax) x = _scanMax;
+            ScanLineMin.X1 = x;
+
+            // LineMovedScanMax?.Invoke(this, (float)x, _channel);
         }
 
         private void IndexLine_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)

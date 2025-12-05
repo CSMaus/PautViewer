@@ -24,7 +24,7 @@ namespace PAUTViewer.Models
             _ctx = ctx; _st = st; _a = a; _b = b; _c = c; _d = d;
 
             // --- wire once, here ---
-            _c.LineMovedScan += OnCscanScanMoved;
+            _c.LineMovedScanMax += OnCscanScanMoved;
             _c.LineMovedIndex += OnCscanIndexMoved;
 
             // If D-scan also has a scan line the user can drag, keep both in sync:

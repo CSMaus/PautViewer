@@ -11,7 +11,7 @@
         <s:GradientStopsToLinearGradientBrushConverter x:Key="ColorsToLinearGradientBrushConverter"/>
         <!-- This is the C-scan Amplitude-->
         <!-- Jet-like palette -->
-        <s:HeatmapColorPalette x:Key="CscanColorPalette" Minimum="0" Maximum="1">
+        <s:HeatmapColorPalette x:Key="ScanColorPalette" Minimum="0" Maximum="1">
             <s:HeatmapColorPalette.GradientStops>
                 <GradientStop Offset="0.00" Color="#00007F"/>
                 <GradientStop Offset="0.17" Color="#0000FF"/>
@@ -33,7 +33,7 @@
             <s:SciChartSurface.RenderableSeries>
             <s:FastUniformHeatmapRenderableSeries x:Name="HeatmapSeries"
                                                   Opacity="0.95"
-                                                  ColorMap="{StaticResource CscanColorPalette}"
+                                                  ColorMap="{StaticResource ScanColorPalette}"
                                                       UseLinearTextureFiltering="True"/>
             </s:SciChartSurface.RenderableSeries>
 
@@ -63,14 +63,22 @@
             </s:SciChartSurface.ChartModifier>
 
             <s:SciChartSurface.Annotations>
-                <s:VerticalLineAnnotation x:Name="ScanLine"
+                <s:VerticalLineAnnotation x:Name="ScanLineMax"
                                           Stroke="Black"
                                           StrokeThickness="2"
                                           X1="0"
                                           IsEditable="True"
                                           LabelTextFormatting="0.00"
                                           ShowLabel="True"
-                                          DragDelta="ScanLine_OnDragDelta" />
+                                          DragDelta="ScanLineMax_OnDragDelta" />
+                <s:VerticalLineAnnotation x:Name="ScanLineMin"
+                                          Stroke="Coral"
+                                          StrokeThickness="2"
+                                          X1="0"
+                                          IsEditable="True"
+                                          LabelTextFormatting="0.00"
+                                          ShowLabel="True"
+                                          DragDelta="ScanLineMin_OnDragDelta" />
                 <s:HorizontalLineAnnotation x:Name="IndexLine"
                                             Stroke="Black"
                                             StrokeThickness="2"
