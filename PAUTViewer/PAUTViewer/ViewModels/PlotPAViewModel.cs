@@ -147,6 +147,33 @@ namespace PAUTViewer.ViewModels
 
         #endregion
 
+        #region Side Panel: View. This is settings of the Scans displayment
+
+        private bool _isBscanRangeProjection = false;
+        public bool IsBscanRangeProjection
+        {
+            get => _isBscanRangeProjection;
+            set
+            {
+                _isBscanRangeProjection = value;
+                OnPropertyChanged(nameof(IsBscanRangeProjection));
+                Channels[SelectedConfigIndex].Dscan.UpdatePlot();
+            }
+        }
+
+        private bool _isDscanRangeProjection = false;
+        public bool IsDscanRangeProjection
+        {
+            get => _isDscanRangeProjection;
+            set
+            {
+                _isDscanRangeProjection = value;
+                OnPropertyChanged(nameof(IsDscanRangeProjection));
+            }
+        }
+
+        #endregion
+
         private DataLoader loadedData;
         public PlotPAViewModel(DataLoader loadedData)
         {

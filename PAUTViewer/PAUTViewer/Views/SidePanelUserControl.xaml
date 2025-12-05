@@ -39,7 +39,11 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <CheckBox Content="B-Scan: Range projection" Grid.Row="0" Margin="2" IsChecked="{Binding IsBscanRangeProjection}"/>
+                    <CheckBox Content="D-Scan: Range projection" Grid.Row="1" Margin="2" IsChecked="{Binding IsDscanRangeProjection}"/>
+
                 </Grid>
             </TabItem>
 
