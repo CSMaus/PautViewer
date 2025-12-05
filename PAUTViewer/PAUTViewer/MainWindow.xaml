@@ -18,10 +18,13 @@
         </Grid.RowDefinitions>
 
         <Border BorderBrush="DarkGray" BorderThickness="0" Margin="2">
-            <Frame x:Name="ExplorerFrame" NavigationUIVisibility="Hidden" Grid.Row="0" Margin="0"/>
+            <Frame x:Name="ExplorerFrame" NavigationUIVisibility="Hidden"/>
         </Border>
         <Border BorderBrush="WhiteSmoke" BorderThickness="2" Margin="2" Grid.Row="1">
-            <Frame x:Name="PAFrame" NavigationUIVisibility="Hidden" Grid.Row="1" Margin="1"/>
+            <Frame x:Name="PAFrame" NavigationUIVisibility="Hidden"/>
+        </Border>
+        <Border BorderThickness="0" Margin="2, 5, 2, 2"  Grid.Column="1"  Grid.RowSpan="2">
+            <Frame x:Name="SidePanelFrame" NavigationUIVisibility="Hidden"/>
         </Border>
 
     </Grid>

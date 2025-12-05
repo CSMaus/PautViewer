@@ -9,7 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <s:GradientStopsToLinearGradientBrushConverter x:Key="ColorsToLinearGradientBrushConverter"/>
-
+        <!-- This is actually the C-scan Position-->
         <s:HeatmapColorPalette x:Key="DscanColorPalette">
             <s:HeatmapColorPalette.GradientStops>
                 <GradientStop Offset="0.00" Color="#00007F"/>

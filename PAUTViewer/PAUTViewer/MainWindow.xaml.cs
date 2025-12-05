@@ -22,6 +22,7 @@ namespace PAUTViewer
 
         private DataLoader loadedData;
         private PlotPAView plotPAView;
+        private SidePanelUserControl sidePanel;
         public static MenuUserControl _menuUserControl;
         //private FlawTableUserControl flawTableUserControl;
 
@@ -35,10 +36,12 @@ namespace PAUTViewer
             SharedPlotPAViewModel = new PlotPAViewModel(loadedData);
             _menuUserControl = new MenuUserControl(this, loadedData, SharedPlotPAViewModel);
             plotPAView = new PlotPAView(SharedPlotPAViewModel);
+            sidePanel = new SidePanelUserControl(SharedPlotPAViewModel);
             //flawTableUserControl = new FlawTableUserControl(SharedPlotPAViewModel);
 
             ExplorerFrame.Navigate(_menuUserControl);
             PAFrame.Navigate(plotPAView);
+            SidePanelFrame.Navigate(sidePanel);
             //FlawTableFrame.Navigate(flawTableUserControl);
         }
 
@@ -47,6 +50,8 @@ namespace PAUTViewer
             // maybe do not need this anymore bcs of the SharedPlotPAViewModel, but it will be here for now
             plotPAView.DataContext = null;
             plotPAView.DataContext = viewModel;
+            sidePanel.DataContext = null;
+            sidePanel.DataContext = viewModel;
             //flawTableUserControl.DataContext = viewModel;
         }
 

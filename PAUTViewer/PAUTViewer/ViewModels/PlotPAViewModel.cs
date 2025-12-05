@@ -299,7 +299,9 @@ namespace PAUTViewer.ViewModels
                 return Channels.Count > 0 ? Channels[i] : null;
             }
         }
+
         public ObservableCollection<ChannelUI> Channels { get; } = new();
+
         private int _selectedConfigIndex = 0;
         public int SelectedConfigIndex
         {
@@ -310,8 +312,13 @@ namespace PAUTViewer.ViewModels
                 _selectedConfigIndex = value;
                 OnPropertyChanged(nameof(SelectedConfigIndex));
                 OnPropertyChanged(nameof(Current));           // <— important
+                OnPropertyChanged(nameof(SelectedChannel));
             }
         }
+        public ChannelUI SelectedChannel =>
+            (_selectedConfigIndex >= 0 && _selectedConfigIndex < Channels.Count)
+                ? Channels[_selectedConfigIndex]
+                : null;
 
 
         public void PlotData()
@@ -369,13 +376,17 @@ namespace PAUTViewer.ViewModels
                 st.SetGain(1f);
                 var coord = new ScanCoordinator(ctx, st, a, b, c, d);
 
+                var depthS = new DepthscanPAUserControl();
+
+
                 Channels.Add(new ChannelUI
                 {
                     Channel = ichan,
                     Ascan = a,
                     Bscan = b,
-                    Cscan = c,
-                    Dscan = d,
+                    CAscan = c,
+                    CPscan = d,
+                    Dscan = depthS,
                     Context = ctx,
                     State = st,
                     Coordinator = coord,
@@ -646,7 +657,7 @@ namespace PAUTViewer.ViewModels
 
         private void ResetDepthLimsBasedOnGates(int ichan)
         {
-            var cscan = Channels[ichan].Cscan;
+            var cscan = Channels[ichan].CAscan;
             if (Application.Current.Resources["gateFirstReflection"] is string k1 &&
                 cscan.Gates.TryGetValue(k1, out var t1))
                 DepthMin = Math.Round(t1.Item3, 2).ToString(CultureInfo.InvariantCulture);
@@ -662,7 +673,7 @@ namespace PAUTViewer.ViewModels
         public void RecalculateDscanGates(bool isSelectedChannel = true, int ichan = 0)
         {
             ichan = isSelectedChannel ? SelectedConfigIndex : ichan;
-            double[,] dataDscan = Channels[ichan].Dscan.CscanData;
+            double[,] dataDscan = Channels[ichan].CPscan.CscanData;
             float siglen = _sigDpsLengths[ichan][2];
             float mpsLen = MpsLim[ichan][1] - MpsLim[ichan][0];
 
@@ -673,13 +684,13 @@ namespace PAUTViewer.ViewModels
             int firstIndex_prev = 0;
             int secondIndex_prev = 0;
 
-            var keysToRemove = Channels[ichan].Cscan.Gates.Keys.ToArray();
-            Channels[ichan].Cscan.SelectedGateKey = null;
+            var keysToRemove = Channels[ichan].CAscan.Gates.Keys.ToArray();
+            Channels[ichan].CAscan.SelectedGateKey = null;
             foreach (var key in keysToRemove)
-                Channels[ichan].Cscan.Gates.Remove(key);
+                Channels[ichan].CAscan.Gates.Remove(key);
 
             string gatesKey = Application.Current.Resources["gateFullDepth"] as string;
-            Channels[ichan].Cscan.Gates[gatesKey] = (0, (int)siglen - 1, MpsLim[ichan][0], MpsLim[ichan][1]);
+            Channels[ichan].CAscan.Gates[gatesKey] = (0, (int)siglen - 1, MpsLim[ichan][0], MpsLim[ichan][1]);
 
             foreach ((int start, int end) in GatesIdxs)
             {
@@ -695,10 +706,10 @@ namespace PAUTViewer.ViewModels
                 if (lineIdx == 0)
                 {
                     gatesKey = Application.Current.Resources["gateWater"] as string;
-                    //Channels[ichan].Cscan.Gates[gatesKey] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
+                    //Channels[ichan].CAscan.Gates[gatesKey] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
 
                     gatesKey = Application.Current.Resources["gateFirstReflection"] as string;
-                    //Channels[ichan].Cscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                    //Channels[ichan].CAscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                 }
                 else
                 {
@@ -708,18 +719,18 @@ namespace PAUTViewer.ViewModels
                     if (lineIdx == 1)
                     {
                         gatesKey = Application.Current.Resources["gateSpecimenThickness"] as string;
-                        //Channels[ichan].Cscan.Gates[gatesKey] = (secondIndex_prev, firstIndex, mpsSecond_prev, mpsFirst);
+                        //Channels[ichan].CAscan.Gates[gatesKey] = (secondIndex_prev, firstIndex, mpsSecond_prev, mpsFirst);
 
                         gatesKey = Application.Current.Resources["gateSecondReflection"] as string;
-                        //Channels[ichan].Cscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                        //Channels[ichan].CAscan.Gates[gatesKey] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                     }
                     else
                     {
                         gatesKey = Application.Current.Resources["gateBeforeReflection"] as string;
-                        //Channels[ichan].Cscan.Gates[$"{gatesKey} {lineIdx}"] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
+                        //Channels[ichan].CAscan.Gates[$"{gatesKey} {lineIdx}"] = (0, firstIndex, MpsLim[ichan][0], mpsFirst);
 
                         gatesKey = Application.Current.Resources["gateReflection"] as string;
-                        //Channels[ichan].Cscan.Gates[$"{gatesKey} {lineIdx}"] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
+                        //Channels[ichan].CAscan.Gates[$"{gatesKey} {lineIdx}"] = (firstIndex, secondIndex, mpsFirst, mpsSecond);
                     }
                 }
 
@@ -731,11 +742,11 @@ namespace PAUTViewer.ViewModels
             float secondIndex_lastPRC = Math.Clamp((float)secondIndex_prev / siglen, 0f, 1f);
             float mpsSecond_last = MpsLim[ichan][0] + mpsLen * secondIndex_lastPRC;
             //gatesKey = Application.Current.Resources["gateBelowLastReflection"] as string;
-            //Channels[ichan].Cscan.Gates[gatesKey] = (secondIndex_prev, (int)siglen - 1, mpsSecond_last, MpsLim[ichan][1] - mpsLen / 100);
+            //Channels[ichan].CAscan.Gates[gatesKey] = (secondIndex_prev, (int)siglen - 1, mpsSecond_last, MpsLim[ichan][1] - mpsLen / 100);
 
-            //Channels[ichan].Cscan.Gates = new Dictionary<string, (int, int, float, float)>(Channels[ichan].Cscan.Gates);
-            //Channels[ichan].Cscan.GatesPropertyChanged();
-            //if (IsDisplayGatesMask) Channels[ichan].Dscan.AddDefectedMask(mask, ScanLims[ichan], Ylims[ichan]);
+            //Channels[ichan].CAscan.Gates = new Dictionary<string, (int, int, float, float)>(Channels[ichan].CAscan.Gates);
+            //Channels[ichan].CAscan.GatesPropertyChanged();
+            //if (IsDisplayGatesMask) Channels[ichan].CPscan.AddDefectedMask(mask, ScanLims[ichan], Ylims[ichan]);
 
             ResetDepthLimsBasedOnGates(ichan);
         }
@@ -1072,8 +1083,9 @@ namespace PAUTViewer.ViewModels
         // UI controls
         public AscanPAUserControl Ascan { get; init; }
         public BscanPAUserControl Bscan { get; init; }
-        public CscanPAUserControl Cscan { get; init; }
-        public DscanPAUserControl Dscan { get; init; }
+        public CscanPAUserControl CAscan { get; init; }
+        public DscanPAUserControl CPscan { get; init; }
+        public DepthscanPAUserControl Dscan { get; init; }
 
         // Core objects to access later
         public ChannelContext Context { get; init; }

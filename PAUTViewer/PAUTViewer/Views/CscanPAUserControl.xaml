@@ -9,7 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <s:GradientStopsToLinearGradientBrushConverter x:Key="ColorsToLinearGradientBrushConverter"/>
-
+        <!-- This is the C-scan Amplitude-->
         <!-- Jet-like palette -->
         <s:HeatmapColorPalette x:Key="CscanColorPalette" Minimum="0" Maximum="1">
             <s:HeatmapColorPalette.GradientStops>
