@@ -13,96 +13,87 @@ namespace PAUTViewer.Models
         private readonly ScanState _st;
         private readonly AscanPAUserControl _a;
         private readonly BscanPAUserControl _b;
-        private readonly CscanPAUserControl _c;
-        private readonly DscanPAUserControl _d;
+        private readonly DepthscanPAUserControl _d;
+        private readonly CscanPAUserControl _ca;
+        private readonly DscanPAUserControl _cp;
 
 
         public ScanCoordinator(ChannelContext ctx, ScanState st,
                            AscanPAUserControl a, BscanPAUserControl b,
-                           CscanPAUserControl c, DscanPAUserControl d)
+                           CscanPAUserControl ca, DscanPAUserControl cp, DepthscanPAUserControl d)
         {
-            _ctx = ctx; _st = st; _a = a; _b = b; _c = c; _d = d;
+            _ctx = ctx; _st = st; _a = a; _b = b; _ca = ca; _cp = cp; _d = d;
 
             // --- wire once, here ---
-            _c.LineMovedScanMax += OnCscanScanMoved;
-            _c.LineMovedIndex += OnCscanIndexMoved;
+            _ca.LineMovedScanMax += OnCAscanScanMoved;
+            _ca.LineMovedIndex += OnCAscanIndexMoved;
 
-            // If D-scan also has a scan line the user can drag, keep both in sync:
-            _d.LineMovedScan += OnDscanScanMoved;
-            _d.LineMovedIndex += OnDscanIndexMoved;
+            _cp.LineMovedScan += OnCPscanScanMoved;
+            _cp.LineMovedIndex += OnCPscanIndexMoved;
+
 
             _a.LineMovedMin += OnAscanGateMinMoved;
             _a.LineMovedMax += OnAscanGateMaxMoved;
 
+            _d.LineMovedScanMax += OnDscanScanMoved;
             _b.LineMovedIndex += OnBscanIndexMoved;
 
             UpdateAscan();
             UpdateBscan();
-            UpdateCscan();
+            UpdateCAscan();
+            UpdateCPscan();
             UpdateDscan();
         }
 
         #region OnLineMoved haldlers funcitons for all
-        private void OnCscanScanMoved(object? sender, float xWorld, int _)
+        private void OnCAscanScanMoved(object? sender, float xWorld, int _)
         {
             int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
             _st.SetScanIndex(scan);
+            _cp.UpdateScanLinePosition(scan);
             _d.UpdateScanLinePosition(scan);
-            UpdateAscan(); UpdateBscan(); // UpdateDscan();
+            UpdateAscan(); UpdateBscan(); // UpdateCPscan();
+        }
+
+        private void OnCPscanScanMoved(object? sender, float xWorld, int _)
+        {
+            int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
+            _st.SetScanIndex(scan);
+            _ca.UpdateScanLinePosition(scan);
+            _d.UpdateScanLinePosition(scan);
+            UpdateAscan(); UpdateBscan(); // UpdateCPscan();
         }
 
         private void OnDscanScanMoved(object? sender, float xWorld, int _)
         {
             int scan = ClampToIndex(xWorld, _ctx.ScanLims[0], _ctx.ScanLims[1] - 1);
             _st.SetScanIndex(scan);
-            _c.UpdateScanLinePosition(scan);
-            UpdateAscan(); UpdateBscan(); // UpdateDscan();
+            _ca.UpdateScanLinePosition(scan);
+            _cp.UpdateScanLinePosition(scan);
+            UpdateAscan(); UpdateBscan(); // UpdateCPscan();
         }
         // C-scan handler
-        private void OnCscanIndexMoved(object? sender, float yWorld, int _)
+        private void OnCAscanIndexMoved(object? sender, float yWorld, int _)
         {
             int beam = WorldToNearestBeam(yWorld, _ctx.Xlims, _ctx.Beams);
             _st.SetSampleIndex(beam);
 
             double ySnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
-            _d.UpdateIndexLinePosition(ySnap);
-            // _c.UpdateIndexLinePosition(ySnap); 
+            _cp.UpdateIndexLinePosition(ySnap);
             _b.UpdateIndexLinePosition(ySnap);
-
-
-            UpdateBscan(); UpdateAscan();
+            UpdateAscan(); UpdateDscan();  // UpdateBscan();
         }
 
-        // D-scan handler
-        private void OnDscanIndexMoved(object? sender, float yWorld, int _)
+        private void OnCPscanIndexMoved(object? sender, float yWorld, int _)
         {
             int beam = WorldToNearestBeam(yWorld, _ctx.Xlims, _ctx.Beams);
             _st.SetSampleIndex(beam);
 
             double ySnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
-            _c.UpdateIndexLinePosition(ySnap);
-            // _d.UpdateIndexLinePosition(ySnap);
+            _ca.UpdateIndexLinePosition(ySnap);
             _b.UpdateIndexLinePosition(ySnap);
 
-            UpdateBscan(); UpdateAscan();
-        }
-
-
-
-        private void OnAscanGateMinMoved(object? sender, float xWorld, int _)
-        {
-            int g0 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
-            _st.SetDepthGate(g0, _st.GateDepthMax);
-            _a.VLineMin.X1 = DepthIndexToWorldX(g0, _ctx.MpsLim, _ctx.DepthSamples);
-            UpdateCscan(); UpdateDscan();
-        }
-
-        private void OnAscanGateMaxMoved(object? sender, float xWorld, int _)
-        {
-            int g1 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
-            _st.SetDepthGate(_st.GateDepthMin, g1);
-            _a.VLineMax.X1 = DepthIndexToWorldX(g1, _ctx.MpsLim, _ctx.DepthSamples);
-            UpdateCscan(); UpdateDscan();
+            UpdateAscan();
         }
         private void OnBscanIndexMoved(object? sender, float xWorld, int _)
         {
@@ -111,12 +102,27 @@ namespace PAUTViewer.Models
 
             double xSnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
 
-            _c.UpdateIndexLinePosition(xSnap);
-            _d.UpdateIndexLinePosition(xSnap);
-            // _b.UpdateIndexLinePosition(xSnap);
+            _ca.UpdateIndexLinePosition(xSnap);
+            _cp.UpdateIndexLinePosition(xSnap);
 
-            UpdateBscan();
-            UpdateAscan();
+            UpdateAscan(); UpdateDscan();  // UpdateBscan();
+        }
+
+
+        private void OnAscanGateMinMoved(object? sender, float xWorld, int _)
+        {
+            int g0 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
+            _st.SetDepthGate(g0, _st.GateDepthMax);
+            _a.VLineMin.X1 = DepthIndexToWorldX(g0, _ctx.MpsLim, _ctx.DepthSamples);
+            UpdateCAscan(); UpdateCPscan();
+        }
+
+        private void OnAscanGateMaxMoved(object? sender, float xWorld, int _)
+        {
+            int g1 = WorldDepthToIndex_FromX(xWorld, _ctx.MpsLim, _ctx.DepthSamples);
+            _st.SetDepthGate(_st.GateDepthMin, g1);
+            _a.VLineMax.X1 = DepthIndexToWorldX(g1, _ctx.MpsLim, _ctx.DepthSamples);
+            UpdateCAscan(); UpdateCPscan();
         }
 
         #endregion
@@ -135,20 +141,27 @@ namespace PAUTViewer.Models
             _b.UpdateIndexLinePosition(xSnap);
         }
 
-        private void UpdateCscan()
+        private void UpdateDscan()
         {
-            _c.UpdateScanPlotModel(
+            // todo: here need to paste the positions of the index ranges later. Now it will be only one index line, -1 and false (for range projection)(
+            _d.UpdateScanPlotModel(_ctx.SigDps, _st.SampleIndex, -1, false, _ctx.ScanLims, _ctx.Ylims, _ctx.Alims[0], _ctx.Alims[1], _st.Gain);
+            _d.UpdateScanLinePosition(_st.ScanIndex);
+        }
+
+        private void UpdateCAscan()
+        {
+            _ca.UpdateScanPlotModel(
                 _ctx.SigDps,
                 _st.GateDepthMin,
                 _st.GateDepthMax,
                 _st.Gain);
-            _c.UpdateScanLinePosition(_st.ScanIndex);
-            _c.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
+            _ca.UpdateScanLinePosition(_st.ScanIndex);
+            _ca.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
         }
 
-        private void UpdateDscan()
+        private void UpdateCPscan()
         {
-            _d.UpdateScanPlotModel(
+            _cp.UpdateScanPlotModel(
                 currentData: _ctx.SigDps,
                 depthMinIdx: _st.GateDepthMin,
                 depthMaxIdx: _st.GateDepthMax,
@@ -156,8 +169,8 @@ namespace PAUTViewer.Models
                 ampRelMax: _st.AmpLimitMaxRel,
                 softGain: _st.Gain
             );
-            _d.UpdateScanLinePosition(_st.ScanIndex);
-            _d.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
+            _cp.UpdateScanLinePosition(_st.ScanIndex);
+            _cp.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
         }
         #endregion
 
@@ -191,9 +204,12 @@ namespace PAUTViewer.Models
 
         public void Dispose()
         {
-            _c.LineMovedScan -= OnCscanScanMoved;
-            _c.LineMovedIndex -= OnCscanIndexMoved;
-            _d.LineMovedScan -= OnDscanScanMoved;
+            _ca.LineMovedScanMax -= OnCAscanScanMoved;
+            _ca.LineMovedIndex -= OnCAscanIndexMoved;
+            _cp.LineMovedScan -= OnCPscanScanMoved;
+            _cp.LineMovedIndex -= OnCPscanIndexMoved;
+            _d.LineMovedScanMax -= OnDscanScanMoved;
+            _b.LineMovedIndex -= OnBscanIndexMoved;
             _a.LineMovedMin -= OnAscanGateMinMoved;
             _a.LineMovedMax -= OnAscanGateMaxMoved;
         }

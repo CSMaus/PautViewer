@@ -23,13 +23,17 @@
             Height="22"
             Width="100"
             VerticalAlignment="Center"
-            HorizontalAlignment="Center"
+            HorizontalAlignment="Left"
             Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"
             ToolTip="Color maps"
             ItemsSource="{Binding configNames}"
             SelectedIndex="{Binding SelectedConfigIndex, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Center">
+        <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Left">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}"
+               BasedOn="{StaticResource SlimTabItem}" />
+            </TabControl.Resources>
             <TabItem Header="View">
                 <Grid>
                     <Grid.ColumnDefinitions>

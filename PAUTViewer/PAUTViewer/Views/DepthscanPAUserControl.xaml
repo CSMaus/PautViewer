@@ -38,7 +38,7 @@
                 <s:NumericAxis x:Name="XAxis" DrawMajorBands="True" AxisTitle="Scan, mm"/>
             </s:SciChartSurface.XAxis>
             <s:SciChartSurface.YAxis>
-                <s:NumericAxis x:Name="YAxis" DrawMajorBands="True" AxisTitle="Index, mm"/>
+                <s:NumericAxis x:Name="YAxis" DrawMajorBands="True" FlipCoordinates="True" AxisTitle="Depth, mm"/>
             </s:SciChartSurface.YAxis>
 
             <s:SciChartSurface.ChartModifier>
@@ -54,22 +54,14 @@
             </s:SciChartSurface.ChartModifier>
 
             <s:SciChartSurface.Annotations>
-                <s:VerticalLineAnnotation x:Name="ScanLine"
+                <s:VerticalLineAnnotation x:Name="ScanLineMax"
                                   Stroke="Black"
                                   StrokeThickness="2"
                                   X1="0"
                                   IsEditable="True"
                                   LabelTextFormatting="0.00"
                                   ShowLabel="True"
-                                  DragDelta="ScanLine_OnDragDelta"/>
-                <s:HorizontalLineAnnotation x:Name="IndexLine"
-                                    Stroke="Black"
-                                    StrokeThickness="2"
-                                    Y1="0"
-                                    IsEditable="True"
-                                    LabelTextFormatting="0.00"
-                                    ShowLabel="True"
-                                    DragDelta="IndexLine_OnDragDelta"/>
+                                  DragDelta="ScanLineMax_OnDragDelta"/>
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
         <s:HeatmapColorMap Grid.Column="1"

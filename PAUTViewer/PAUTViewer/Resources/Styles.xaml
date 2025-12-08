@@ -77,5 +77,28 @@
 
     </Style>
 
+    <Style x:Key="SlimTabItem0" TargetType="TabItem" BasedOn="{StaticResource MahApps.Styles.TabItem}">
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Padding" Value="2,2"/>
+        <Setter Property="Height" Value="26"/>
+    </Style>
+
+    <Style x:Key="SlimTabItem" TargetType="TabItem" BasedOn="{StaticResource MahApps.Styles.TabItem}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <TextBlock Text="{TemplateBinding Header}" Padding="2" Margin="1,0" FontSize="12"/>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="DodgerBlue" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 
 </ResourceDictionary>

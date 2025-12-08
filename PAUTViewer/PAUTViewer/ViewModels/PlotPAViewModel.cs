@@ -9,15 +9,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq; // <-- needed for ToList(), Min/Max LINQ, etc.
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using ToastNotifications.Messages;
-using System.IO;
-using System.Text.Json;
 
 namespace PAUTViewer.ViewModels
 {
@@ -157,7 +158,9 @@ namespace PAUTViewer.ViewModels
             {
                 _isBscanRangeProjection = value;
                 OnPropertyChanged(nameof(IsBscanRangeProjection));
-                Channels[SelectedConfigIndex].Dscan.UpdatePlot();
+                int ichan = SelectedConfigIndex;
+                // todo: write here correct scan update
+                // Channels[SelectedConfigIndex].Dscan.UpdateScanPlotModel(SigDps[ichan], DepthMin[ichan], DepthMax[ichan], Alims[ichan][0], Alims[ichan][1], 1f); ;
             }
         }
 
@@ -401,10 +404,24 @@ namespace PAUTViewer.ViewModels
                 st.SetSampleIndex(_sigDpsLengths[ichan][0] / 2);
                 st.SetDepthGate(0, _sigDpsLengths[ichan][2] - 1);
                 st.SetGain(1f);
-                var coord = new ScanCoordinator(ctx, st, a, b, c, d);
 
                 var depthS = new DepthscanPAUserControl();
+                depthS.CreateScanPlotModel(
+                    channel: ichan,
+                    Ylims: Ylims[ichan],
+                    scansLims: ScanLims[ichan],
+                    scanCount: _sigDpsLengths[ichan][1],
+                    depthCount: _sigDpsLengths[ichan][2],
+                    scanStep: ScanStep[ichan],
+                    Alims[ichan][1]
+                );
 
+                int beams = SigDps[ichan].Length;
+                depthS.UpdateScanPlotModel(SigDps[ichan], (int)(beams/2), -1, false,
+                    ScanLims[ichan], Ylims[ichan], Alims[ichan][0], Alims[ichan][1], 1f); // todo: replace softgain with real value
+
+
+                var coord = new ScanCoordinator(ctx, st, a, b, c, d, depthS);
 
                 Channels.Add(new ChannelUI
                 {
@@ -1063,6 +1080,7 @@ namespace PAUTViewer.ViewModels
         public int DepthSamples { get; }
         public int Scans { get; }
         public int Beams { get; }
+
 
         public ChannelContext(int ch, float[][][] sigDps, float[] mpsLim, float[] xlims, float[] ylims, int[] scanLims, float[] alims)
         {

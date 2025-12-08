@@ -27,11 +27,11 @@ namespace PAUTViewer.Views
             InitializeComponent();
         }
 
-        public void CreateScanPlotModel(int channel, float[] Ylims, float[] Xlims, float maxVal)
+        public void CreateScanPlotModel(int channel, float[] Ylims, float[] Scanlims, float maxVal)
         {
             _channel = channel;
 
-            _xlims[0] = Xlims[0]; _xlims[1] = Xlims[1];
+            _xlims[0] = Scanlims[0]; _xlims[1] = Scanlims[1];
             _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
 
             XAxis.VisibleRange = new DoubleRange(_xlims[0], _xlims[1]);

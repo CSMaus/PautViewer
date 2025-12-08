@@ -58,7 +58,7 @@ namespace PAUTViewer.Views
             double maxVal,
             int scanCount,
             int sampleCount,
-            double scanStep = 1.0,
+            double scanStep,
             double indexStep = 1.0)
         {
             _channel = channel;
@@ -70,8 +70,7 @@ namespace PAUTViewer.Views
             _idxMin = xlims[0];
             _idxMax = xlims[1];
 
-            _scanStep = scanStep <= 0 ? 1.0 : scanStep;
-            _idxStep = indexStep <= 0 ? 1.0 : indexStep;
+            _idxStep = Math.Abs(_idxMax - _idxMin) / sampleCount;
 
             XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);
             YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);
