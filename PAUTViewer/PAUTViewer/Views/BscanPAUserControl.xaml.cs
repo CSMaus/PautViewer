@@ -1,11 +1,13 @@
-﻿using System;
+﻿using PAUTViewer.ViewModels;
+using SciChart.Charting.Model.DataSeries;
+using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
+using SciChart.Data.Model;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using SciChart.Charting.Model.DataSeries;
-using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
-using SciChart.Data.Model;
+using System.Windows.Documents;
 
 namespace PAUTViewer.Views
 {
@@ -44,41 +46,62 @@ namespace PAUTViewer.Views
             HeatmapSeries.DataSeries = null;
 
             if (_xlims[1] > _xlims[0])
-                IndexLine.X1 = (_xlims[0] + _xlims[1]) * 0.5;
+                IndexLineMax.X1 = (_xlims[0] + _xlims[1]) * 0.5;
             else
-                IndexLine.X1 = _xlims[0];
+                IndexLineMax.X1 = _xlims[0];
 
         }
 
-        public void UpdateScanPlotModel(float[][][] currentData,
-                                int scan,
-                                float[] Xlims,
-                                float[] Ylims,
-                                float softGain)
+        public void UpdateScanPlotModel(float[][][] currentData, int scanStart, int scanEnd, bool projectAcrossScan, 
+            int scan, float[] Xlims, float[] Ylims, float softGain)
         {
             if (currentData == null || currentData.Length == 0) return;
             
-            int numSignals = currentData.Length;          // rows (Y)
-            int numScans = currentData[0].Length;
-            int numDist = currentData[0][0].Length;    // cols (X)
+            int beams = currentData.Length;          // rows (Y)
+            int scans = currentData[0].Length;
+            int depthCount = currentData[0][0].Length;    // cols (X)
 
-            int scanIdx = scan < numScans ? scan : numScans - 1;
+            int scanIdx = scan < scans ? scan : scans - 1;
             if (scanIdx < 0) scanIdx = 0;
 
-            _ny = numSignals;
-            _nx = numDist;
+            _ny = beams;
+            _nx = depthCount;
 
             _xlims[0] = Xlims[0]; _xlims[1] = Xlims[1];
             _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
-            double gain = (softGain == 0f) ? 1.0 : softGain;
+            float g = (softGain == 0f) ? 1.0f : softGain;
+
+            int s0, s1;
+            s0 = scanStart < (scans - 1) ? (scanStart >= 0 ? scanStart : 0) : scans - 1;
+            s1 = scanEnd < (scans - 1) ? (scanEnd >= 0 ? scanEnd : 0) : scans - 1;
 
             var data = new double[_nx, _ny];
-            System.Threading.Tasks.Parallel.For(0, _ny, i =>
+
+            if (projectAcrossScan)
             {
-                var row = currentData[i][scanIdx];
-                for (int j = 0; j < _nx; j++)
-                    data[j, i] = row[j] * gain;
-            });
+                Parallel.For(0, beams, i =>
+                {
+                    for (int j = 0; j < depthCount; j++)
+                    {
+                        float maxv = 0f;
+                        for (int s = s0; s < s1; s++)
+                        {
+                            float v = currentData[i][s][j] * g;
+                            if (v > maxv) maxv = v;
+                        }
+                        data[j, i] = maxv;
+                    }
+                });
+            }
+            else
+            {
+                Parallel.For(0, _ny, i =>
+                {
+                    var row = currentData[i][scanIdx];
+                    for (int j = 0; j < _nx; j++)
+                        data[j, i] = row[j] * g;
+                });
+            }
 
             double xStart = _xlims[0];
             double xStep = (_ny > 1) ? (_xlims[1] - _xlims[0]) / (_ny - 1) : 1.0;
@@ -94,17 +117,17 @@ namespace PAUTViewer.Views
 
         public void UpdateIndexLinePosition(double newIndex)
         {
-            IndexLine.X1 = newIndex;
+            IndexLineMax.X1 = newIndex;
         }
 
         private void IndexLine_OnDragDelta(object sender, SciChart.Charting.Visuals.Events.AnnotationDragDeltaEventArgs e)
         {
-            double x = IndexLine.X1 is double dx ? dx : Convert.ToDouble(IndexLine.X1);
+            double x = IndexLineMax.X1 is double dx ? dx : Convert.ToDouble(IndexLineMax.X1);
 
             if (x < _xlims[0]) x = _xlims[0];
             if (x > _xlims[1]) x = _xlims[1];
 
-            IndexLine.X1 = x;
+            IndexLineMax.X1 = x;
 
             LineMovedIndex?.Invoke(this, (float)x, _channel);
         }

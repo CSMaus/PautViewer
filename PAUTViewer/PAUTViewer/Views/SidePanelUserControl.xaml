@@ -29,7 +29,7 @@
             ItemsSource="{Binding configNames}"
             SelectedIndex="{Binding SelectedConfigIndex, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Left">
+        <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Stretch">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabItem}"
                BasedOn="{StaticResource SlimTabItem}" />
@@ -44,10 +44,15 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <CheckBox Content="B-Scan: Range projection" Grid.Row="0" Margin="2" IsChecked="{Binding IsBscanRangeProjection}"/>
                     <CheckBox Content="D-Scan: Range projection" Grid.Row="1" Margin="2" IsChecked="{Binding IsDscanRangeProjection}"/>
-
+                    <Border Grid.Row="2" Margin="2" BorderThickness="0, 1, 0, 0" BorderBrush="Azure">
+                        <TextBlock Text="C-scan View"/>
+                    </Border>
                 </Grid>
             </TabItem>
 

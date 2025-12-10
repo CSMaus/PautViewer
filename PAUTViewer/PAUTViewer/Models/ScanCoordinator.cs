@@ -26,7 +26,7 @@ namespace PAUTViewer.Models
 
             // --- wire once, here ---
             _ca.LineMovedScanMax += OnCAscanScanMoved;
-            _ca.LineMovedIndex += OnCAscanIndexMoved;
+            _ca.LineMovedIndexMax += OnCAscanIndexMoved;
 
             _cp.LineMovedScan += OnCPscanScanMoved;
             _cp.LineMovedIndex += OnCPscanIndexMoved;
@@ -90,7 +90,7 @@ namespace PAUTViewer.Models
             _st.SetSampleIndex(beam);
 
             double ySnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
-            _ca.UpdateIndexLinePosition(ySnap);
+            _ca.UpdateIndexLineMaxPosition(ySnap);
             _b.UpdateIndexLinePosition(ySnap);
 
             UpdateAscan();
@@ -102,7 +102,7 @@ namespace PAUTViewer.Models
 
             double xSnap = BeamToWorld(beam, _ctx.Xlims, _ctx.Beams);
 
-            _ca.UpdateIndexLinePosition(xSnap);
+            _ca.UpdateIndexLineMaxPosition(xSnap);
             _cp.UpdateIndexLinePosition(xSnap);
 
             UpdateAscan(); UpdateDscan();  // UpdateBscan();
@@ -156,7 +156,7 @@ namespace PAUTViewer.Models
                 _st.GateDepthMax,
                 _st.Gain);
             _ca.UpdateScanLinePosition(_st.ScanIndex);
-            _ca.UpdateIndexLinePosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
+            _ca.UpdateIndexLineMaxPosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleIndex / (double)(_ctx.Beams - 1)));
         }
 
         private void UpdateCPscan()
@@ -205,7 +205,7 @@ namespace PAUTViewer.Models
         public void Dispose()
         {
             _ca.LineMovedScanMax -= OnCAscanScanMoved;
-            _ca.LineMovedIndex -= OnCAscanIndexMoved;
+            _ca.LineMovedIndexMax -= OnCAscanIndexMoved;
             _cp.LineMovedScan -= OnCPscanScanMoved;
             _cp.LineMovedIndex -= OnCPscanIndexMoved;
             _d.LineMovedScanMax -= OnDscanScanMoved;

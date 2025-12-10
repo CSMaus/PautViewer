@@ -79,14 +79,22 @@
                                           LabelTextFormatting="0.00"
                                           ShowLabel="True"
                                           DragDelta="ScanLineMin_OnDragDelta" />
-                <s:HorizontalLineAnnotation x:Name="IndexLine"
-                                            Stroke="Black"
-                                            StrokeThickness="2"
-                                            Y1="0"
-                                            IsEditable="True"
-                                            LabelTextFormatting="0.00"
-                                            ShowLabel="True"
-                                            DragDelta="IndexLine_OnDragDelta" />
+                <s:HorizontalLineAnnotation x:Name="IndexLineMax"
+                                Stroke="Black"
+                                StrokeThickness="2"
+                                Y1="0"
+                                IsEditable="True"
+                                LabelTextFormatting="0.00"
+                                ShowLabel="True"
+                                DragDelta="IndexLineMax_OnDragDelta" />
+                <s:HorizontalLineAnnotation x:Name="IndexLineMin"
+                                Stroke="Coral"
+                                StrokeThickness="2"
+                                Y1="0"
+                                IsEditable="True"
+                                LabelTextFormatting="0.00"
+                                ShowLabel="True"
+                                DragDelta="IndexLineMin_OnDragDelta" />
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
         <s:HeatmapColorMap Grid.Column="1"

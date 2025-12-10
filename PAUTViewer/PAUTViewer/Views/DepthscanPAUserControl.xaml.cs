@@ -54,16 +54,8 @@ namespace PAUTViewer.Views
             ScanLineMax.X1 = _xlims[0] + _scanStep;
         }
 
-        public void UpdateScanPlotModel(
-            float[][][] currentData,
-            int idxStart,
-            int idxEnd,
-            bool projectAcrossIndex,
-            int[] scansLims,
-            float[] Ylims,
-            double ampRelMin,
-            double ampRelMax,
-            float softGain = 1f)
+        public void UpdateScanPlotModel( float[][][] currentData, int idxStart, int idxEnd, bool projectAcrossIndex,
+            int[] scansLims, float[] Ylims, double ampRelMin, double ampRelMax, float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0)
                 return;

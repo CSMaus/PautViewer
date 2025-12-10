@@ -33,7 +33,8 @@ namespace PAUTViewer.Views
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
         public event LineMovedEventHandler LineMovedScanMin;
         public event LineMovedEventHandler LineMovedScanMax;
-        public event LineMovedEventHandler LineMovedIndex;
+        public event LineMovedEventHandler LineMovedIndexMax;
+        public event LineMovedEventHandler LineMovedIndexMin;
 
         private int _channel;
         double _xStart, _xStep, _yStart, _yStep;
@@ -90,7 +91,7 @@ namespace PAUTViewer.Views
             HeatmapSeries.DataSeries = _dataSeries;
 
             ScanLineMax.X1 = _scanMin + _scanStep;
-            IndexLine.Y1 = _idxMin + _idxStep;
+            IndexLineMax.Y1 = _idxMin + _idxStep;
 
             _xStart = _scanMin;
             _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
@@ -167,9 +168,9 @@ namespace PAUTViewer.Views
         {
             ScanLineMax.X1 = newScan;
         }
-        public void UpdateIndexLinePosition(double newIndex)
+        public void UpdateIndexLineMaxPosition(double newIndex)
         {
-            IndexLine.Y1 = newIndex;
+            IndexLineMax.Y1 = newIndex;
         }
 
         private void ScanLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
@@ -184,7 +185,7 @@ namespace PAUTViewer.Views
 
         private void ScanLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
         {
-            double x = ScanLineMax.X1 is double dx ? dx : Convert.ToDouble(ScanLineMax.X1);
+            double x = ScanLineMin.X1 is double dx ? dx : Convert.ToDouble(ScanLineMin.X1);
             if (x < _scanMin) x = _scanMin;
             if (x > _scanMax) x = _scanMax;
             ScanLineMin.X1 = x;
@@ -192,14 +193,14 @@ namespace PAUTViewer.Views
             // LineMovedScanMax?.Invoke(this, (float)x, _channel);
         }
 
-        private void IndexLine_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        private void IndexLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
         {
-            double y = IndexLine.Y1 is double dy ? dy : Convert.ToDouble(IndexLine.Y1);
+            double y = IndexLineMax.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMax.Y1);
             if (y < _idxMin) y = _idxMin;
             if (y > _idxMax) y = _idxMax;
-            IndexLine.Y1 = y;
+            IndexLineMax.Y1 = y;
 
-            LineMovedIndex?.Invoke(this, (float)y, _channel);
+            LineMovedIndexMax?.Invoke(this, (float)y, _channel);
         }
 
 
