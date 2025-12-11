@@ -89,8 +89,8 @@ namespace PAUTViewer.Views
             ScanLineMax.X1 = _scanMin + _scanStep;
             IndexLineMax.Y1 = _idxMin + _idxStep;
 
-            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin) / 10 + _scanStep;
-            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 10 + _idxStep;
+            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin) / 4 + _scanStep;
+            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 4 + _idxStep;
 
 
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(

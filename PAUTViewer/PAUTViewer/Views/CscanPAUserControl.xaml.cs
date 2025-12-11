@@ -85,8 +85,8 @@ namespace PAUTViewer.Views
             ScanLineMax.X1 = _scanMax - _scanStep;
             IndexLineMax.Y1 = _idxMax - _idxStep;
 
-            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin)/10 + _scanStep;
-            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 10 + _idxStep;
+            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin)/4 + _scanStep;
+            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 4 + _idxStep;
 
             _xStart = _scanMin;
             _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;

@@ -45,7 +45,8 @@ namespace PAUTViewer.Models
             _b.LineMovedIndexMin += OnBscanIndexMinMoved;
 
             _st.SyncScansAxisChanged += OnSyncScansAxisChanged;
-
+            _st.BscanRangeProjectionChanged += OnBscanRangeProjectionChanged;
+            _st.DscanRangeProjectionChanged += OnDscanRangeProjectionChanged;
             UpdateAscan();
             UpdateBscan();
             UpdateCAscan();
@@ -242,6 +243,15 @@ namespace PAUTViewer.Models
             _cp.UpdateScanLineMinPosition(_st.ScanMinIndex);
             _cp.UpdateIndexLineMaxPosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleMaxIndex / (double)(_ctx.Beams - 1)));
             _cp.UpdateIndexLineMinPosition(_ctx.Xlims[0] + (_ctx.Xlims[1] - _ctx.Xlims[0]) * (_st.SampleMinIndex / (double)(_ctx.Beams - 1)));
+        }
+
+        private void OnBscanRangeProjectionChanged(bool enabled)
+        {
+            UpdateBscan();
+        }
+        private void OnDscanRangeProjectionChanged(bool enabled)
+        {
+            UpdateDscan();
         }
         #endregion
 

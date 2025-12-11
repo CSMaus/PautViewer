@@ -391,10 +391,6 @@ namespace PAUTViewer.ViewModels
                     _sigDpsLengths[ichan][1] / 2,
                     MpsLim[ichan], 1);
 
-                var c = new CscanPAUserControl();
-                c.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1],
-                                      _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], ScanStep[ichan]);
-                c.UpdateScanPlotModel(SigDps[ichan], -1, -1);
 
                 var d = new DscanPAUserControl();
                 d.CreateScanPlotModel(
@@ -414,15 +410,6 @@ namespace PAUTViewer.ViewModels
                 b.CreateScanPlotModel(ichan, Ylims[ichan], Xlims[ichan], Alims[ichan][1]);
                 b.UpdateScanPlotModel(SigDps[ichan], (int)ScanLims[ichan][0] + 1, -1, false, Xlims[ichan], Ylims[ichan], 1);
 
-                // Coordinator wiring (NO ad-hoc "+=" handlers)
-                var ctx = new ChannelContext(ichan, SigDps[ichan], MpsLim[ichan], Xlims[ichan], Ylims[ichan], ScanLims[ichan], Alims[ichan]);
-                var st = new ScanState();
-                st.SetScanIndexMax(_sigDpsLengths[ichan][1] / 2);
-                st.SetSampleIndexMax(_sigDpsLengths[ichan][0] / 2);
-                st.SetDepthGate(0, _sigDpsLengths[ichan][2] - 1);
-                st.SetGain(1f);
-                st.SetAmpLimits(Alims[ichan][0], Alims[ichan][1]);
-
                 var depthS = new DepthscanPAUserControl();
                 depthS.CreateScanPlotModel(
                     channel: ichan,
@@ -435,9 +422,27 @@ namespace PAUTViewer.ViewModels
                 );
 
                 int beams = SigDps[ichan].Length;
-                depthS.UpdateScanPlotModel(SigDps[ichan], -1, (int)(beams/2), false,
+                depthS.UpdateScanPlotModel(SigDps[ichan], -1, (int)(beams / 2), false,
                     ScanLims[ichan], Ylims[ichan], Alims[ichan][0], Alims[ichan][1], 1f); // todo: replace softgain with real value
 
+
+                var c = new CscanPAUserControl();
+                c.CreateScanPlotModel(ichan, ScanLims[ichan], Xlims[ichan], Alims[ichan][1],
+                                      _sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], ScanStep[ichan]);
+                c.UpdateScanPlotModel(SigDps[ichan], -1, -1);
+
+                // Coordinator wiring (NO ad-hoc "+=" handlers)
+                var ctx = new ChannelContext(ichan, SigDps[ichan], MpsLim[ichan], Xlims[ichan], Ylims[ichan], ScanLims[ichan], Alims[ichan]);
+                var st = new ScanState();
+                st.SetScanIndexMax(_sigDpsLengths[ichan][1] / 2);
+                st.SetSampleIndexMax(_sigDpsLengths[ichan][0] / 2);
+                st.SetScanIndexMin(_sigDpsLengths[ichan][1] / 4);
+                st.SetSampleIndexMin(_sigDpsLengths[ichan][0] / 4);
+                st.SetDepthGate(0, _sigDpsLengths[ichan][2] - 1);
+                st.SetGain(1f);
+                st.SetAmpLimits(Alims[ichan][0], Alims[ichan][1]);
+
+                
 
                 var coord = new ScanCoordinator(ctx, st, a, b, c, d, depthS);
 
