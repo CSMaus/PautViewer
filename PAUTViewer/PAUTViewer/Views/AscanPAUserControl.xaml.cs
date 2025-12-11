@@ -19,6 +19,7 @@ namespace PAUTViewer.Views
     {
         #region Fields definition
         public XyDataSeries<double, double> LineDataSeries { get; } = new();
+        public NumericAxis XAxisControl { get { return XAxis; } }
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
         public event LineMovedEventHandler LineMovedMin;
         public event LineMovedEventHandler LineMovedMax;

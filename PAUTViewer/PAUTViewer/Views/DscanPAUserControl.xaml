@@ -56,22 +56,38 @@
             </s:SciChartSurface.ChartModifier>
 
             <s:SciChartSurface.Annotations>
-                <s:VerticalLineAnnotation x:Name="ScanLine"
+                <s:VerticalLineAnnotation x:Name="ScanLineMax"
                                           Stroke="Black"
                                           StrokeThickness="2"
                                           X1="0"
                                           IsEditable="True"
                                           LabelTextFormatting="0.00"
                                           ShowLabel="True"
-                                          DragDelta="ScanLine_OnDragDelta"/>
-                <s:HorizontalLineAnnotation x:Name="IndexLine"
+                                          DragDelta="ScanLineMax_OnDragDelta"/>
+                <s:VerticalLineAnnotation x:Name="ScanLineMin"
+                                          Stroke="Coral"
+                                          StrokeThickness="1"
+                                          X1="0"
+                                          IsEditable="True"
+                                          LabelTextFormatting="0.00"
+                                          ShowLabel="True"
+                                          DragDelta="ScanLineMin_OnDragDelta" />
+                <s:HorizontalLineAnnotation x:Name="IndexLineMax"
                                             Stroke="Black"
                                             StrokeThickness="2"
                                             Y1="0"
                                             IsEditable="True"
                                             LabelTextFormatting="0.00"
                                             ShowLabel="True"
-                                            DragDelta="IndexLine_OnDragDelta"/>
+                                            DragDelta="IndexLineMax_OnDragDelta"/>
+                <s:HorizontalLineAnnotation x:Name="IndexLineMin"
+                                Stroke="ForestGreen"
+                                StrokeThickness="1"
+                                Y1="0"
+                                IsEditable="True"
+                                LabelTextFormatting="0.00"
+                                ShowLabel="True"
+                                DragDelta="IndexLineMin_OnDragDelta" />
             </s:SciChartSurface.Annotations>
         </s:SciChartSurface>
         <s:HeatmapColorMap Grid.Column="1"

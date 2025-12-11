@@ -73,7 +73,7 @@
                                           DragDelta="ScanLineMax_OnDragDelta" />
                 <s:VerticalLineAnnotation x:Name="ScanLineMin"
                                           Stroke="Coral"
-                                          StrokeThickness="2"
+                                          StrokeThickness="1"
                                           X1="0"
                                           IsEditable="True"
                                           LabelTextFormatting="0.00"
@@ -88,8 +88,8 @@
                                 ShowLabel="True"
                                 DragDelta="IndexLineMax_OnDragDelta" />
                 <s:HorizontalLineAnnotation x:Name="IndexLineMin"
-                                Stroke="Coral"
-                                StrokeThickness="2"
+                                Stroke="ForestGreen"
+                                StrokeThickness="1"
                                 Y1="0"
                                 IsEditable="True"
                                 LabelTextFormatting="0.00"

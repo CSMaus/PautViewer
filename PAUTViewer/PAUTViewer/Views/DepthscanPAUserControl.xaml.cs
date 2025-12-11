@@ -1,4 +1,5 @@
 ﻿using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Events;
 using SciChart.Data.Model;
 using System;
@@ -12,6 +13,8 @@ namespace PAUTViewer.Views
     public partial class DepthscanPAUserControl : UserControl
     {
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
+        public NumericAxis XAxisControl { get { return XAxis; } }
+        public NumericAxis YAxisControl { get { return YAxis; } }
         private int _nx; // columns (distance/depth)
         private int _ny; // rows (beams/signals)
 
@@ -24,6 +27,7 @@ namespace PAUTViewer.Views
         private int _channel;
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
         public event LineMovedEventHandler LineMovedScanMax;
+        public event LineMovedEventHandler LineMovedScanMin;
 
         public DepthscanPAUserControl()
         {
@@ -98,7 +102,7 @@ namespace PAUTViewer.Views
                 {
                     for (int d = 0; d < depthCount; d++)
                     {
-                        float v = currentData[i0][s][d] * g;
+                        float v = currentData[i1][s][d] * g;
                         z[d, s] = v;
                     }
                 });
@@ -111,9 +115,13 @@ namespace PAUTViewer.Views
             HeatmapSeries.ColorMap.Maximum = ampRelMax;
         }
 
-        public void UpdateScanLinePosition(double newScan)
+        public void UpdateScanLineMaxPosition(double newScan)
         {
             ScanLineMax.X1 = newScan;
+        }
+        public void UpdateScanLineMinPosition(double newScan)
+        {
+            ScanLineMin.X1 = newScan;
         }
 
         private void ScanLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
@@ -124,6 +132,15 @@ namespace PAUTViewer.Views
             ScanLineMax.X1 = x;
 
             LineMovedScanMax?.Invoke(this, (float)x, _channel);
+        }
+        private void ScanLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        {
+            double x = ScanLineMin.X1 is double dx ? dx : Convert.ToDouble(ScanLineMin.X1);
+            if (x < _xlims[0]) x = _xlims[0];
+            if (x > _xlims[1]) x = _xlims[1];
+            ScanLineMin.X1 = x;
+
+            LineMovedScanMin?.Invoke(this, (float)x, _channel);
         }
     }
 }

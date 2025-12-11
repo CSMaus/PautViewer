@@ -1,5 +1,6 @@
 ﻿using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
 using SciChart.Charting.Visuals.Annotations;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Events;
 using SciChart.Data.Model;
 using System;
@@ -17,6 +18,8 @@ namespace PAUTViewer.Views
         #region Fields
 
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
+        public NumericAxis XAxisControl { get { return XAxis; } }
+        public NumericAxis YAxisControl { get { return YAxis; } }
 
         private int _scans;    // height (scan count)
         private int _samples;  // width (index/sample count)
@@ -37,8 +40,10 @@ namespace PAUTViewer.Views
         private int _channel;
 
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
-        public event LineMovedEventHandler LineMovedScan;
-        public event LineMovedEventHandler LineMovedIndex;
+        public event LineMovedEventHandler LineMovedScanMax;
+        public event LineMovedEventHandler LineMovedScanMin;
+        public event LineMovedEventHandler LineMovedIndexMax;
+        public event LineMovedEventHandler LineMovedIndexMin;
 
         #endregion
 
@@ -48,16 +53,9 @@ namespace PAUTViewer.Views
         }
 
 
-        public void CreateScanPlotModel(
-                int channel,
-                int[] scansLims,
-                float[] xlims,
-                (double min, double max) depthWorldRange,
-                double ampMaxAbs,
-                int scanCount,
-                int sampleCount,
-                double scanStep = 1.0,
-                double indexStep = 1.0)
+        public void CreateScanPlotModel(int channel, int[] scansLims, float[] xlims,
+                (double min, double max) depthWorldRange, double ampMaxAbs, int scanCount, int sampleCount,
+                double scanStep = 1.0, double indexStep = 1.0)
         {
             _channel = channel;
 
@@ -85,30 +83,34 @@ namespace PAUTViewer.Views
             _yStart = _idxMin;
             _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
 
-            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(
-                new double[_scans, _samples], _xStart, _xStep, _yStart, _yStep);
-            HeatmapSeries.DataSeries = _dataSeries;
 
             XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);
             YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);
-            ScanLine.X1 = _scanMin + _scanStep;
-            IndexLine.Y1 = _idxMin + _idxStep;
+            ScanLineMax.X1 = _scanMin + _scanStep;
+            IndexLineMax.Y1 = _idxMin + _idxStep;
+
+            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin) / 10 + _scanStep;
+            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 10 + _idxStep;
+
+
+            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(
+                new double[_scans, _samples], _xStart, _xStep, _yStart, _yStep);
+            HeatmapSeries.DataSeries = _dataSeries;
         }
 
 
 
         // currentData[d][s][b]
-        public void UpdateScanPlotModel(
-    float[][][] currentData,
-    int depthMinIdx, int depthMaxIdx,
-    double ampRelMin, double ampRelMax,
-    double _ = 1.0, float softGain = 1f)
+        public void UpdateScanPlotModel(float[][][] currentData, int depthMinIdx, int depthMaxIdx,
+            float[] Alims, float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0) return;
 
             int beams = currentData.Length;           // Y axis (index)
             int scans = currentData[0].Length;        // X axis (scans)
             int depth = currentData[0][0].Length;     // projection dim
+
+            float ampRelMin = Alims[0]; float ampRelMax = Alims[1];
 
             if (beams != _samples || scans != _scans)
             {
@@ -164,27 +166,47 @@ namespace PAUTViewer.Views
 
 
 
-        public void UpdateScanLinePosition(double newScan) => ScanLine.X1 = newScan;
-        public void UpdateIndexLinePosition(double newIndex) => IndexLine.Y1 = newIndex;
+        public void UpdateScanLineMaxPosition(double newScan) => ScanLineMax.X1 = newScan;
+        public void UpdateIndexLineMaxPosition(double newIndex) => IndexLineMax.Y1 = newIndex;
 
-        private void ScanLine_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        public void UpdateScanLineMinPosition(double newScan) => ScanLineMin.X1 = newScan;
+        public void UpdateIndexLineMinPosition(double newIndex) => IndexLineMin.Y1 = newIndex;
+
+        private void ScanLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
         {
-            double x = ScanLine.X1 is double dx ? dx : Convert.ToDouble(ScanLine.X1);
+            double x = ScanLineMax.X1 is double dx ? dx : Convert.ToDouble(ScanLineMax.X1);
             if (x < _scanMin) x = _scanMin;
             if (x > _scanMax) x = _scanMax;
-            ScanLine.X1 = x;
+            ScanLineMax.X1 = x;
 
-            LineMovedScan?.Invoke(this, (float)x, _channel);
+            LineMovedScanMax?.Invoke(this, (float)x, _channel);
         }
-
-        private void IndexLine_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        private void ScanLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
         {
-            double y = IndexLine.Y1 is double dy ? dy : Convert.ToDouble(IndexLine.Y1);
+            double x = ScanLineMin.X1 is double dx ? dx : Convert.ToDouble(ScanLineMin.X1);
+            if (x < _scanMin) x = _scanMin;
+            if (x > _scanMax) x = _scanMax;
+            ScanLineMin.X1 = x;
+
+            LineMovedScanMin?.Invoke(this, (float)x, _channel);
+        }
+        private void IndexLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        {
+            double y = IndexLineMax.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMax.Y1);
             if (y < _idxMin) y = _idxMin;
             if (y > _idxMax) y = _idxMax;
-            IndexLine.Y1 = y;
+            IndexLineMax.Y1 = y;
 
-            LineMovedIndex?.Invoke(this, (float)y, _channel);
+            LineMovedIndexMax?.Invoke(this, (float)y, _channel);
+        }
+        private void IndexLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        {
+            double y = IndexLineMin.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMin.Y1);
+            if (y < _idxMin) y = _idxMin;
+            if (y > _idxMax) y = _idxMax;
+            IndexLineMin.Y1 = y;
+
+            LineMovedIndexMin?.Invoke(this, (float)y, _channel);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

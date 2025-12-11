@@ -1,6 +1,7 @@
 ﻿using PAUTViewer.ViewModels;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Data.Model;
 using System;
 using System.ComponentModel;
@@ -14,27 +15,30 @@ namespace PAUTViewer.Views
     public partial class BscanPAUserControl : UserControl
     {
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
-        private int _nx; // columns (distance/depth)
-        private int _ny; // rows (beams/signals)
+        public NumericAxis XAxisControl { get { return XAxis; } }
+        public NumericAxis YAxisControl { get { return YAxis; } }
+        private int _nindex; // columns (distance/depth)
+        private int _ndepth; // rows (beams/signals)
 
         private double[] _xlims = new double[2];
         private double[] _ylims = new double[2];
 
         private int _channel;
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
-        public event LineMovedEventHandler LineMovedIndex;
+        public event LineMovedEventHandler LineMovedIndexMax;
+        public event LineMovedEventHandler LineMovedIndexMin;
 
         public BscanPAUserControl()
         {
             InitializeComponent();
         }
 
-        public void CreateScanPlotModel(int channel, float[] Ylims, float[] Scanlims, float maxVal)
+        public void CreateScanPlotModel(int channel, float[] Ylims, float[] Xlims, float maxVal)
         {
             _channel = channel;
 
-            _xlims[0] = Scanlims[0]; _xlims[1] = Scanlims[1];
-            _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
+            _ylims[0] = Xlims[0]; _ylims[1] = Xlims[1];  // this is index axis
+            _xlims[0] = Ylims[0]; _xlims[1] = Ylims[1]; // this is depth coordinate
 
             XAxis.VisibleRange = new DoubleRange(_xlims[0], _xlims[1]);
             YAxis.VisibleRange = new DoubleRange(_ylims[0], _ylims[1]);
@@ -45,15 +49,16 @@ namespace PAUTViewer.Views
             _dataSeries = null;
             HeatmapSeries.DataSeries = null;
 
-            if (_xlims[1] > _xlims[0])
-                IndexLineMax.X1 = (_xlims[0] + _xlims[1]) * 0.5;
+            if (_ylims[1] > _ylims[0])
+                IndexLineMax.Y1 = (_ylims[0] + _ylims[1]) * 0.5;
             else
-                IndexLineMax.X1 = _xlims[0];
+                IndexLineMax.Y1 = _ylims[0];
 
+            IndexLineMax.Y1 = _ylims[0] + (_ylims[1] - _ylims[0]) / 4;
         }
 
-        public void UpdateScanPlotModel(float[][][] currentData, int scanStart, int scanEnd, bool projectAcrossScan, 
-            int scan, float[] Xlims, float[] Ylims, float softGain)
+        public void UpdateScanPlotModel(float[][][] currentData, int scanStart, int scanEnd, bool projectAcrossScan,
+            float[] Indexlims, float[] Depthlims, float softGain)
         {
             if (currentData == null || currentData.Length == 0) return;
             
@@ -61,21 +66,21 @@ namespace PAUTViewer.Views
             int scans = currentData[0].Length;
             int depthCount = currentData[0][0].Length;    // cols (X)
 
-            int scanIdx = scan < scans ? scan : scans - 1;
-            if (scanIdx < 0) scanIdx = 0;
+            // int scanIdx = scan < scans ? scan : scans - 1;
+            // if (scanIdx < 0) scanIdx = 0;
 
-            _ny = beams;
-            _nx = depthCount;
+            _nindex = beams;
+            _ndepth = depthCount;
 
-            _xlims[0] = Xlims[0]; _xlims[1] = Xlims[1];
-            _ylims[0] = Ylims[0]; _ylims[1] = Ylims[1];
+            _ylims[0] = Indexlims[0]; _ylims[1] = Indexlims[1]; // index axis - should be vertical
+            _xlims[0] = Depthlims[0]; _xlims[1] = Depthlims[1];  // depth axis - should be horizontal
             float g = (softGain == 0f) ? 1.0f : softGain;
 
             int s0, s1;
             s0 = scanStart < (scans - 1) ? (scanStart >= 0 ? scanStart : 0) : scans - 1;
             s1 = scanEnd < (scans - 1) ? (scanEnd >= 0 ? scanEnd : 0) : scans - 1;
 
-            var data = new double[_nx, _ny];
+            var data = new double[_nindex, _ndepth];
 
             if (projectAcrossScan)
             {
@@ -89,24 +94,24 @@ namespace PAUTViewer.Views
                             float v = currentData[i][s][j] * g;
                             if (v > maxv) maxv = v;
                         }
-                        data[j, i] = maxv;
+                        data[i, j] = maxv;
                     }
                 });
             }
             else
             {
-                Parallel.For(0, _ny, i =>
+                Parallel.For(0, _nindex, i =>
                 {
-                    var row = currentData[i][scanIdx];
-                    for (int j = 0; j < _nx; j++)
-                        data[j, i] = row[j] * g;
+                    var row = currentData[i][s1];
+                    for (int j = 0; j < _ndepth; j++)
+                        data[i, j] = row[j] * g;
                 });
             }
 
             double xStart = _xlims[0];
-            double xStep = (_ny > 1) ? (_xlims[1] - _xlims[0]) / (_ny - 1) : 1.0;
+            double xStep = (_ndepth > 1) ? (_xlims[1] - _xlims[0]) / (_ndepth - 1) : 1.0;
             double yStart = _ylims[0];
-            double yStep = (_nx > 1) ? (_ylims[1] - _ylims[0]) / (_nx - 1) : 1.0;
+            double yStep = (_nindex > 1) ? (_ylims[1] - _ylims[0]) / (_nindex - 1) : 1.0;
 
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(data, xStart, xStep, yStart, yStep);
             HeatmapSeries.DataSeries = _dataSeries;
@@ -115,21 +120,38 @@ namespace PAUTViewer.Views
             // YAxis.VisibleRange = new SciChart.Data.Model.DoubleRange(_ylims[0], _ylims[1]);
         }
 
-        public void UpdateIndexLinePosition(double newIndex)
+        public void UpdateIndexLineMaxPosition(double newIndex)
         {
-            IndexLineMax.X1 = newIndex;
+            IndexLineMax.Y1 = newIndex;
         }
 
-        private void IndexLine_OnDragDelta(object sender, SciChart.Charting.Visuals.Events.AnnotationDragDeltaEventArgs e)
+        public void UpdateIndexLineMinPosition(double newIndex)
         {
-            double x = IndexLineMax.X1 is double dx ? dx : Convert.ToDouble(IndexLineMax.X1);
+            IndexLineMin.Y1 = newIndex;
+        }
 
-            if (x < _xlims[0]) x = _xlims[0];
-            if (x > _xlims[1]) x = _xlims[1];
+        private void IndexLineMax_OnDragDelta(object sender, SciChart.Charting.Visuals.Events.AnnotationDragDeltaEventArgs e)
+        {
+            double y = IndexLineMax.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMax.Y1);
 
-            IndexLineMax.X1 = x;
+            if (y < _ylims[0]) y = _ylims[0];
+            if (y > _ylims[1]) y = _ylims[1];
 
-            LineMovedIndex?.Invoke(this, (float)x, _channel);
+            IndexLineMax.Y1 = y;
+
+            LineMovedIndexMax?.Invoke(this, (float)y, _channel);
+        }
+
+        private void IndexLineMin_OnDragDelta(object sender, SciChart.Charting.Visuals.Events.AnnotationDragDeltaEventArgs e)
+        {
+            double y = IndexLineMin.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMin.Y1);
+
+            if (y < _ylims[0]) y = _ylims[0];
+            if (y > _ylims[1]) y = _ylims[1];
+
+            IndexLineMin.Y1 = y;
+
+            LineMovedIndexMin?.Invoke(this, (float)y, _channel);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

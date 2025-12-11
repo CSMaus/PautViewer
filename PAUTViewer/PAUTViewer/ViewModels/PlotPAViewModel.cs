@@ -16,6 +16,7 @@ using System.Linq; // <-- needed for ToList(), Min/Max LINQ, etc.
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 using System.Windows;
 using System.Windows.Input;
 using ToastNotifications.Messages;
@@ -159,6 +160,7 @@ namespace PAUTViewer.ViewModels
                 _isBscanRangeProjection = value;
                 OnPropertyChanged(nameof(IsBscanRangeProjection));
                 int ichan = SelectedConfigIndex;
+                Channels[ichan].State.SetBscanRangeProjection(value);
                 // todo: write here correct scan update
                 // Channels[SelectedConfigIndex].Dscan.UpdateScanPlotModel(SigDps[ichan], DepthMin[ichan], DepthMax[ichan], Alims[ichan][0], Alims[ichan][1], 1f); ;
             }
@@ -172,6 +174,21 @@ namespace PAUTViewer.ViewModels
             {
                 _isDscanRangeProjection = value;
                 OnPropertyChanged(nameof(IsDscanRangeProjection));
+                int ichan = SelectedConfigIndex;
+                Channels[ichan].State.SetDscanRangeProjection(value);
+            }
+        }
+
+        private bool _isSyncScansAxis = false;
+        public bool IsSyncScansAxis
+        {
+            get => _isSyncScansAxis;
+            set
+            {
+                _isSyncScansAxis = value;
+                OnPropertyChanged(nameof(IsSyncScansAxis));
+                int ichan = SelectedConfigIndex;
+                Channels[ichan].State.SetSyncScansAxis(value);
             }
         }
 
@@ -391,19 +408,20 @@ namespace PAUTViewer.ViewModels
                     scanStep: ScanStep[ichan],
                     indexStep: 1.0
                 );
-                d.UpdateScanPlotModel(SigDps[ichan], 0, _sigDpsLengths[ichan][2], 0.3, 1.0, 1f);
+                d.UpdateScanPlotModel(SigDps[ichan], 0, _sigDpsLengths[ichan][2], Alims[ichan], 1f);
 
                 var b = new BscanPAUserControl();
                 b.CreateScanPlotModel(ichan, Ylims[ichan], Xlims[ichan], Alims[ichan][1]);
-                b.UpdateScanPlotModel(SigDps[ichan], (int)ScanLims[ichan][0] + 1, Xlims[ichan], Ylims[ichan], 1);
+                b.UpdateScanPlotModel(SigDps[ichan], (int)ScanLims[ichan][0] + 1, -1, false, Xlims[ichan], Ylims[ichan], 1);
 
                 // Coordinator wiring (NO ad-hoc "+=" handlers)
                 var ctx = new ChannelContext(ichan, SigDps[ichan], MpsLim[ichan], Xlims[ichan], Ylims[ichan], ScanLims[ichan], Alims[ichan]);
                 var st = new ScanState();
-                st.SetScanIndex(_sigDpsLengths[ichan][1] / 2);
-                st.SetSampleIndex(_sigDpsLengths[ichan][0] / 2);
+                st.SetScanIndexMax(_sigDpsLengths[ichan][1] / 2);
+                st.SetSampleIndexMax(_sigDpsLengths[ichan][0] / 2);
                 st.SetDepthGate(0, _sigDpsLengths[ichan][2] - 1);
                 st.SetGain(1f);
+                st.SetAmpLimits(Alims[ichan][0], Alims[ichan][1]);
 
                 var depthS = new DepthscanPAUserControl();
                 depthS.CreateScanPlotModel(
@@ -417,7 +435,7 @@ namespace PAUTViewer.ViewModels
                 );
 
                 int beams = SigDps[ichan].Length;
-                depthS.UpdateScanPlotModel(SigDps[ichan], (int)(beams/2), -1, false,
+                depthS.UpdateScanPlotModel(SigDps[ichan], -1, (int)(beams/2), false,
                     ScanLims[ichan], Ylims[ichan], Alims[ichan][0], Alims[ichan][1], 1f); // todo: replace softgain with real value
 
 
@@ -1093,8 +1111,10 @@ namespace PAUTViewer.ViewModels
 
     public sealed class ScanState
     {
-        public int ScanIndex { get; private set; }
-        public int SampleIndex { get; private set; }
+        public int ScanMaxIndex { get; private set; }
+        public int ScanMinIndex { get; private set; }
+        public int SampleMaxIndex { get; private set; }
+        public int SampleMinIndex { get; private set; }
         public int GateDepthMin { get; private set; }
         public int GateDepthMax { get; private set; }
         public float Gain { get; private set; } = 1f;
@@ -1102,22 +1122,34 @@ namespace PAUTViewer.ViewModels
         public double AmpLimitMinRel { get; private set; } = 0.15;
         public double AmpLimitMaxRel { get; private set; } = 1.0;
 
-        public event Action<int> ScanIndexChanged;
-        public event Action<int> SampleIndexChanged;
+        public bool IsBscanRangeProjection { get; private set; }
+        public bool IsDscanRangeProjection { get; private set; }
+        public bool IsSyncScansAxis { get; private set; }
+
+
+        public event Action<bool> BscanRangeProjectionChanged;
+        public event Action<bool> DscanRangeProjectionChanged;
+        public event Action<bool> SyncScansAxisChanged;
+
+        public event Action<int> ScanIndexMaxChanged;
+        public event Action<int> ScanIndexMinChanged;
+        public event Action<int> SampleIndexMaxChanged;
+        public event Action<int> SampleIndexMinChanged;
         public event Action<int, int> DepthGateChanged;
         public event Action<float> GainChanged;
         public event Action<double, double> AmpLimitsChanged;
 
-        public void SetScanIndex(int v) { if (v == ScanIndex) return; ScanIndex = v; ScanIndexChanged?.Invoke(v); }
-        public void SetSampleIndex(int v) { if (v == SampleIndex) return; SampleIndex = v; SampleIndexChanged?.Invoke(v); }
+        public void SetScanIndexMax(int v) { if (v == ScanMaxIndex) return; ScanMaxIndex = v; ScanIndexMaxChanged?.Invoke(v); }
+        public void SetSampleIndexMax(int v) { if (v == SampleMaxIndex) return; SampleMaxIndex = v; SampleIndexMaxChanged?.Invoke(v); }
+        public void SetScanIndexMin(int v) { if (v == ScanMaxIndex) return; ScanMinIndex = v; ScanIndexMinChanged?.Invoke(v); }
+        public void SetSampleIndexMin(int v) { if (v == SampleMaxIndex) return; SampleMinIndex = v; SampleIndexMinChanged?.Invoke(v); }
         public void SetDepthGate(int g0, int g1) { if (g0 == GateDepthMin && g1 == GateDepthMax) return; GateDepthMin = g0; GateDepthMax = g1; DepthGateChanged?.Invoke(g0, g1); }
         public void SetGain(float g) { if (Math.Abs(g - Gain) < 1e-9) return; Gain = g; GainChanged?.Invoke(g); }
 
-        public void SetAmpLimits(double minRel, double maxRel)
-        {
-            if (Math.Abs(minRel - AmpLimitMinRel) < 1e-12 && Math.Abs(maxRel - AmpLimitMaxRel) < 1e-12) return;
-            AmpLimitMinRel = minRel; AmpLimitMaxRel = maxRel; AmpLimitsChanged?.Invoke(minRel, maxRel);
-        }
+        public void SetBscanRangeProjection(bool v) { if (v == IsBscanRangeProjection) return; IsBscanRangeProjection = v; BscanRangeProjectionChanged?.Invoke(v);}
+        public void SetDscanRangeProjection(bool v) { if (v == IsDscanRangeProjection) return; IsDscanRangeProjection = v; DscanRangeProjectionChanged?.Invoke(v); }
+        public void SetSyncScansAxis(bool v) { if (v == IsSyncScansAxis) return; IsSyncScansAxis = v; SyncScansAxisChanged?.Invoke(v); }
+        public void SetAmpLimits(double minRel, double maxRel) { if (Math.Abs(minRel - AmpLimitMinRel) < 1e-12 && Math.Abs(maxRel - AmpLimitMaxRel) < 1e-12) return; AmpLimitMinRel = minRel; AmpLimitMaxRel = maxRel; AmpLimitsChanged?.Invoke(minRel, maxRel);}
 
     }
 
@@ -1177,6 +1209,7 @@ namespace PAUTViewer.ViewModels
             }
 
             SoftGain = (float)Math.Pow(10, sgdB / 20);
+            State.SetGain(SoftGain);
         }
         #endregion
 

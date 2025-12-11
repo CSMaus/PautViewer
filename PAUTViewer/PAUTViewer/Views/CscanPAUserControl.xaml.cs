@@ -1,5 +1,6 @@
 ﻿using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
 using SciChart.Charting.Visuals.Annotations;
+using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Events;
 using SciChart.Data.Model;
 using System;
@@ -17,19 +18,17 @@ namespace PAUTViewer.Views
         #region Initial variables and fields definition
         // heatmap data (Z) shaped as [height=scans, width=samples]
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
-        // sizing
+
+        public NumericAxis XAxisControl { get { return XAxis; } }
+        public NumericAxis YAxisControl { get { return YAxis; } }
+
         private int _scans;    // width
         private int _samples;  // height
-
-        // world ranges
         private double _scanMin, _scanMax;   // from ScansLims
         private double _idxMin, _idxMax;    // from Xlims
-
-        // initial steps (for line defaults)
         private double _scanStep = 1.0;
         private double _idxStep = 1.0;
 
-        // events for external listeners
         public delegate void LineMovedEventHandler(object sender, float newPosition, int channel);
         public event LineMovedEventHandler LineMovedScanMin;
         public event LineMovedEventHandler LineMovedScanMax;
@@ -52,15 +51,8 @@ namespace PAUTViewer.Views
             InitializeComponent();
         }
 
-        public void CreateScanPlotModel(
-            int channel,
-            int[] scansLims,
-            float[] xlims,
-            double maxVal,
-            int scanCount,
-            int sampleCount,
-            double scanStep,
-            double indexStep = 1.0)
+        public void CreateScanPlotModel( int channel, int[] scansLims, float[] xlims, double maxVal,
+            int scanCount, int sampleCount, double scanStep, double indexStep = 1.0)
         {
             _channel = channel;
             _scans = scanCount;
@@ -90,8 +82,11 @@ namespace PAUTViewer.Views
             _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, xStart, xStep, yStart, yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-            ScanLineMax.X1 = _scanMin + _scanStep;
-            IndexLineMax.Y1 = _idxMin + _idxStep;
+            ScanLineMax.X1 = _scanMax - _scanStep;
+            IndexLineMax.Y1 = _idxMax - _idxStep;
+
+            ScanLineMin.X1 = _scanMin + (_scanMax - _scanMin)/10 + _scanStep;
+            IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 10 + _idxStep;
 
             _xStart = _scanMin;
             _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
@@ -163,14 +158,23 @@ namespace PAUTViewer.Views
         }
 
 
-
-        public void UpdateScanLinePosition(double newScan)
+        #region Line Annotations manipulations
+        public void UpdateScanLineMaxPosition(double newScan)
         {
             ScanLineMax.X1 = newScan;
         }
         public void UpdateIndexLineMaxPosition(double newIndex)
         {
             IndexLineMax.Y1 = newIndex;
+        }
+
+        public void UpdateScanLineMinPosition(double newScan)
+        {
+            ScanLineMin.X1 = newScan;
+        }
+        public void UpdateIndexLineMinPosition(double newIndex)
+        {
+            IndexLineMin.Y1 = newIndex;
         }
 
         private void ScanLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
@@ -190,7 +194,7 @@ namespace PAUTViewer.Views
             if (x > _scanMax) x = _scanMax;
             ScanLineMin.X1 = x;
 
-            // LineMovedScanMax?.Invoke(this, (float)x, _channel);
+            LineMovedScanMin?.Invoke(this, (float)x, _channel);
         }
 
         private void IndexLineMax_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
@@ -203,6 +207,16 @@ namespace PAUTViewer.Views
             LineMovedIndexMax?.Invoke(this, (float)y, _channel);
         }
 
+        private void IndexLineMin_OnDragDelta(object sender, AnnotationDragDeltaEventArgs e)
+        {
+            double y = IndexLineMin.Y1 is double dy ? dy : Convert.ToDouble(IndexLineMin.Y1);
+            if (y < _idxMin) y = _idxMin;
+            if (y > _idxMax) y = _idxMax;
+            IndexLineMin.Y1 = y;
+
+            LineMovedIndexMin?.Invoke(this, (float)y, _channel);
+        }
+        #endregion
 
 
         public event PropertyChangedEventHandler PropertyChanged;
