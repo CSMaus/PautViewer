@@ -1185,24 +1185,18 @@ namespace PAUTViewer.ViewModels
             }
         }
 
-        // ________________ Accumulated amplitude values plot _____________________
-        public ObservableCollection<IAxis> PixelsVSAmplitudeXAxes { get; } =
-                new() { new NumericAxis { AxisTitle = "Pixels" } };
-
-        public ObservableCollection<IAxis> PixelsVSAmplitudeYAxes { get; } =
-            new() { new NumericAxis { AxisTitle = "Amplitude" } };
-
-        public XyDataSeries<double, double> PixelsVSAmplitudeData { get; } = new();
-
-        public ObservableCollection<IRenderableSeries> PixelsVSAmplitudeSeries { get; }
-
-        public MyVm()
+        private int[] _amplitudeDistribution = new int[101];
+        public int[] AmplitudeDistribution
         {
-            PixelsVSAmplitudeSeries = new()
+            get { return _amplitudeDistribution; }
+            set
             {
-                new FastLineRenderableSeries { DataSeries = PixelsVSAmplitudeData }
-            };
+                _amplitudeDistribution = value;
+                OnPropertyChanged(nameof(AmplitudeDistribution));
+            }
         }
+
+        
 
 
         // ________________ AMark Results on C-Scan _____________________
@@ -1234,7 +1228,32 @@ namespace PAUTViewer.ViewModels
         #endregion
 
         #region SNR Analysis Panel: Functions (all core logic)
-        
+
+        // ________________ Accumulated amplitude values plot _____________________
+        public ObservableCollection<IAxis> PixelsVSAmplitudeXAxes { get; } =
+                new() { new NumericAxis { AxisTitle = "Pixels" } };
+
+        public ObservableCollection<IAxis> PixelsVSAmplitudeYAxes { get; } =
+            new() { new NumericAxis { AxisTitle = "Amplitude" } };
+
+        public XyDataSeries<double, double> PixelsVSAmplitudeData { get; } = new();
+
+        public ObservableCollection<IRenderableSeries> PixelsVSAmplitudeSeries { get; }
+
+        private VerticalLineAnnotation _sminLine;
+        private VerticalLineAnnotation _smaxLine;
+
+        public void MyVm()
+        {
+            PixelsVSAmplitudeSeries = new ObservableCollection<IRenderableSeries>
+            {
+                new FastLineRenderableSeries
+                {
+                    DataSeries = PixelsVSAmplitudeData
+                }
+            };
+        }
+
         private void RemoveSNRFromCscan(int ichan)
         {
             Channels[ichan].CAscan.RemoveRectAnnotation();
@@ -1314,7 +1333,7 @@ namespace PAUTViewer.ViewModels
                 }
                 return;
             }
-            var rect = Channels[ichan].CAscan.snrMarker;
+            var rect = Channels[ichan].CAscan._snrBox;
 
             int[] coordinates = GetRectangleCoordinates(rect, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
             UpdateSNRParameters(ichan, coordinates, false, true);
@@ -1323,60 +1342,27 @@ namespace PAUTViewer.ViewModels
 
         public void CreateAnalysisPlot()
         {
-            // int ichan = SelectedConfigIndex;
+            PixelsVSAmplitudeData.Clear();
 
-            PixelsVSAmplitudePlot = OxyPlotHelper.CreateDarkThemePlotModel();
-            PixelsVSAmplitudeSeries = new LineSeries { Color = OxyColors.LightBlue };
-            string seriesColorBrushString = System.Windows.Application.Current.Resources["AScanLineColor"].ToString();
-            OxyColor seriesColorBrush = OxyColor.Parse(seriesColorBrushString);
+            for (int i = 0; i <= 100; i++)
+                PixelsVSAmplitudeData.Append(i, AmplitudeDistribution[i]);
 
-            // X-axis (Bottom)
-            var xAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Bottom);
-            xAxis.Minimum = -1;
-            xAxis.Maximum = 100;
-            xAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
-            xAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
-            xAxis.MajorGridlineColor = OxyColors.Gray;
-            xAxis.MinorGridlineColor = OxyColors.DarkGray;
-
-            // Y-axis (Left)
-            var yAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Left);
-            yAxis.Minimum = 0;
-            yAxis.Maximum = 100; // reset it later based on data calculated
-            yAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
-            yAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
-            yAxis.MajorGridlineColor = OxyColors.Gray;
-            yAxis.MinorGridlineColor = OxyColors.DarkGray;
-
-            PixelsVSAmplitudeSeries.Color = seriesColorBrush;
-            PixelsVSAmplitudePlot.Series.Clear();
-            PixelsVSAmplitudePlot.Series.Add(PixelsVSAmplitudeSeries);
-
-            PixelsVSAmplitudeSeries.Points.AddRange(
-            Enumerable.Range(0, 101)
-                        .Select(i => new DataPoint(i, AmplitudeDistribution[i])));
-
-
-            var lineColor = OxyColors.Red;
-            SminLineAnnotation = new LineAnnotation
+            _sminLine = new VerticalLineAnnotation
             {
-                Type = LineAnnotationType.Vertical,
-                X = 1,
-                Color = lineColor,
+                X1 = 1,
                 StrokeThickness = 2,
+                Stroke = System.Windows.Media.Brushes.Red,
+                IsEditable = false
             };
 
-            SmaxLineAnnotation = new LineAnnotation
+            _smaxLine = new VerticalLineAnnotation
             {
-                Type = LineAnnotationType.Vertical,
-                X = 99,
-                Color = lineColor,
+                X1 = 99,
                 StrokeThickness = 2,
+                Stroke = System.Windows.Media.Brushes.Red,
+                IsEditable = false
             };
 
-            PixelsVSAmplitudePlot.Annotations.Add(SminLineAnnotation);
-            PixelsVSAmplitudePlot.Annotations.Add(SmaxLineAnnotation);
-            PixelsVSAmplitudePlot.InvalidatePlot(true);
         }
 
         public void UpdateSNRParameters(int ichan, int[] coordinates, bool isWindow = false, bool isAutoSNR = false)
@@ -1384,9 +1370,16 @@ namespace PAUTViewer.ViewModels
             // need somehow to get z value:
             //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
             var CscanData = Channels[ichan].CAscan.CscanData;
-            
+
             // should we add check for coordinates?
-            
+            PixelsVSAmplitudeSeries = new ObservableCollection<IRenderableSeries>
+            {
+                new FastLineRenderableSeries
+                {
+                    DataSeries = PixelsVSAmplitudeData
+                }
+            };
+
             int lenAD = AmplitudeDistribution.Length;
             AmplitudeDistribution = new int[lenAD];
             for (int i = coordinates[0]; i <= coordinates[1]; i++)
@@ -1414,24 +1407,14 @@ namespace PAUTViewer.ViewModels
             Smax = Mean + k * StdDev;
             SNR = (float)Math.Round(20 * Math.Log10(k), 2);
 
-            SminLineAnnotation.X = Smin;
-            SmaxLineAnnotation.X = Smax;
 
             MarkedData = RecalculateDefectAreas(CscanData);
+            _sminLine.X1 = Smin;
+            _smaxLine.X1 = Smax;
 
-            PixelsVSAmplitudeSeries.Points.Clear();
-            PixelsVSAmplitudeSeries.Points.AddRange(
-            Enumerable.Range(0, 101)
-                        .Select(i => new DataPoint(i, AmplitudeDistribution[i])));
-            // Y-axis (Left)
-            var yAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Left);
-            yAxis.Minimum = 0;
-            yAxis.Maximum = AmplitudeDistribution.Max();
-            yAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
-            yAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
-            yAxis.MajorGridlineColor = OxyColors.Gray;
-            yAxis.MinorGridlineColor = OxyColors.DarkGray;
-            PixelsVSAmplitudePlot.InvalidatePlot(true);
+            PixelsVSAmplitudeData.Clear();
+            for (int i = 0; i <= 100; i++)
+                PixelsVSAmplitudeData.Append(i, AmplitudeDistribution[i]);
 
         }
         private (float, float) CaclDistMetrics(int[] ampDist)
@@ -1575,59 +1558,38 @@ namespace PAUTViewer.ViewModels
                 }
                 return;
             }
-            var rect = Channels[ichan].CAscan.snrMarker;
+            var box = Channels[ichan].CAscan._snrBox;
 
-            int[] coordinates = GetRectangleCoordinates(rect, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
+            int[] coordinates = GetRectangleCoordinates(box, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
             UpdateSNRParameters(ichan, coordinates);
 
         }
 
-        private int[] GetRectangleCoordinates(RectangleAnnotation rect, int[] xlims, float[] ylims, int ichan)
+        private int[] GetRectangleCoordinates(BoxAnnotation box, int[] xlims, float[] ylims, int ichan)
         {
             /// ylims is from the XLims[ichan] which is float values
             /// xlims is from the ScansLims[ichan] which is type of int (maybe it should be float? is it so in the SDK?)
 
             // need to test these values - not sure that hese are the ones are needed
-            float x1 = (float)rect.MinimumX;
-            float x2 = (float)rect.MaximumX;
-            float y1 = (float)rect.MinimumY;
-            float y2 = (float)rect.MaximumY;
+            double x1 = Math.Min((double)box.X1, (double)box.X2);
+            double x2 = Math.Max((double)box.X1, (double)box.X2);
+            double y1 = Math.Min((double)box.Y1, (double)box.Y2);
+            double y2 = Math.Max((double)box.Y1, (double)box.Y2);
 
-            // check if the x1 and x2, y1 and y2 are inside correcponding limits
-            bool x1Inside = x1 >= xlims[0] && x1 < xlims[1];
-            bool x2Inside = x2 >= xlims[0] && x2 < xlims[1];
-            bool y1Inside = y1 >= ylims[0] && y1 < ylims[1];
-            bool y2Inside = y2 >= ylims[0] && y2 < ylims[1];
+            int lenScan = SigDps[ichan][0].Length;
+            int lenIndex = SigDps[ichan].Length;
 
-            x1 = x1Inside ? x1 : xlims[0] + 1;
-            x2 = x2Inside ? x2 : xlims[1] - 1;
-            y1 = y1Inside ? y1 : ylims[0] + 1;
-            y2 = y2Inside ? y2 : ylims[1] - 1;
+            int ix1 = (int)Math.Round((x1 - xlims[0]) / (xlims[1] - xlims[0]) * (lenScan - 1));
+            int ix2 = (int)Math.Round((x2 - xlims[0]) / (xlims[1] - xlims[0]) * (lenScan - 1));
+            int iy1 = (int)Math.Round((y1 - ylims[0]) / (ylims[1] - ylims[0]) * (lenIndex - 1));
+            int iy2 = (int)Math.Round((y2 - ylims[0]) / (ylims[1] - ylims[0]) * (lenIndex - 1));
 
-            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
-            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
-            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
+            ix1 = Math.Clamp(ix1, 0, lenScan - 1);
+            ix2 = Math.Clamp(ix2, 0, lenScan - 1);
+            iy1 = Math.Clamp(iy1, 0, lenIndex - 1);
+            iy2 = Math.Clamp(iy2, 0, lenIndex - 1);
 
-            float x1_perc = ((x1 - xlims[0]) / (xlims[1] - xlims[0]));
-            float x2_perc = ((x2 - xlims[0]) / (xlims[1] - xlims[0]));
-            float y1_perc = Math.Abs((y1 - ylims[0]) / (ylims[1] - ylims[0]));
-            float y2_perc = Math.Abs((y2 - ylims[0]) / (ylims[1] - ylims[0]));
-
-            int x1_idx = (int)Math.Round(lenScanAxis * x1_perc);
-            int x2_idx = (int)Math.Round(lenScanAxis * x2_perc);
-
-            x1_idx = x1_idx < 0 ? 0 : x1_idx >= lenScanAxis ? lenScanAxis - 1 : x1_idx;
-            x2_idx = x2_idx < 0 ? 0 : x2_idx >= lenScanAxis ? lenScanAxis - 1 : x2_idx;
-
-
-            int y1_idx = (int)Math.Round(lenIndexAxis * y1_perc);
-            int y2_idx = (int)Math.Round(lenIndexAxis * y2_perc);
-
-            y1_idx = y1_idx < 0 ? 0 : y1_idx >= lenIndexAxis ? lenIndexAxis - 1 : y1_idx;
-            y2_idx = y2_idx < 0 ? 0 : y2_idx >= lenIndexAxis ? lenIndexAxis - 1 : y2_idx;
-
-            int[] coordinates = new int[] { x1_idx, x2_idx, Math.Min(y1_idx, y2_idx), Math.Max(y1_idx, y2_idx) }; // xmin, xmax, ymin, ymax
-            return coordinates;
+            return new[] { ix1, ix2, iy1, iy2 };
         }
 
         public void UpdateMarkedAreaOnCscan()
@@ -1646,7 +1608,7 @@ namespace PAUTViewer.ViewModels
                     return;
                 }
 
-                Channels[ichan].CAscan.AddDefectedMask(MarkedData, ScanLims[ichan], Xlims[ichan]);
+                Channels[ichan].CAscan.SetMask(MarkedData, ScanLims[ichan], Xlims[ichan]);
             }
             else
             {
