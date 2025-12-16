@@ -14,9 +14,9 @@
 
                 <ResourceDictionary Source="Resources/Styles.xaml" />
                 <ResourceDictionary Source="Resources/StringResources.xaml" />
-                <ResourceDictionary Source="Resources/StringResources.xaml" />
-                <ResourceDictionary Source="Resources/StringResources.ko-KR.xaml" />
                 <ResourceDictionary Source="Resources/StringResources.fr-FR.xaml" />
+                <ResourceDictionary Source="Resources/StringResources.ko-KR.xaml" />
+                <ResourceDictionary Source="Resources/StringResources.xaml" />
                 
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

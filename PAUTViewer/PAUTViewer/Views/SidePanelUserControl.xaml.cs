@@ -24,5 +24,10 @@ namespace PAUTViewer.Views
             InitializeComponent();
             DataContext = sharedPlotPAViewModel;
         }
+
+        private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }

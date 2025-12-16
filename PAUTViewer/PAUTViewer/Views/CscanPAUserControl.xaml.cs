@@ -2,11 +2,13 @@
 using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
 using SciChart.Charting.Visuals.Events;
+using SciChart.Charting.Visuals.RenderableSeries;
 using SciChart.Data.Model;
-using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PAUTViewer.Views
 {
@@ -38,6 +40,9 @@ namespace PAUTViewer.Views
         private int _channel;
         double _xStart, _xStep, _yStart, _yStep;
         double maxAmp;
+
+        // for SNR analysis, so we could easily get currently ploted data as 2d array
+        public double[,] CscanData { get; private set; } = new double[0, 0];
 
         public Dictionary<string, (int startIdx, int endIdx, float yMinWorld, float yMaxWorld)> Gates { get; set; }
                  = new Dictionary<string, (int, int, float, float)>();
@@ -100,10 +105,7 @@ namespace PAUTViewer.Views
 
 
         // currentData[d][s][b]
-        public void UpdateScanPlotModel(
-                float[][][] currentData,
-                int depthMin, int depthMax,
-                float softGain = 1f)
+        public void UpdateScanPlotModel(float[][][] currentData, int depthMin, int depthMax, float softGain = 1f)
         {
             if (currentData == null || currentData.Length == 0) return;
 
@@ -151,7 +153,7 @@ namespace PAUTViewer.Views
                 z, _xStart, _xStep, _yStart, _yStep);
             HeatmapSeries.DataSeries = _dataSeries;
 
-
+            CscanData = z;
             // XAxis.VisibleRange = new DoubleRange(_scanMin, _scanMax);
             // YAxis.VisibleRange = new DoubleRange(_idxMin, _idxMax);
 
@@ -218,6 +220,84 @@ namespace PAUTViewer.Views
         }
         #endregion
 
+
+        #region SNR analysis things
+        public BoxAnnotation? _snrBox { get; private set; }
+
+        public bool IsSNRMarkerAdded() => _snrBox != null;
+
+        public void AddRectAnnotation()
+        {
+            if (_snrBox != null) return;
+
+            _snrBox = new BoxAnnotation
+            {
+                CoordinateMode = AnnotationCoordinateMode.Absolute,
+
+                // X1/X2/Y1/Y2 in WORLD coordinates (same as your line annotations)
+                X1 = _scanMin + (_scanMax - _scanMin) * 0.25,
+                X2 = _scanMin + (_scanMax - _scanMin) * 0.75,
+                Y1 = _idxMin + (_idxMax - _idxMin) * 0.25,
+                Y2 = _idxMin + (_idxMax - _idxMin) * 0.75,
+                BorderBrush = Brushes.Yellow,
+                IsEditable = true,
+            };
+
+            Surface.Annotations.Add(_snrBox);
+            Surface.InvalidateElement();
+        }
+
+        public void RemoveRectAnnotation()
+        {
+            if (_snrBox == null) return;
+
+            Surface.Annotations.Remove(_snrBox);
+            _snrBox = null;
+            Surface.InvalidateElement();
+        }
+
+        private FastUniformHeatmapRenderableSeries? _maskSeries;
+
+        public void RemoveMaskSeries()
+        {
+            if (_maskSeries == null) return;
+
+            Surface.RenderableSeries.Remove(_maskSeries);
+            _maskSeries = null;
+            Surface.InvalidateElement();
+        }
+
+        public void SetMask(double[,] markedData)
+        {
+            if (_maskSeries == null)
+            {
+                _maskSeries = new FastUniformHeatmapRenderableSeries
+                {
+                    Opacity = 0.35,
+                    ColorMap = new HeatmapColorPalette
+                    {
+                        Minimum = 0,
+                        Maximum = 1,
+                        GradientStops = new ObservableCollection<GradientStop>
+                {
+                    new GradientStop(Color.FromArgb(0,   0,   0,   0), 0.0),
+                    new GradientStop(Color.FromArgb(180, 255, 0,   0), 1.0),
+                }
+                    }
+                };
+
+                Surface.RenderableSeries.Add(_maskSeries);
+            }
+
+            var ds = new UniformHeatmapDataSeries<double, double, double>(
+                markedData, _xStart, _xStep, _yStart, _yStep);
+
+            _maskSeries.DataSeries = ds;
+            Surface.InvalidateElement();
+        }
+
+
+        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string n) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));

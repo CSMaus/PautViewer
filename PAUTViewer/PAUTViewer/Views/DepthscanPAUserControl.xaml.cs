@@ -29,6 +29,9 @@ namespace PAUTViewer.Views
         public event LineMovedEventHandler LineMovedScanMax;
         public event LineMovedEventHandler LineMovedScanMin;
 
+        // for SNR analysis (I used it for automatic SNR for gates calculation)
+        public double[,] DscanData { get; private set; } = new double[0, 0];
+
         public DepthscanPAUserControl()
         {
             InitializeComponent();
@@ -113,6 +116,7 @@ namespace PAUTViewer.Views
             HeatmapSeries.DataSeries = _dataSeries;
             HeatmapSeries.ColorMap.Minimum = ampRelMin;
             HeatmapSeries.ColorMap.Maximum = ampRelMax;
+            DscanData = z;
         }
 
         public void UpdateScanLineMaxPosition(double newScan)

@@ -247,10 +247,16 @@ namespace PAUTViewer.Models
 
         private void OnBscanRangeProjectionChanged(bool enabled)
         {
+            //_d.ScanLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            //_cp.ScanLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            //_ca.ScanLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             UpdateBscan();
         }
         private void OnDscanRangeProjectionChanged(bool enabled)
         {
+            //_b.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            //_cp.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            //_ca.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             UpdateDscan();
         }
         #endregion

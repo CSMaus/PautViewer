@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PAUTViewer.Views"
+             xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="200">
+             d:DesignHeight="500" d:DesignWidth="300">
     <!-- This panel is used to select config (channel), analyse data (SNR, AI) -->
     <Grid>
         <Grid.ColumnDefinitions>
@@ -50,12 +51,9 @@
                     </Grid.RowDefinitions>
                     <CheckBox Content="B-Scan: Range projection" Grid.Row="0" Margin="2" IsChecked="{Binding IsBscanRangeProjection}"/>
                     <CheckBox Content="D-Scan: Range projection" Grid.Row="1" Margin="2" IsChecked="{Binding IsDscanRangeProjection}"/>
-                    <Border Grid.Row="2" Margin="2" BorderThickness="0, 1, 0, 1" BorderBrush="DarkBlue">
+                    <Border Grid.Row="2" Margin="2" BorderThickness="0, 1, 0, 1" BorderBrush="DarkGray">
                         <CheckBox Content="Sync Scans Axis" IsChecked="{Binding IsSyncScansAxis}"  Margin="0, 5, 0, 5"
                                   ToolTip="Sync axis to be same as in C-Scam: Amplitude"/>
-                    </Border>
-                    <Border Grid.Row="3" Margin="2" BorderThickness="0, 1, 0, 0" BorderBrush="Azure">
-                        <TextBlock Text="C-scan View"/>
                     </Border>
                 </Grid>
             </TabItem>
@@ -63,13 +61,181 @@
             <TabItem Header="SNR">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <Border BorderBrush="{DynamicResource BordersBrush}" BorderThickness="1" Grid.Row="1" Margin="0, -9, 0, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="15"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Button Content="{DynamicResource addSNRMarker}"  Margin="2" Width="102" HorizontalAlignment="Left" Command="{Binding AddSNRAnalysisArea_ClickCommand}"
+                Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="1"/>
+                            <Button Content="{DynamicResource hideSNRMarker}"  Margin="2" Width="102" HorizontalAlignment="Left" Command="{Binding RemoveSNRAnalysisArea_ClickCommand}"
+                Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="1"/>
+                            <Button Content="{DynamicResource retrieve}"  Command="{Binding Retrieve_ClickCommand}"
+                Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="1"
+                Margin="2" Width="88" HorizontalAlignment="Right" />
+
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3">
+                                <TextBlock Text="{DynamicResource meanValue}" Grid.Row="1" Grid.Column="2" 
+                 HorizontalAlignment="Right" Margin="2" VerticalAlignment="Center"/>
+                                <TextBox Grid.Row="1" Grid.Column="3"  Margin="2" IsEnabled="False" HorizontalAlignment="Right" Width="50"
+                    Text="{Binding Mean, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                                <TextBlock Text=" %" Grid.Row="1" Grid.Column="4" Margin="2"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3">
+                                <TextBlock Text="{DynamicResource standardDeviation}" Grid.Row="2" Grid.Column="2" 
+                    HorizontalAlignment="Right" Margin="2" VerticalAlignment="Center"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Margin="2" IsEnabled="False" HorizontalAlignment="Right" Width="50"
+                    Text="{Binding StdDev, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                                <TextBlock Text=" %" Grid.Row="2" Grid.Column="4" Margin="2"/>
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Border>
+                    <TextBlock Text="{DynamicResource referenceArea}" Background="{DynamicResource Background}" Width="90" HorizontalAlignment="Left" Margin="2"/>
+
+                    <Border BorderBrush="{DynamicResource BordersBrush}" BorderThickness="1" Grid.Row="4" Margin="0, -9, 0, 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <s:SciChartSurface Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" MinHeight="50"
+                                   Background="{DynamicResource Background}"
+                                   XAxes="{Binding PixelsVSAmplitudeXAxes}"
+                                   YAxes="{Binding PixelsVSAmplitudeYAxes}"
+                                   RenderableSeries="{Binding PixelsVSAmplitudeSeries}">
+                                <s:SciChartSurface.ChartModifier>
+                                    <s:ModifierGroup>
+                                        <s:ZoomPanModifier ExecuteOn="MouseRightButton"/>
+                                        <s:MouseWheelZoomModifier/>
+                                        <s:ZoomExtentsModifier/>
+                                    </s:ModifierGroup>
+                                </s:SciChartSurface.ChartModifier>
+
+                                <!-- If you want Smin/Smax vertical lines here too -->
+                                <s:SciChartSurface.Annotations>
+                                    <s:VerticalLineAnnotation X1="{Binding Smin}" IsEditable="False" ShowLabel="True"/>
+                                    <s:VerticalLineAnnotation X1="{Binding Smax}" IsEditable="False" ShowLabel="True"/>
+                                </s:SciChartSurface.Annotations>
+                            </s:SciChartSurface>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="5,10,0,0" Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="A1:"  Margin="2" VerticalAlignment="Bottom"/>
+                                <TextBlock Text="{Binding Area1, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="2" VerticalAlignment="Bottom" MinWidth="30"/>
+                                <TextBlock Text=" mm" Margin="2" VerticalAlignment="Bottom"/>
+                                <TextBlock Text="2" Margin="-2,-2,0,0" VerticalAlignment="Center" FontSize="7"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,5,0" Grid.Column="1">
+                                <TextBlock Text="A2:"  Margin="2" VerticalAlignment="Bottom"/>
+                                <TextBlock Text="{Binding Area2, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Margin="2" VerticalAlignment="Bottom" MinWidth="30"/>
+                                <TextBlock Text=" mm" Margin="2" VerticalAlignment="Bottom"/>
+                                <TextBlock Text="2" Margin="-2,-2,0,0" VerticalAlignment="Center" FontSize="7"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <TextBlock Text="{DynamicResource evaluation}" Grid.Row="3" Background="{DynamicResource Background}" Width="62" HorizontalAlignment="Left" Margin="2"/>
+
+                    <StackPanel  Grid.Row="5" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <!--<Button Command="{Binding AddRectangularDefects_DEVELOPER_Command}" Content="Add for Labeling" Height="20" HorizontalAlignment="Left" Width="120" Margin="1"/>-->
+                        <CheckBox IsChecked="{Binding ExcludeBelowValues}" Content="{DynamicResource excludeValuesFromBelowGate}" Margin="1"/>
+                        <CheckBox IsChecked="{Binding DisplayDefectAreaMask, UpdateSourceTrigger=PropertyChanged}" 
+                            Grid.Row="6" HorizontalAlignment="Left" VerticalAlignment="Top" Content="{DynamicResource displayDefectArea}" Margin="1"/>
+                        <Button Command="{Binding AddSNRDefectsIntoDevTable}" Content="{DynamicResource snrDefectsInDeveloperTable}" Width="120" Margin="1" Height="20" HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="7" Margin="0, 5, 0, 5" BorderBrush="{DynamicResource BordersBrush}" BorderThickness="1">
+                        <Grid Margin="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" MaxWidth="45"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="K:" Width="15" Grid.Column="0"/>
+                            <TextBox Grid.Column="4" Text="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                            <Slider Grid.Column="1" Grid.ColumnSpan="3" Value="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+    Minimum="0" Maximum="20" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" MinWidth="150"/>
+
+                            <TextBlock Text="{DynamicResource defectArea}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Margin="3">
+                                <TextBlock Text="{Binding TotalDefectArea}"/>
+                                <TextBlock Text=" mm"/>
+                                <TextBlock Text="2" FontSize="7"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{DynamicResource signalToNoiseRatio}" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3" ToolTip="SNR = 20 * Log10(K)"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="2" Grid.Column="3" HorizontalAlignment="Left" Margin="3" ToolTip="SNR = 20 * Log10(K)">
+                                <TextBlock Text="{Binding KValue}"/>
+                                <TextBlock Text=" ("/>
+                                <TextBlock Text="{Binding SNR}"/>
+                                <TextBlock Text=" dB)"/>
+                            </StackPanel>
+
+                            <Border BorderBrush="{DynamicResource BordersBrush}" BorderThickness="0,1,0,0" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="3"/>
+
+                            <TextBlock Text="{DynamicResource totalArea}" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="4" Grid.Column="3" HorizontalAlignment="Left" Margin="3">
+                                <TextBlock Text="{Binding TotalArea}" />
+                                <TextBlock Text=" mm"/>
+                                <TextBlock Text="2" FontSize="7"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{DynamicResource defectAreaTotalArea}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3" ToolTip="SNR = 20 * Log10(K)"/>
+
+                            <StackPanel Orientation="Horizontal"  Grid.Row="5" Grid.Column="3" HorizontalAlignment="Left" Margin="3" >
+                                <TextBlock Text="{Binding TotalDefectAreaPerc}" />
+                                <TextBlock Text=" %"/>
+                            </StackPanel>
+
+                            <!--<Button Content="{DynamicResource calculatePredictionMetrics}" Width="170" Margin="20, 20, 20, 0" Height="25" 
+                Command="{Binding CalculateMetrics}"
+                Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="5" HorizontalAlignment="Center"/>-->
+
+                        </Grid>
+                    </Border>
+
                 </Grid>
             </TabItem>
 

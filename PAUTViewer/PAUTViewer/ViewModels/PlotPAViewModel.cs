@@ -1,9 +1,11 @@
-﻿using OlympusNDT.Instrumentation.NET;
-using OlympusNDT.Storage.NET;
+﻿// using OlympusNDT.Storage.NET;
 using PAUTViewer.Models;
 using PAUTViewer.ProjectUtilities;
 using PAUTViewer.Views;
+using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Annotations;
+using SciChart.Charting.Visuals.Axes;
+using SciChart.Charting.Visuals.RenderableSeries;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,6 +22,7 @@ using System.Threading.Channels;
 using System.Windows;
 using System.Windows.Input;
 using ToastNotifications.Messages;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties;
 
 namespace PAUTViewer.ViewModels
 {
@@ -123,7 +126,7 @@ namespace PAUTViewer.ViewModels
                 OnPropertyChanged(nameof(DefectSizeThreshold));
             }
         }
-        public List<string> InspectionMethods { get; } = Enum.GetNames(typeof(InspectionMethodType)).ToList();
+        public List<string> InspectionMethods { get; } = Enum.GetNames(typeof(OlympusNDT.Storage.NET.InspectionMethodType)).ToList();
 
         #endregion
 
@@ -1024,6 +1027,698 @@ namespace PAUTViewer.ViewModels
             return gradient;
         }
         #endregion
+
+        #region SNR Analysis Panel: Fields and Variables
+        // Commands: bindings to buttons and checkboxes
+        public ICommand AddSNRAnalysisArea_ClickCommand { get; set; }
+        public ICommand RemoveSNRAnalysisArea_ClickCommand { get; set; }
+        public ICommand Retrieve_ClickCommand { get; set; }
+        public ICommand AddSNRDefectsIntoDevTable { get; set; }
+        public ICommand AutoSNR_ClickCommand { get; set; }
+        public bool IsAutoSNROpen { get; set; } = false; // todo: remove 
+
+        // Computed SNR metrics:
+        private float _mean = 0;
+        public float Mean
+        {
+            get { return _mean; }
+            set
+            {
+                _mean = value;
+                OnPropertyChanged(nameof(Mean));
+            }
+        }
+
+        private float _stdDev = 0;
+        public float StdDev
+        {
+            get { return _stdDev; }
+            set
+            {
+                _stdDev = value;
+                OnPropertyChanged(nameof(StdDev));
+            }
+        }
+
+        private float _area1 = 0;
+        public float Area1
+        {
+            get { return _area1; }
+            set
+            {
+                _area1 = value;
+                OnPropertyChanged(nameof(Area1));
+            }
+        }
+        private float _area2 = 0;
+        public float Area2
+        {
+            get { return _area2; }
+            set
+            {
+                _area2 = value;
+                OnPropertyChanged(nameof(Area2));
+            }
+        }
+
+        // ___________________________________________________________
+
+        private bool _excludeBelowValues = false;
+        public bool ExcludeBelowValues
+        {
+            get { return _excludeBelowValues; }
+            set
+            {
+                _excludeBelowValues = value;
+                OnPropertyChanged(nameof(ExcludeBelowValues));
+                UpdateTotalDefectArea();
+            }
+        }
+
+        private bool _displayPredictedDefects = false;
+        public bool DisplayPredictedDefects
+        {
+            get { return _displayPredictedDefects; }
+            set
+            {
+                _displayPredictedDefects = value;
+                OnPropertyChanged(nameof(DisplayPredictedDefects));
+                DisplayPredictedDefectsFunc();
+            }
+        }
+
+        // ___________________________________________________________
+        private float _Smin = 0;
+        public float Smin
+        {
+            get { return _Smin; }
+            set
+            {
+                _Smin = value;
+                OnPropertyChanged(nameof(Smin));
+            }
+        }
+        private float _Smax = 0;
+        public float Smax
+        {
+            get { return _Smax; }
+            set
+            {
+                _Smax = value;
+                OnPropertyChanged(nameof(Smax));
+            }
+        }
+
+        private float _kValue = 1;
+        public float KValue
+        {
+            get { return (float)Math.Round(_kValue, 2); }
+            set
+            {
+                _kValue = (float)Math.Round(value, 2);
+                OnPropertyChanged(nameof(KValue));
+                OnKValue_Chaned();
+            }
+        }
+
+        private float _SNR = 0;
+        public float SNR
+        {
+            get { return _SNR; }
+            set
+            {
+                _SNR = value;
+                OnPropertyChanged(nameof(SNR));
+            }
+        }
+
+        private float _totalDefectArea = 0;
+        public float TotalDefectArea
+        {
+            get { return _totalDefectArea; }
+            set
+            {
+                _totalDefectArea = value;
+                OnPropertyChanged(nameof(TotalDefectArea));
+            }
+        }
+
+        private float _totalArea = 0;
+        public float TotalArea
+        {
+            get { return _totalArea; }
+            set
+            {
+                _totalArea = value;
+                OnPropertyChanged(nameof(TotalArea));
+            }
+        }
+
+        private float _totalDefectAreaPerc = 0;
+        public float TotalDefectAreaPerc
+        {
+            get { return _totalDefectAreaPerc; }
+            set
+            {
+                _totalDefectAreaPerc = value;
+                OnPropertyChanged(nameof(TotalDefectAreaPerc));
+            }
+        }
+
+        // ________________ Accumulated amplitude values plot _____________________
+        public ObservableCollection<IAxis> PixelsVSAmplitudeXAxes { get; } =
+                new() { new NumericAxis { AxisTitle = "Pixels" } };
+
+        public ObservableCollection<IAxis> PixelsVSAmplitudeYAxes { get; } =
+            new() { new NumericAxis { AxisTitle = "Amplitude" } };
+
+        public XyDataSeries<double, double> PixelsVSAmplitudeData { get; } = new();
+
+        public ObservableCollection<IRenderableSeries> PixelsVSAmplitudeSeries { get; }
+
+        public MyVm()
+        {
+            PixelsVSAmplitudeSeries = new()
+            {
+                new FastLineRenderableSeries { DataSeries = PixelsVSAmplitudeData }
+            };
+        }
+
+
+        // ________________ AMark Results on C-Scan _____________________
+        private double[,] _markedData;
+        public double[,] MarkedData
+        {
+            get { return _markedData; }
+            set
+            {
+                _markedData = value;
+                UpdateMarkedAreaOnCscan();
+                OnPropertyChanged(nameof(MarkedData));
+            }
+        }
+
+        private bool _displayDefectAreaMask = false;
+        public bool DisplayDefectAreaMask
+        {
+            // THIS IS FOR SNR ONLY!!!
+            get { return _displayDefectAreaMask; }
+            set
+            {
+                _displayDefectAreaMask = value;
+                UpdateMarkedAreaOnCscan();
+                OnPropertyChanged(nameof(DisplayDefectAreaMask));
+            }
+        }
+
+        #endregion
+
+        #region SNR Analysis Panel: Functions (all core logic)
+        
+        private void RemoveSNRFromCscan(int ichan)
+        {
+            Channels[ichan].CAscan.RemoveRectAnnotation();
+            Channels[ichan].CAscan.RemoveMaskSeries();
+        }
+
+        public void AddSNRAnalysisArea_Click()
+        {
+            int ichan = SelectedConfigIndex;
+
+            Channels[ichan].CAscan.AddRectAnnotation();
+            // CreateAnalysisPlot(); we need only to update it, not recreate
+            var yLenInMM = Math.Abs(Xlims[ichan][1] - Xlims[ichan][0]);
+            var xLenInMM = Math.Abs(ScanLims[ichan][1] - ScanLims[ichan][0]);
+            TotalArea = Convert.ToSingle(Math.Round(yLenInMM * xLenInMM, 2));
+            OnKValue_Chaned();
+        }
+
+        public void RemoveSNRAnalysisArea_Click()
+        {
+            int ichan = SelectedConfigIndex;
+
+            Channels[ichan].CAscan.RemoveRectAnnotation();
+            DisplayDefectAreaMask = false;
+        }
+
+        public void Retrieve_Click()
+        {
+            int ichan = SelectedConfigIndex;
+            // need to change it. Now use SciChart, so the data 
+            // i e need somehow to get z value:
+            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            // maybe we should store it in iternal variable of that class
+            // HeatmapSeries.DataSeries = _dataSeries;
+            totalAreaPointNumber = Channels[ichan].CAscan.CscanData.GetLength(0) * Channels[ichan].CAscan.CscanData.GetLength(1);
+            Channels[ichan].CAscan.AddRectAnnotation();
+
+            var yLenInMM = Convert.ToSingle(Math.Abs(Xlims[ichan][1] - Xlims[ichan][0]));
+            var xLenInMM = Convert.ToSingle(Math.Abs(ScanLims[ichan][1] - ScanLims[ichan][0]));
+            TotalArea = Convert.ToSingle(Math.Round(yLenInMM * xLenInMM, 2));
+
+            OnKValue_Chaned();
+        }
+
+        public void AutoSNR_Click()
+        {
+            int ichan = SelectedConfigIndex;
+
+            // need to change it. Now use SciChart, so the data 
+            // i e need somehow to get z value:
+            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            // maybe we should store it in iternal variable of that class
+            // HeatmapSeries.DataSeries = _dataSeries;
+            totalAreaPointNumber = Channels[ichan].CAscan.CscanData.GetLength(0) * Channels[ichan].CAscan.CscanData.GetLength(1);
+            Channels[ichan].CAscan.AddRectAnnotation();
+
+            // RecalculateDscanGates();
+
+            string gateKey = Application.Current.Resources["gateSpecimenThickness"] as string;
+            bool exists = Channels[ichan].CAscan.Gates.ContainsKey(gateKey);
+            if (exists)
+            {
+                Channels[ichan].CAscan.SelectedGateKey = gateKey;
+            }
+            var yLenInMM = Math.Abs(Xlims[ichan][1] - Xlims[ichan][0]);
+            var xLenInMM = Math.Abs(ScanLims[ichan][1] - ScanLims[ichan][0]);
+            TotalArea = (float)Math.Round(yLenInMM * xLenInMM, 2);
+
+            
+            if (!Channels[ichan].CAscan.IsSNRMarkerAdded())
+            {
+
+                if (!GlobalSettings.IsTurnOffNotifications)
+                {
+                    string notificationText = Application.Current.Resources["notificationSetupSNRAreaFirst"] as string;
+                    NotificationManager.Notifier.ShowInformation(notificationText);
+                }
+                return;
+            }
+            var rect = Channels[ichan].CAscan.snrMarker;
+
+            int[] coordinates = GetRectangleCoordinates(rect, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
+            UpdateSNRParameters(ichan, coordinates, false, true);
+            
+        }
+
+        public void CreateAnalysisPlot()
+        {
+            // int ichan = SelectedConfigIndex;
+
+            PixelsVSAmplitudePlot = OxyPlotHelper.CreateDarkThemePlotModel();
+            PixelsVSAmplitudeSeries = new LineSeries { Color = OxyColors.LightBlue };
+            string seriesColorBrushString = System.Windows.Application.Current.Resources["AScanLineColor"].ToString();
+            OxyColor seriesColorBrush = OxyColor.Parse(seriesColorBrushString);
+
+            // X-axis (Bottom)
+            var xAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Bottom);
+            xAxis.Minimum = -1;
+            xAxis.Maximum = 100;
+            xAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
+            xAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
+            xAxis.MajorGridlineColor = OxyColors.Gray;
+            xAxis.MinorGridlineColor = OxyColors.DarkGray;
+
+            // Y-axis (Left)
+            var yAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Left);
+            yAxis.Minimum = 0;
+            yAxis.Maximum = 100; // reset it later based on data calculated
+            yAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
+            yAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
+            yAxis.MajorGridlineColor = OxyColors.Gray;
+            yAxis.MinorGridlineColor = OxyColors.DarkGray;
+
+            PixelsVSAmplitudeSeries.Color = seriesColorBrush;
+            PixelsVSAmplitudePlot.Series.Clear();
+            PixelsVSAmplitudePlot.Series.Add(PixelsVSAmplitudeSeries);
+
+            PixelsVSAmplitudeSeries.Points.AddRange(
+            Enumerable.Range(0, 101)
+                        .Select(i => new DataPoint(i, AmplitudeDistribution[i])));
+
+
+            var lineColor = OxyColors.Red;
+            SminLineAnnotation = new LineAnnotation
+            {
+                Type = LineAnnotationType.Vertical,
+                X = 1,
+                Color = lineColor,
+                StrokeThickness = 2,
+            };
+
+            SmaxLineAnnotation = new LineAnnotation
+            {
+                Type = LineAnnotationType.Vertical,
+                X = 99,
+                Color = lineColor,
+                StrokeThickness = 2,
+            };
+
+            PixelsVSAmplitudePlot.Annotations.Add(SminLineAnnotation);
+            PixelsVSAmplitudePlot.Annotations.Add(SmaxLineAnnotation);
+            PixelsVSAmplitudePlot.InvalidatePlot(true);
+        }
+
+        public void UpdateSNRParameters(int ichan, int[] coordinates, bool isWindow = false, bool isAutoSNR = false)
+        {
+            // need somehow to get z value:
+            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            var CscanData = Channels[ichan].CAscan.CscanData;
+            
+            // should we add check for coordinates?
+            
+            int lenAD = AmplitudeDistribution.Length;
+            AmplitudeDistribution = new int[lenAD];
+            for (int i = coordinates[0]; i <= coordinates[1]; i++)
+            {
+                for (int j = coordinates[2]; j <= coordinates[3]; j++)
+                {
+                    float amplitudePercentage = (float)(CscanData[j, i] / Alims[ichan][1]) * 100;
+                    int percentageIndex = (int)Math.Round(amplitudePercentage);
+
+                    if (percentageIndex >= 0 && percentageIndex <= 100)
+                    {
+                        AmplitudeDistribution[percentageIndex]++;
+                    }
+                }
+            }
+
+            (Mean, StdDev) = CaclDistMetrics(AmplitudeDistribution);
+
+            StdDev = StdDev == float.NaN ? 0 : StdDev;
+
+            if (isAutoSNR) KValue = StdDev;
+            float k = KValue;
+
+            Smin = Mean - k * StdDev;
+            Smax = Mean + k * StdDev;
+            SNR = (float)Math.Round(20 * Math.Log10(k), 2);
+
+            SminLineAnnotation.X = Smin;
+            SmaxLineAnnotation.X = Smax;
+
+            MarkedData = RecalculateDefectAreas(CscanData);
+
+            PixelsVSAmplitudeSeries.Points.Clear();
+            PixelsVSAmplitudeSeries.Points.AddRange(
+            Enumerable.Range(0, 101)
+                        .Select(i => new DataPoint(i, AmplitudeDistribution[i])));
+            // Y-axis (Left)
+            var yAxis = PixelsVSAmplitudePlot.Axes.First(a => a.Position == AxisPosition.Left);
+            yAxis.Minimum = 0;
+            yAxis.Maximum = AmplitudeDistribution.Max();
+            yAxis.MajorGridlineStyle = OxyPlot.LineStyle.Solid;
+            yAxis.MinorGridlineStyle = OxyPlot.LineStyle.Dot;
+            yAxis.MajorGridlineColor = OxyColors.Gray;
+            yAxis.MinorGridlineColor = OxyColors.DarkGray;
+            PixelsVSAmplitudePlot.InvalidatePlot(true);
+
+        }
+        private (float, float) CaclDistMetrics(int[] ampDist)
+        {
+            int totalCount = ampDist.Sum();
+            float meanAmplitudePercentage = 0;
+            for (int i = 0; i <= 100; i++)
+            {
+                meanAmplitudePercentage += i * ampDist[i];
+            }
+            meanAmplitudePercentage /= totalCount;
+
+            float variance = 0;
+            for (int i = 0; i <= 100; i++)
+            {
+                float diff = i - meanAmplitudePercentage;
+                variance += ampDist[i] * diff * diff;
+            }
+            variance /= totalCount;
+            float stdDevAmplitudePercentage = (float)Math.Sqrt(variance);
+
+            float mean = (float)Math.Round(meanAmplitudePercentage, 2);
+            float stdDev = (float)Math.Round(stdDevAmplitudePercentage, 2);
+            return (mean, stdDev);
+        }
+
+        private float totalMeanD = 0;
+        private float totalStdD = 0;
+        private void CalculateDscanDist(bool isTotal = false)
+        {
+            int ichan = SelectedConfigIndex;
+            var gatesKey = Channels[ichan].CAscan.SelectedGateKey;
+            if (gatesKey == null) return;
+
+            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
+            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
+            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
+
+
+
+            (int firstIndex, int secondIndex, float mpsFirst, float mpsSecond) = Channels[ichan].CAscan.Gates[gatesKey];
+
+            int x1_idx = 0;
+            int x2_idx = lenScanAxis - 1;
+
+            int y1_idx = firstIndex < 0 ? 0 : firstIndex;
+            int y2_idx = secondIndex > lenDepthAxis - 1 ? lenDepthAxis - 1 : secondIndex;
+
+            if (isTotal)
+            {
+                y1_idx = 0;
+                y2_idx = lenDepthAxis - 1;
+            }
+
+
+            int[] coordinates = new int[] { x1_idx, x2_idx, y1_idx, y2_idx };
+
+            // need somehow to get z value:
+            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            var DscanData = Channels[ichan].Dscan.DscanData;
+
+            int lenAD = AmplitudeDistribution.Length;
+            int[] dscan_AmplitudeDistribution = new int[lenAD];
+            for (int i = coordinates[0]; i <= coordinates[1]; i++)
+            {
+                for (int j = coordinates[2]; j <= coordinates[3]; j++)
+                {
+                    float amplitudePercentage = (float)(DscanData[i, j] / Alims[ichan][1]) * 100;
+                    int percentageIndex = (int)Math.Round(amplitudePercentage);
+
+                    if (percentageIndex >= 0 && percentageIndex <= 100)
+                    {
+                        dscan_AmplitudeDistribution[percentageIndex]++;
+                    }
+                }
+            }
+
+            (float meanD, float stdD) = CaclDistMetrics(dscan_AmplitudeDistribution);
+            if (isTotal) { totalMeanD = meanD; totalStdD = stdD; }
+            Console.WriteLine($"Total Mean: {totalMeanD},  Total Std: {totalStdD}");
+            Console.WriteLine($"Mean: {meanD},  Std: {stdD}; Gates {gatesKey}");
+        }
+
+        public void OnSNRRectangle_Changed(object sender, float x1, float x2, float y1, float y2, int ichan)
+        {
+            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
+            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
+            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
+
+            var xlims = ScanLims[ichan];
+            var ylims = Xlims[ichan];
+
+            // check if the x1 and x2, y1 and y2 are inside correcponding limits
+            bool x1Inside = x1 >= xlims[0] && x1 < xlims[1];
+            bool x2Inside = x2 >= xlims[0] && x2 < xlims[1];
+            bool y1Inside = y1 >= ylims[0] && y1 < ylims[1];
+            bool y2Inside = y2 >= ylims[0] && y2 < ylims[1];
+
+            x1 = x1Inside ? x1 : xlims[0] + 1;
+            x2 = x2Inside ? x2 : xlims[1] - 1;
+            y1 = y1Inside ? y1 : ylims[0] - 1;
+            y2 = y2Inside ? y2 : ylims[1] + 1;
+
+
+            float x1_perc = ((x1 - xlims[0]) / (xlims[1] - xlims[0]));
+            float x2_perc = ((x2 - xlims[0]) / (xlims[1] - xlims[0]));
+            float y1_perc = Math.Abs((y1 - ylims[0]) / (ylims[1] - ylims[0]));
+            float y2_perc = Math.Abs((y2 - ylims[0]) / (ylims[1] - ylims[0]));
+
+            int x1_idx = (int)Math.Round(lenScanAxis * x1_perc);
+            int x2_idx = (int)Math.Round(lenScanAxis * x2_perc);
+
+            x1_idx = x1_idx < 0 ? 0 : x1_idx >= lenScanAxis ? lenScanAxis - 1 : x1_idx;
+            x2_idx = x2_idx < 0 ? 0 : x2_idx >= lenScanAxis ? lenScanAxis - 1 : x2_idx;
+
+
+            int y1_idx = (int)Math.Round(lenIndexAxis * y1_perc);
+            int y2_idx = (int)Math.Round(lenIndexAxis * y2_perc);
+
+            y1_idx = y1_idx < 0 ? 0 : y1_idx >= lenIndexAxis ? lenIndexAxis - 1 : y1_idx;
+            y2_idx = y2_idx < 0 ? 0 : y2_idx >= lenIndexAxis ? lenIndexAxis - 1 : y2_idx;
+
+            int[] coordinates = new int[] { Math.Min(y1_idx, y2_idx), Math.Max(y1_idx, y2_idx), Math.Min(x1_idx, x2_idx), Math.Max(x1_idx, x2_idx) }; // xmin, xmax, ymin, ymax
+
+            if (ichan == SelectedConfigIndex)
+            {
+                UpdateSNRParameters(ichan, coordinates);
+            }
+        }
+
+        public void OnKValue_Chaned()
+        {
+            int ichan = SelectedConfigIndex;
+           
+            if (!Channels[ichan].CAscan.IsSNRMarkerAdded())
+            {
+                if (!GlobalSettings.IsTurnOffNotifications)
+                {
+                    string notificationText = Application.Current.Resources["notificationSetupSNRAreaFirst"] as string;
+                    NotificationManager.Notifier.ShowInformation(notificationText);
+                }
+                return;
+            }
+            var rect = Channels[ichan].CAscan.snrMarker;
+
+            int[] coordinates = GetRectangleCoordinates(rect, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
+            UpdateSNRParameters(ichan, coordinates);
+
+        }
+
+        private int[] GetRectangleCoordinates(RectangleAnnotation rect, int[] xlims, float[] ylims, int ichan)
+        {
+            /// ylims is from the XLims[ichan] which is float values
+            /// xlims is from the ScansLims[ichan] which is type of int (maybe it should be float? is it so in the SDK?)
+
+            // need to test these values - not sure that hese are the ones are needed
+            float x1 = (float)rect.MinimumX;
+            float x2 = (float)rect.MaximumX;
+            float y1 = (float)rect.MinimumY;
+            float y2 = (float)rect.MaximumY;
+
+            // check if the x1 and x2, y1 and y2 are inside correcponding limits
+            bool x1Inside = x1 >= xlims[0] && x1 < xlims[1];
+            bool x2Inside = x2 >= xlims[0] && x2 < xlims[1];
+            bool y1Inside = y1 >= ylims[0] && y1 < ylims[1];
+            bool y2Inside = y2 >= ylims[0] && y2 < ylims[1];
+
+            x1 = x1Inside ? x1 : xlims[0] + 1;
+            x2 = x2Inside ? x2 : xlims[1] - 1;
+            y1 = y1Inside ? y1 : ylims[0] + 1;
+            y2 = y2Inside ? y2 : ylims[1] - 1;
+
+            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
+            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
+            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
+
+            float x1_perc = ((x1 - xlims[0]) / (xlims[1] - xlims[0]));
+            float x2_perc = ((x2 - xlims[0]) / (xlims[1] - xlims[0]));
+            float y1_perc = Math.Abs((y1 - ylims[0]) / (ylims[1] - ylims[0]));
+            float y2_perc = Math.Abs((y2 - ylims[0]) / (ylims[1] - ylims[0]));
+
+            int x1_idx = (int)Math.Round(lenScanAxis * x1_perc);
+            int x2_idx = (int)Math.Round(lenScanAxis * x2_perc);
+
+            x1_idx = x1_idx < 0 ? 0 : x1_idx >= lenScanAxis ? lenScanAxis - 1 : x1_idx;
+            x2_idx = x2_idx < 0 ? 0 : x2_idx >= lenScanAxis ? lenScanAxis - 1 : x2_idx;
+
+
+            int y1_idx = (int)Math.Round(lenIndexAxis * y1_perc);
+            int y2_idx = (int)Math.Round(lenIndexAxis * y2_perc);
+
+            y1_idx = y1_idx < 0 ? 0 : y1_idx >= lenIndexAxis ? lenIndexAxis - 1 : y1_idx;
+            y2_idx = y2_idx < 0 ? 0 : y2_idx >= lenIndexAxis ? lenIndexAxis - 1 : y2_idx;
+
+            int[] coordinates = new int[] { x1_idx, x2_idx, Math.Min(y1_idx, y2_idx), Math.Max(y1_idx, y2_idx) }; // xmin, xmax, ymin, ymax
+            return coordinates;
+        }
+
+        public void UpdateMarkedAreaOnCscan()
+        {
+            int ichan = SelectedConfigIndex;
+
+            if (DisplayDefectAreaMask)
+            {
+                if (!Channels[ichan].CAscan.IsSNRMarkerAdded())
+                {
+                    if (!GlobalSettings.IsTurnOffNotifications)
+                    {
+                        string notificationText = Application.Current.Resources["notificationSetupSNRAreaFirst"] as string;
+                        NotificationManager.Notifier.ShowInformation(notificationText);
+                    }
+                    return;
+                }
+
+                Channels[ichan].CAscan.AddDefectedMask(MarkedData, ScanLims[ichan], Xlims[ichan]);
+            }
+            else
+            {
+                Channels[ichan].CAscan.RemoveMaskSeries();
+            }
+        }
+
+        public double[,] RecalculateDefectAreas(double[,] CurrentCscanData)
+        {
+            int rows = CurrentCscanData.GetLength(0);
+            int cols = CurrentCscanData.GetLength(1);
+            double[,] markedData = new double[rows, cols];
+
+            Area1 = 0;
+            Area2 = 0;
+
+            var _area1_ = 0;
+            var _area2_ = 0;
+            if (ExcludeBelowValues)
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < cols; j++)
+                    {
+                        // -1 all that less than Smin, 0 all that mre than Smin and less than Smax, and 1 all others
+                        if (CurrentCscanData[i, j] > Smax)
+                        {
+                            markedData[i, j] = 500;
+                            _area2_++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < cols; j++)
+                    {
+                        // -1 all that less than Smin, 0 all that mre than Smin and less than Smax, and 1 all others
+                        if (CurrentCscanData[i, j] < Smin)
+                        {
+                            markedData[i, j] = -500;
+                            _area1_++;
+                        }
+                        else if (CurrentCscanData[i, j] > Smax)
+                        {
+                            markedData[i, j] = 500;
+                            _area2_++;
+                        }
+                    }
+                }
+            }
+
+            Area1 = (float)Math.Round(TotalArea * (_area1_ / totalAreaPointNumber), 2);
+            Area2 = (float)Math.Round(TotalArea * (_area2_ / totalAreaPointNumber), 2);
+            UpdateTotalDefectArea();
+            return markedData;
+        }
+
+        private float totalAreaPointNumber = 1;
+        private float Area1SavedValue = 0;
+        private void UpdateTotalDefectArea()
+        {
+            int ichan = SelectedConfigIndex;
+
+            TotalDefectArea = ExcludeBelowValues ? Area2 : Area1 + Area2;
+            TotalDefectAreaPerc = (float)Math.Round(TotalDefectArea / TotalArea, 4) * 100;
+        }
+        #endregion
+
+
 
         public class RelayCommand : ICommand
         {
