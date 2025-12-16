@@ -1103,7 +1103,7 @@ namespace PAUTViewer.ViewModels
             {
                 _displayPredictedDefects = value;
                 OnPropertyChanged(nameof(DisplayPredictedDefects));
-                DisplayPredictedDefectsFunc();
+                // DisplayPredictedDefectsFunc(); // todo: CHECK WHAT IS THIS!!! Need to check the snr. If we do not need it - remove.
             }
         }
 
@@ -1245,13 +1245,12 @@ namespace PAUTViewer.ViewModels
 
         public void MyVm()
         {
-            PixelsVSAmplitudeSeries = new ObservableCollection<IRenderableSeries>
-            {
+            PixelsVSAmplitudeSeries.Clear();
+            PixelsVSAmplitudeSeries.Add(
                 new FastLineRenderableSeries
                 {
                     DataSeries = PixelsVSAmplitudeData
-                }
-            };
+                });
         }
 
         private void RemoveSNRFromCscan(int ichan)
@@ -1370,15 +1369,6 @@ namespace PAUTViewer.ViewModels
             // need somehow to get z value:
             //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
             var CscanData = Channels[ichan].CAscan.CscanData;
-
-            // should we add check for coordinates?
-            PixelsVSAmplitudeSeries = new ObservableCollection<IRenderableSeries>
-            {
-                new FastLineRenderableSeries
-                {
-                    DataSeries = PixelsVSAmplitudeData
-                }
-            };
 
             int lenAD = AmplitudeDistribution.Length;
             AmplitudeDistribution = new int[lenAD];
@@ -1608,7 +1598,7 @@ namespace PAUTViewer.ViewModels
                     return;
                 }
 
-                Channels[ichan].CAscan.SetMask(MarkedData, ScanLims[ichan], Xlims[ichan]);
+                Channels[ichan].CAscan.SetMask(MarkedData);
             }
             else
             {
