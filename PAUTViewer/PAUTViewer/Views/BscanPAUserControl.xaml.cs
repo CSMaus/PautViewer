@@ -2,17 +2,20 @@
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Model.DataSeries.Heatmap2DArrayDataSeries;
 using SciChart.Charting.Visuals.Axes;
+using SciChart.Charting.Visuals.RenderableSeries;
 using SciChart.Data.Model;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace PAUTViewer.Views
 {
-    public partial class BscanPAUserControl : UserControl
+    public partial class BscanPAUserControl : UserControl, INotifyPropertyChanged
     {
         private UniformHeatmapDataSeries<double, double, double> _dataSeries;
         public NumericAxis XAxisControl { get { return XAxis; } }
@@ -154,6 +157,57 @@ namespace PAUTViewer.Views
             LineMovedIndexMin?.Invoke(this, (float)y, _channel);
         }
 
+        #region Plot color maps and view setup
+
+        public void SetColorMap(string cmapName)
+        {
+            if (string.IsNullOrWhiteSpace(cmapName)) return;
+
+            HeatmapSeries.ColorMap = cmapName switch
+            {
+                "Jet" => CreateJetPalette(),
+                "Gray" => CreateGrayPalette(),
+                _ => HeatmapSeries.ColorMap
+            };
+
+            Surface.InvalidateElement();
+        }
+
+        private HeatmapColorPalette CreateJetPalette()
+        {
+            // same as your XAML Jet palette
+            return new HeatmapColorPalette
+            {
+                Minimum = HeatmapSeries.ColorMap.Minimum,
+                Maximum = HeatmapSeries.ColorMap.Maximum,
+                GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00007F"), 0.00),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#0000FF"), 0.17),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFF"), 0.33),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00FF00"), 0.50),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FFFF00"), 0.67),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FF7F00"), 0.83),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FF0000"), 1.00),
+        }
+            };
+        }
+
+        private HeatmapColorPalette CreateGrayPalette()
+        {
+            return new HeatmapColorPalette
+            {
+                Minimum = HeatmapSeries.ColorMap.Minimum,
+                Maximum = HeatmapSeries.ColorMap.Maximum,
+                GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop(Colors.Black, 0.0),
+            new GradientStop(Colors.White, 1.0),
+        }
+            };
+        }
+
+        #endregion
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 

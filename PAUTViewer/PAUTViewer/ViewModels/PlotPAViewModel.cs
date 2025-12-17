@@ -146,12 +146,109 @@ namespace PAUTViewer.ViewModels
                 OnPropertyChanged(nameof(configNames));
             }
         }
+        public IReadOnlyList<string> ScanColorMapNames { get; } = new[] { "Jet", "Gray" };
 
-        private int signalIndex = 10;
-        private int scanIndex = 0;
-        private bool isUpdatingLinkedLinesDepth = false;
-        private bool isUpdatingLinkedLinesScan = false;
-        private bool isUpdatingSelectedRect = false;
+        private string _selectedCAscanColorMapName = "Jet";
+        public string SelectedCAscanColorMapName
+        {
+            get => _selectedCAscanColorMapName;
+            set
+            {
+                if (_selectedCAscanColorMapName == value) return;
+                _selectedCAscanColorMapName = value;
+                OnPropertyChanged(nameof(SelectedCAscanColorMapName));
+
+                Channels[SelectedConfigIndex].CAscan.SetColorMap(_selectedCAscanColorMapName);
+            }
+        }
+
+        private string _selectedCPscanColorMapName = "Jet";
+        public string SelectedCPscanColorMapName
+        {
+            get => _selectedCPscanColorMapName;
+            set
+            {
+                if (_selectedCPscanColorMapName == value) return;
+                _selectedCPscanColorMapName = value;
+                OnPropertyChanged(nameof(SelectedCPscanColorMapName));
+
+                Channels[SelectedConfigIndex].CPscan.SetColorMap(_selectedCPscanColorMapName);
+            }
+        }
+
+
+        private string _selectedDscanColorMapName = "Jet";
+        public string SelectedDscanColorMapName
+        {
+            get => _selectedDscanColorMapName;
+            set
+            {
+                if (_selectedDscanColorMapName == value) return;
+                _selectedDscanColorMapName = value;
+                OnPropertyChanged(nameof(SelectedDscanColorMapName));
+
+                Channels[SelectedConfigIndex].Dscan.SetColorMap(_selectedDscanColorMapName);
+            }
+        }
+
+
+        private string _selectedBscanColorMapName = "Jet";
+        public string SelectedBscanColorMapName
+        {
+            get => _selectedBscanColorMapName;
+            set
+            {
+                if (_selectedBscanColorMapName == value) return;
+                _selectedBscanColorMapName = value;
+                OnPropertyChanged(nameof(SelectedBscanColorMapName));
+
+                Channels[SelectedConfigIndex].Bscan.SetColorMap(_selectedBscanColorMapName);
+            }
+        }
+
+        public ICommand RecalculateSoftGain { get; set; }
+
+        private string _softGaindB = "0";
+        public string SoftGaindB
+        {
+            get => _softGaindB;
+            set
+            {
+                _softGaindB = value;
+                OnPropertyChanged(nameof(SoftGaindB));
+            }
+        }
+        private float _softGain = 1;
+        public float SoftGain
+        {
+            get => _softGain;
+            set
+            {
+                _softGain = value;
+                OnPropertyChanged(nameof(SoftGain));
+            }
+        }
+        private void UpdateSGdbRatio()
+        {
+            float sgdB = 0;
+            var normalizedValue = SoftGaindB.Replace('.', ',');
+            if (float.TryParse(SoftGaindB, out float parsedSGdB))
+            {
+                sgdB = parsedSGdB;
+            }
+            else if (float.TryParse(normalizedValue, out parsedSGdB))
+            {
+                sgdB = parsedSGdB;
+            }
+
+            SoftGain = (float)Math.Pow(10, sgdB / 20);
+        }
+
+        public void UpdateSGChanged()
+        {
+            UpdateSGdbRatio();
+            Channels[SelectedConfigIndex].State.SetGain(SoftGain);
+        }
 
         #endregion
 
@@ -471,6 +568,7 @@ namespace PAUTViewer.ViewModels
                     ColumnWidth1 = new GridLength(1, GridUnitType.Star), // left
                     ColumnWidth2 = new GridLength(15),                   // vert splitter
                     ColumnWidth3 = new GridLength(1, GridUnitType.Star), // right
+                    
                 });
             }
 
@@ -491,6 +589,7 @@ namespace PAUTViewer.ViewModels
             Retrieve_ClickCommand = new RelayCommand(() => Retrieve_Click());
             // AddSNRDefectsIntoDevTable = new RelayCommand(() => AddSN());
             AutoSNR_ClickCommand = new RelayCommand(() => AutoSNR_Click());
+            RecalculateSoftGain = new RelayCommand(() => UpdateSGChanged());
 
             CreateAnalysisPlot();
         }
@@ -1563,7 +1662,7 @@ namespace PAUTViewer.ViewModels
                     return;
                 }
 
-                Channels[ichan].CAscan.SetMask(MarkedData);
+                Channels[ichan].CAscan.SetMask(MarkedData, ExcludeBelowValues);
             }
             else
             {
@@ -1606,7 +1705,7 @@ namespace PAUTViewer.ViewModels
                         // -1 all that less than Smin, 0 all that mre than Smin and less than Smax, and 1 all others
                         if (CurrentCscanData[i, j] < Smin)
                         {
-                            markedData[i, j] = 0;
+                            markedData[i, j] = -1;
                             _area1_++;
                         }
                         else if (CurrentCscanData[i, j] > Smax)
@@ -1729,8 +1828,6 @@ namespace PAUTViewer.ViewModels
             numChannels = 0;
             numAngles = 0;
             SoundVel = 0;
-            signalIndex = 10;
-            scanIndex = 0;
 
             aiInspectionFileInfo = null;
             _ReportData = null;
@@ -1837,7 +1934,7 @@ namespace PAUTViewer.ViewModels
 
     }
 
-    public sealed class ChannelUI
+    public sealed class ChannelUI : INotifyPropertyChanged
     {
         public int Channel { get; init; }
 
@@ -1855,46 +1952,9 @@ namespace PAUTViewer.ViewModels
 
         #region Softgan
 
-        public ICommand RecalculateSoftGain { get; set; }
 
-        private string _softGaindB = "0";
-        public string SoftGaindB
-        {
-            get => _softGaindB;
-            set
-            {
-                _softGaindB = value;
-                UpdateSGdbRatio();
-                OnPropertyChanged(nameof(SoftGaindB));
-            }
-        }
-        private float _softGain = 1;
-        public float SoftGain
-        {
-            get => _softGain;
-            set
-            {
-                _softGain = value;
-                OnPropertyChanged(nameof(SoftGain));
-            }
-        }
 
-        private void UpdateSGdbRatio()
-        {
-            float sgdB = 0;
-            var normalizedValue = SoftGaindB.Replace('.', ',');
-            if (float.TryParse(SoftGaindB, out float parsedSGdB))
-            {
-                sgdB = parsedSGdB;
-            }
-            else if (float.TryParse(normalizedValue, out parsedSGdB))
-            {
-                sgdB = parsedSGdB;
-            }
-
-            SoftGain = (float)Math.Pow(10, sgdB / 20);
-            State.SetGain(SoftGain);
-        }
+        
         #endregion
 
         #region Rows Heights and Collumn width

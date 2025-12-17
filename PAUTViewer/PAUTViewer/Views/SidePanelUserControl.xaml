@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:PAUTViewer.Views"
              xmlns:s="http://schemas.abtsoftware.co.uk/scichart"
              mc:Ignorable="d"
-             d:DesignHeight="650" d:DesignWidth="300">
+             d:DesignHeight="650" d:DesignWidth="320">
     <!-- This panel is used to select config (channel), analyse data (SNR, AI) -->
     <Grid>
         <Grid.ColumnDefinitions>
@@ -56,6 +56,55 @@
                         <CheckBox Content="Sync Scans Axis" IsChecked="{Binding IsSyncScansAxis}"  Margin="0, 5, 0, 5"
                                   ToolTip="Sync axis to be same as in C-Scam: Amplitude"/>
                     </Border>
+                    
+                    <Border Grid.Row="3" Margin="2" BorderThickness="0, 2, 0, 2" BorderBrush="DarkGray" HorizontalAlignment="Stretch">
+                        <Grid Margin="0,2,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="CA-scan ColorMap" Grid.Row="0" Background="{DynamicResource Background}"/>
+                            <TextBlock Text="B-scan ColorMap" Grid.Row="1" Background="{DynamicResource Background}"/>
+                            <TextBlock Text="CP-scan ColorMap" Grid.Row="2" Background="{DynamicResource Background}"/>
+                            <TextBlock Text="D-scan ColorMap" Grid.Row="3" Background="{DynamicResource Background}"/>
+
+
+                            <ComboBox ItemsSource="{Binding ScanColorMapNames}" Grid.Column="1" Grid.Row="0"
+    SelectedItem="{Binding SelectedCAscanColorMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <ComboBox ItemsSource="{Binding ScanColorMapNames}" Grid.Column="1" Grid.Row="1"
+    SelectedItem="{Binding SelectedBscanColorMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <ComboBox ItemsSource="{Binding ScanColorMapNames}" Grid.Column="1" Grid.Row="2"
+    SelectedItem="{Binding SelectedCPscanColorMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <ComboBox ItemsSource="{Binding ScanColorMapNames}"  Grid.Column="1" Grid.Row="3"
+    SelectedItem="{Binding SelectedDscanColorMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        </Grid>
+                        
+                    </Border>
+
+
+                    <Border BorderThickness="0" BorderBrush="DarkGray" Grid.Row="4" Margin="1" MinWidth="120" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text=" SoftGain  " VerticalAlignment="Center" Foreground="DarkGray"/>
+                            <TextBox Text="{Binding SoftGaindB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         VerticalAlignment="Center" Style="{StaticResource SlimTextBox}"/>
+                            <TextBlock Text="  dB" VerticalAlignment="Center" Foreground="DarkGray"/>
+                            <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" 
+                                        VerticalAlignment="Center" Margin="5, 0, 0,0" Style="{StaticResource SlimButton}" Height="18" Width="40"/>
+                            <!--<Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" 
+                                            VerticalAlignment="Center" Margin="15, 0, 0,0" Style="{StaticResource SlimButton}"
+                                            ToolTip="Change depth gates in A-scan and press this button to update"/>
+                                    -->
+                        </StackPanel>
+                    </Border>
+                    
                 </Grid>
             </TabItem>
 

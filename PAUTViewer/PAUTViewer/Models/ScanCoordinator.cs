@@ -47,6 +47,8 @@ namespace PAUTViewer.Models
             _st.SyncScansAxisChanged += OnSyncScansAxisChanged;
             _st.BscanRangeProjectionChanged += OnBscanRangeProjectionChanged;
             _st.DscanRangeProjectionChanged += OnDscanRangeProjectionChanged;
+            _st.GainChanged += OnSoftGainValueChanged;
+
             UpdateAscan();
             UpdateBscan();
             UpdateCAscan();
@@ -257,6 +259,15 @@ namespace PAUTViewer.Models
             //_b.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             //_cp.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             //_ca.IndexLineMin.Visibility = enabled ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            UpdateDscan();
+        }
+
+        private void OnSoftGainValueChanged(float sg)
+        {
+            UpdateAscan();
+            UpdateBscan();
+            UpdateCAscan();
+            UpdateCPscan();
             UpdateDscan();
         }
         #endregion
@@ -495,6 +506,12 @@ namespace PAUTViewer.Models
             _b.LineMovedIndexMin -= OnBscanIndexMinMoved;
             _a.LineMovedMin -= OnAscanGateMinMoved;
             _a.LineMovedMax -= OnAscanGateMaxMoved;
+
+            _st.SyncScansAxisChanged -= OnSyncScansAxisChanged;
+            _st.BscanRangeProjectionChanged -= OnBscanRangeProjectionChanged;
+            _st.DscanRangeProjectionChanged -= OnDscanRangeProjectionChanged;
+            _st.GainChanged -= OnSoftGainValueChanged;
+
             UnsubscribeAxisSyncEvents();
         }
         #endregion

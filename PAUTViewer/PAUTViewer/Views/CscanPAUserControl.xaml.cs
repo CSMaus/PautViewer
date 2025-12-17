@@ -256,35 +256,99 @@ namespace PAUTViewer.Views
             Surface.InvalidateElement();
         }
 
-        public void SetMask(double[,] markedData)
+        public void SetMask(double[,] markedData, bool excludeBelowValues)
         {
             if (_maskSeries == null)
             {
                 _maskSeries = new FastUniformHeatmapRenderableSeries
                 {
                     Opacity = 0.85,
-                    ColorMap = new HeatmapColorPalette
-                    {
-                        Minimum = 0,
-                        Maximum = 1,
-                        GradientStops = new ObservableCollection<GradientStop>
-                        {
-                            new GradientStop(Color.FromArgb(0,   0,   0,   0), 0.0),
-                            new GradientStop(Color.FromArgb(200, 255, 255,   0), 1.0),
-                        }
-                    }
+                    ColorMap = new HeatmapColorPalette()
                 };
-
                 Surface.RenderableSeries.Add(_maskSeries);
             }
 
-            var ds = new UniformHeatmapDataSeries<double, double, double>(
+            if (excludeBelowValues)
+            {
+                _maskSeries.ColorMap.Minimum = 0;
+                _maskSeries.ColorMap.Maximum = 1;
+                _maskSeries.ColorMap.GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop(Color.FromArgb(0,   0,   0,   0), 0.0), // 0 => transparent
+            new GradientStop(Color.FromArgb(200, 255, 255, 0), 1.0), // 1 => yellow
+        };
+            }
+            else
+            {
+                _maskSeries.ColorMap.Minimum = -1;
+                _maskSeries.ColorMap.Maximum = 1;
+                _maskSeries.ColorMap.GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop(Color.FromArgb(200, 0,   120, 255), 0.0), // -1 => blue
+            new GradientStop(Color.FromArgb(0,   0,   0,   0),   0.5), //  0 => transparent
+            new GradientStop(Color.FromArgb(200, 255, 255, 0),   1.0), // +1 => yellow
+        };
+            }
+
+            _maskSeries.DataSeries = new UniformHeatmapDataSeries<double, double, double>(
                 markedData, _xStart, _xStep, _yStart, _yStep);
 
-            _maskSeries.DataSeries = ds;
             Surface.InvalidateElement();
         }
 
+
+
+        #endregion
+
+        #region Plot color maps and view setup
+
+        public void SetColorMap(string cmapName)
+        {
+            if (string.IsNullOrWhiteSpace(cmapName)) return;
+
+            HeatmapSeries.ColorMap = cmapName switch
+            {
+                "Jet" => CreateJetPalette(),
+                "Gray" => CreateGrayPalette(),
+                _ => HeatmapSeries.ColorMap
+            };
+
+            Surface.InvalidateElement();
+        }
+
+        private HeatmapColorPalette CreateJetPalette()
+        {
+            // same as your XAML Jet palette
+            return new HeatmapColorPalette
+            {
+                Minimum = HeatmapSeries.ColorMap.Minimum,
+                Maximum = HeatmapSeries.ColorMap.Maximum,
+                GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00007F"), 0.00),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#0000FF"), 0.17),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00FFFF"), 0.33),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#00FF00"), 0.50),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FFFF00"), 0.67),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FF7F00"), 0.83),
+            new GradientStop((Color)ColorConverter.ConvertFromString("#FF0000"), 1.00),
+        }
+            };
+        }
+
+        private HeatmapColorPalette CreateGrayPalette()
+        {
+            return new HeatmapColorPalette
+            {
+                Minimum = HeatmapSeries.ColorMap.Minimum,
+                Maximum = HeatmapSeries.ColorMap.Maximum,
+                GradientStops = new ObservableCollection<GradientStop>
+        {
+            new GradientStop(Colors.Black, 0.0),
+            new GradientStop(Colors.White, 1.0),
+        }
+            };
+        }
 
         #endregion
 

@@ -42,20 +42,6 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border BorderThickness="0" BorderBrush="DarkGray" Grid.Row="0" Margin="1" MinWidth="120" HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text=" SoftGain  " VerticalAlignment="Center" Foreground="DarkGray"/>
-                                    <TextBox Text="{Binding SoftGaindB, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                         VerticalAlignment="Center" Style="{StaticResource SlimTextBox}"/>
-                                    <TextBlock Text="  dB" VerticalAlignment="Center" Foreground="DarkGray"/>
-                                    <Button Content="{DynamicResource applySoftGain}"  Command="{Binding RecalculateSoftGain}" 
-                                        VerticalAlignment="Center" Margin="5, 0, 0,0" Style="{StaticResource SlimButton}" Height="18" Width="40"/>
-                                    <!--<Button Content="Update Depth Gates"  Command="{Binding UpdateGates_Click}" 
-                                            VerticalAlignment="Center" Margin="15, 0, 0,0" Style="{StaticResource SlimButton}"
-                                            ToolTip="Change depth gates in A-scan and press this button to update"/>
-                                    -->
-                                </StackPanel>
-                            </Border>
 
 
                             <Grid Grid.Row="1" Grid.Column="0">
