@@ -12,9 +12,6 @@ using System.Windows.Media;
 
 namespace PAUTViewer.Views
 {
-    /// <summary>
-    /// Interaction logic for CscanPAUserControl.xaml
-    /// </summary>
     public partial class CscanPAUserControl : UserControl, INotifyPropertyChanged
     {
         #region Initial variables and fields definition
@@ -78,15 +75,6 @@ namespace PAUTViewer.Views
 
             var z = new double[_scans, _samples];
 
-            double xStart = _scanMax;
-            double xStep = (_scans > 1) ? (_scanMin - _scanMax) / (_scans - 1) : -1.0;
-
-            double yStart = _idxMin;
-            double yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
-
-            _dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, xStart, xStep, yStart, yStep);
-            HeatmapSeries.DataSeries = _dataSeries;
-
             ScanLineMax.X1 = _scanMax - _scanStep;
             IndexLineMax.Y1 = _idxMax - _idxStep;
 
@@ -94,7 +82,7 @@ namespace PAUTViewer.Views
             IndexLineMin.Y1 = _idxMin + (_idxMax - _idxMin) / 4 + _idxStep;
 
             _xStart = _scanMin;
-            _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : 1.0;
+            _xStep = (_scans > 1) ? (_scanMax - _scanMin) / (_scans - 1) : -1.0;
             _yStart = _idxMin;
             _yStep = (_samples > 1) ? (_idxMax - _idxMin) / (_samples - 1) : 1.0;
 
@@ -239,7 +227,8 @@ namespace PAUTViewer.Views
                 X2 = _scanMin + (_scanMax - _scanMin) * 0.75,
                 Y1 = _idxMin + (_idxMax - _idxMin) * 0.25,
                 Y2 = _idxMin + (_idxMax - _idxMin) * 0.75,
-                BorderBrush = Brushes.Yellow,
+                BorderBrush = Brushes.Magenta,
+                BorderThickness = new System.Windows.Thickness(3),
                 IsEditable = true,
             };
 
@@ -256,8 +245,8 @@ namespace PAUTViewer.Views
             Surface.InvalidateElement();
         }
 
-        private FastUniformHeatmapRenderableSeries? _maskSeries;
 
+        private FastUniformHeatmapRenderableSeries? _maskSeries;
         public void RemoveMaskSeries()
         {
             if (_maskSeries == null) return;
@@ -273,16 +262,16 @@ namespace PAUTViewer.Views
             {
                 _maskSeries = new FastUniformHeatmapRenderableSeries
                 {
-                    Opacity = 0.35,
+                    Opacity = 0.85,
                     ColorMap = new HeatmapColorPalette
                     {
                         Minimum = 0,
                         Maximum = 1,
                         GradientStops = new ObservableCollection<GradientStop>
-                {
-                    new GradientStop(Color.FromArgb(0,   0,   0,   0), 0.0),
-                    new GradientStop(Color.FromArgb(180, 255, 0,   0), 1.0),
-                }
+                        {
+                            new GradientStop(Color.FromArgb(0,   0,   0,   0), 0.0),
+                            new GradientStop(Color.FromArgb(200, 255, 255,   0), 1.0),
+                        }
                     }
                 };
 

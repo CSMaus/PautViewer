@@ -34,25 +34,26 @@ namespace PAUTViewer
             InitializeComponent();
             loadedData = new DataLoader();
             SharedPlotPAViewModel = new PlotPAViewModel(loadedData);
+
             _menuUserControl = new MenuUserControl(this, loadedData, SharedPlotPAViewModel);
             plotPAView = new PlotPAView(SharedPlotPAViewModel);
             sidePanel = new SidePanelUserControl(SharedPlotPAViewModel);
-            //flawTableUserControl = new FlawTableUserControl(SharedPlotPAViewModel);
 
-            ExplorerFrame.Navigate(_menuUserControl);
-            PAFrame.Navigate(plotPAView);
-            SidePanelFrame.Navigate(sidePanel);
-            //FlawTableFrame.Navigate(flawTableUserControl);
+            //ExplorerFrame.Navigate(_menuUserControl);
+            //PAFrame.Navigate(plotPAView);
+            //SidePanelFrame.Navigate(sidePanel);
+
+            ExplorerFrame.Content = _menuUserControl;
+            PAFrame.Content = plotPAView;
+            SidePanelFrame.Content = sidePanel;
         }
 
         public void UpdatePAPlotDataContext(PlotPAViewModel viewModel)
         {
-            // maybe do not need this anymore bcs of the SharedPlotPAViewModel, but it will be here for now
             plotPAView.DataContext = null;
             plotPAView.DataContext = viewModel;
             sidePanel.DataContext = null;
             sidePanel.DataContext = viewModel;
-            //flawTableUserControl.DataContext = viewModel;
         }
 
     }

@@ -1,6 +1,8 @@
-﻿using PAUTViewer.ViewModels;
+﻿using PAUTViewer.Models;
+using PAUTViewer.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,20 +16,26 @@ using System.Windows.Shapes;
 
 namespace PAUTViewer.Views
 {
-    /// <summary>
-    /// Interaction logic for SidePanelUserControl.xaml
-    /// </summary>
-    public partial class SidePanelUserControl : UserControl
+    public partial class SidePanelUserControl : UserControl, INotifyPropertyChanged
     {
-        public SidePanelUserControl(PlotPAViewModel sharedPlotPAViewModel)
+        public SidePanelUserControl()
         {
             InitializeComponent();
+            if (DesignerProperties.GetIsInDesignMode(this))
+            {
+                DataContext = new PlotPAViewModel(new DataLoader());
+            }
+        }
+
+        public SidePanelUserControl(PlotPAViewModel sharedPlotPAViewModel) : this()
+        {
             DataContext = sharedPlotPAViewModel;
         }
 
-        private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
         {
-
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

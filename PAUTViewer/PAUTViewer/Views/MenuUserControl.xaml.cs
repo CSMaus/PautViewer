@@ -80,7 +80,7 @@ namespace PAUTViewer.Views
             this.mainWindow = mainWindow;
             this.loadedData = loadedData;
             this.plotPAViewModel = sharedPlotPAViewModel;
-            DataContext = this;
+            DataContext = sharedPlotPAViewModel;
         }
 
 
@@ -99,29 +99,6 @@ namespace PAUTViewer.Views
                 FolderPath = Path.GetDirectoryName(filePath);
                 SavePath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath))+ SelectedExtension;
             }
-        }
-
-        public void ChooseSavePath_Click(object sender, RoutedEventArgs e)
-        {
-            string dialogueSavePath = "";
-            var dialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true,
-                Title = "Choose path to save data"
-            };
-
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                dialogueSavePath = dialog.FileName;
-            }
-        }
-
-        public void SaveData_Click(object sender, RoutedEventArgs e)
-        {
-            plotPAViewModel.SaveData2FileExt(SavePath, SelectedExtension);
-
-            Console.WriteLine($"Opened File FolerPath: {FolderPath}");
-            Console.WriteLine($"Save File Path: {SavePath}");
         }
 
         private async void LoadOPDData(string filePath)
@@ -183,26 +160,6 @@ namespace PAUTViewer.Views
                 return;
             }
 
-
-            //if (!GlobalSettings.IsTurnOffNotifications)
-            //{
-            //    notificationText = string.Format(Application.Current.Resources["notificationDataLoadedSuccessfully"] as string, filePath);
-            //    NotificationManager.Notifier.ShowInformation(notificationText);
-            //    // isDataLoading = false;
-            //    // return;
-            //}
-
-            //try
-            //{
-            //    plotPAViewModel.SetWindowsLayoutAndCmaps();
-            //}
-            //catch (Exception ex)
-            //{
-            //    notificationText = string.Format(Application.Current.Resources["notificationErrorSettingConfig"] as string, ex.Message);
-            //    NotificationManager.Notifier.ShowError(notificationText);
-            //    isDataLoading = false;
-            //    return;
-            //}
             try
             {
                 LoadDataCompleted?.Invoke();
@@ -228,6 +185,32 @@ namespace PAUTViewer.Views
             }
             isDataLoading = false;
         }
+
+
+        public void ChooseSavePath_Click(object sender, RoutedEventArgs e)
+        {
+            string dialogueSavePath = "";
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Choose path to save data"
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                dialogueSavePath = dialog.FileName;
+            }
+        }
+
+        public void SaveData_Click(object sender, RoutedEventArgs e)
+        {
+            plotPAViewModel.SaveData2FileExt(SavePath, SelectedExtension);
+
+            Console.WriteLine($"Opened File FolerPath: {FolderPath}");
+            Console.WriteLine($"Save File Path: {SavePath}");
+        }
+
+
         #region External API controls
         private bool isDataLoading = false;
         public event Action LoadDataCompleted;

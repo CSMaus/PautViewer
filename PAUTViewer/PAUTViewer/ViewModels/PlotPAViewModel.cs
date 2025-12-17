@@ -1,7 +1,10 @@
 ﻿// using OlympusNDT.Storage.NET;
+using OlympusNDT.Instrumentation.NET;
 using PAUTViewer.Models;
 using PAUTViewer.ProjectUtilities;
 using PAUTViewer.Views;
+using SciChart.Charting.Model;
+using SciChart.Charting.Model.ChartSeries;
 using SciChart.Charting.Model.DataSeries;
 using SciChart.Charting.Visuals.Annotations;
 using SciChart.Charting.Visuals.Axes;
@@ -26,7 +29,7 @@ using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties;
 
 namespace PAUTViewer.ViewModels
 {
-    public class PlotPAViewModel
+    public class PlotPAViewModel : INotifyPropertyChanged
     {
         #region Initial Variables
         public string FilePath { get; set; }
@@ -203,6 +206,7 @@ namespace PAUTViewer.ViewModels
             this.loadedData = loadedData;
             WriteLoadedDataIntoVariables(loadedData);
             PlotData();
+            BindAllCommand2Functions();
         }
 
         public void WriteLoadedDataIntoVariables(DataLoader loadedData)
@@ -445,7 +449,7 @@ namespace PAUTViewer.ViewModels
                 st.SetGain(1f);
                 st.SetAmpLimits(Alims[ichan][0], Alims[ichan][1]);
 
-                
+
 
                 var coord = new ScanCoordinator(ctx, st, a, b, c, d, depthS);
 
@@ -480,7 +484,16 @@ namespace PAUTViewer.ViewModels
             }
             _ReportData = new ReportData();
         }
+        public void BindAllCommand2Functions()
+        {
+            AddSNRAnalysisArea_ClickCommand = new RelayCommand(() => AddSNRAnalysisArea_Click());
+            RemoveSNRAnalysisArea_ClickCommand = new RelayCommand(() => RemoveSNRAnalysisArea_Click());
+            Retrieve_ClickCommand = new RelayCommand(() => Retrieve_Click());
+            // AddSNRDefectsIntoDevTable = new RelayCommand(() => AddSN());
+            AutoSNR_ClickCommand = new RelayCommand(() => AutoSNR_Click());
 
+            CreateAnalysisPlot();
+        }
         private void FillAIInspectionFileInfo()
         {
             string fileName = System.IO.Path.GetFileNameWithoutExtension(FilePath);
@@ -515,12 +528,12 @@ namespace PAUTViewer.ViewModels
         {
             // for each channel save all data file that we have
             // saveFilePath already contains extension, but need to choose extension from "extension" variable, if there is a difference between json, csv and txt saving ways
-            if (string.IsNullOrWhiteSpace(saveFilePath) || numChannels <= 0 || SigDps == null) 
+            if (string.IsNullOrWhiteSpace(saveFilePath) || numChannels <= 0 || SigDps == null)
             {
                 NotificationManager.Notifier.ShowWarning($"Save file path is not specified");
                 return;
             }
-                
+
 
             var ext = extension;
             if (string.IsNullOrWhiteSpace(ext))
@@ -1038,8 +1051,8 @@ namespace PAUTViewer.ViewModels
         public bool IsAutoSNROpen { get; set; } = false; // todo: remove 
 
         // Computed SNR metrics:
-        private float _mean = 0;
-        public float Mean
+        private string _mean = "0";
+        public string Mean
         {
             get { return _mean; }
             set
@@ -1049,8 +1062,8 @@ namespace PAUTViewer.ViewModels
             }
         }
 
-        private float _stdDev = 0;
-        public float StdDev
+        private string _stdDev = "0";
+        public string StdDev
         {
             get { return _stdDev; }
             set
@@ -1060,8 +1073,8 @@ namespace PAUTViewer.ViewModels
             }
         }
 
-        private float _area1 = 0;
-        public float Area1
+        private string _area1 = "0";
+        public string Area1
         {
             get { return _area1; }
             set
@@ -1070,8 +1083,8 @@ namespace PAUTViewer.ViewModels
                 OnPropertyChanged(nameof(Area1));
             }
         }
-        private float _area2 = 0;
-        public float Area2
+        private string _area2 = "0";
+        public string Area2
         {
             get { return _area2; }
             set
@@ -1091,7 +1104,7 @@ namespace PAUTViewer.ViewModels
             {
                 _excludeBelowValues = value;
                 OnPropertyChanged(nameof(ExcludeBelowValues));
-                UpdateTotalDefectArea();
+                RecalculateDefectAreas(Channels[SelectedConfigIndex].CAscan.CscanData);
             }
         }
 
@@ -1108,18 +1121,32 @@ namespace PAUTViewer.ViewModels
         }
 
         // ___________________________________________________________
-        private float _Smin = 0;
-        public float Smin
+        //private float _Smin = 0;
+        //public float Smin
+        //{
+        //    get { return _Smin; }
+        //    set
+        //    {
+        //        _Smin = value;
+        //        OnPropertyChanged(nameof(Smin));
+        //    }
+        //}
+        private double _Smin;
+        public double Smin
         {
-            get { return _Smin; }
+            get => _Smin;
             set
             {
-                _Smin = value;
-                OnPropertyChanged(nameof(Smin));
+                if (_Smin != value)
+                {
+                    _Smin = value; // Set the backing field
+                    OnPropertyChanged(nameof(Smin)); // Notify the UI
+                }
             }
         }
-        private float _Smax = 0;
-        public float Smax
+
+        private double _Smax = 0;
+        public double Smax
         {
             get { return _Smax; }
             set
@@ -1196,7 +1223,7 @@ namespace PAUTViewer.ViewModels
             }
         }
 
-        
+
 
 
         // ________________ AMark Results on C-Scan _____________________
@@ -1230,27 +1257,15 @@ namespace PAUTViewer.ViewModels
         #region SNR Analysis Panel: Functions (all core logic)
 
         // ________________ Accumulated amplitude values plot _____________________
-        public ObservableCollection<IAxis> PixelsVSAmplitudeXAxes { get; } =
-                new() { new NumericAxis { AxisTitle = "Pixels" } };
 
-        public ObservableCollection<IAxis> PixelsVSAmplitudeYAxes { get; } =
-            new() { new NumericAxis { AxisTitle = "Amplitude" } };
+        // public RenderableSeriesSourceCollection PixelsVSAmplitudeSeries { get; }
 
         public XyDataSeries<double, double> PixelsVSAmplitudeData { get; } = new();
 
-        public ObservableCollection<IRenderableSeries> PixelsVSAmplitudeSeries { get; }
-
-        private VerticalLineAnnotation _sminLine;
-        private VerticalLineAnnotation _smaxLine;
-
         public void MyVm()
         {
-            PixelsVSAmplitudeSeries.Clear();
-            PixelsVSAmplitudeSeries.Add(
-                new FastLineRenderableSeries
-                {
-                    DataSeries = PixelsVSAmplitudeData
-                });
+            // PixelsVSAmplitudeSeries.Clear();
+            // PixelsVSAmplitudeSeries.Add(new FastLineRenderableSeries{DataSeries = PixelsVSAmplitudeData});
         }
 
         private void RemoveSNRFromCscan(int ichan)
@@ -1321,7 +1336,7 @@ namespace PAUTViewer.ViewModels
             var xLenInMM = Math.Abs(ScanLims[ichan][1] - ScanLims[ichan][0]);
             TotalArea = (float)Math.Round(yLenInMM * xLenInMM, 2);
 
-            
+
             if (!Channels[ichan].CAscan.IsSNRMarkerAdded())
             {
 
@@ -1336,36 +1351,37 @@ namespace PAUTViewer.ViewModels
 
             int[] coordinates = GetRectangleCoordinates(rect, ScanLims[ichan], Xlims[ichan], ichan); // xmin, xmax, ymin, ymax
             UpdateSNRParameters(ichan, coordinates, false, true);
-            
+
         }
 
-        public void CreateAnalysisPlot()
+        private bool _snrPlotInited = false;
+        private void CreateAnalysisPlot()
         {
-            PixelsVSAmplitudeData.Clear();
+            if (_snrPlotInited) return;
 
+            PixelsVSAmplitudeData.Clear();
             for (int i = 0; i <= 100; i++)
                 PixelsVSAmplitudeData.Append(i, AmplitudeDistribution[i]);
 
-            _sminLine = new VerticalLineAnnotation
-            {
-                X1 = 1,
-                StrokeThickness = 2,
-                Stroke = System.Windows.Media.Brushes.Red,
-                IsEditable = false
-            };
+            // PixelsVSAmplitudeAnnotations.Add(_sminLine);
+            // PixelsVSAmplitudeAnnotations.Add(_smaxLine);
 
-            _smaxLine = new VerticalLineAnnotation
-            {
-                X1 = 99,
-                StrokeThickness = 2,
-                Stroke = System.Windows.Media.Brushes.Red,
-                IsEditable = false
-            };
-
+            MyVm();
+            _snrPlotInited = true;
         }
 
         public void UpdateSNRParameters(int ichan, int[] coordinates, bool isWindow = false, bool isAutoSNR = false)
         {
+            if (!Application.Current.Dispatcher.CheckAccess())
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    UpdateSNRParameters(ichan, coordinates, isWindow, isAutoSNR)));
+                return;
+            }
+
+            CreateAnalysisPlot();
+            // StdDev = StdDev == float.NaN ? 0 : StdDev;
+            // Mean = Mean == float.NaN ? 0 : Mean;
             // need somehow to get z value:
             //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
             var CscanData = Channels[ichan].CAscan.CscanData;
@@ -1386,21 +1402,20 @@ namespace PAUTViewer.ViewModels
                 }
             }
 
-            (Mean, StdDev) = CaclDistMetrics(AmplitudeDistribution);
+            (var mean, var std) = CaclDistMetrics(AmplitudeDistribution);
 
-            StdDev = StdDev == float.NaN ? 0 : StdDev;
+            std = std == float.NaN ? 0 : std;
 
-            if (isAutoSNR) KValue = StdDev;
+            if (isAutoSNR) KValue = std;
             float k = KValue;
 
-            Smin = Mean - k * StdDev;
-            Smax = Mean + k * StdDev;
+            Smin = mean - k * std;
+            Smax = mean + k * std;
             SNR = (float)Math.Round(20 * Math.Log10(k), 2);
 
-
+            Mean = mean.ToString();
+            StdDev = std.ToString();
             MarkedData = RecalculateDefectAreas(CscanData);
-            _sminLine.X1 = Smin;
-            _smaxLine.X1 = Smax;
 
             PixelsVSAmplitudeData.Clear();
             for (int i = 0; i <= 100; i++)
@@ -1410,88 +1425,38 @@ namespace PAUTViewer.ViewModels
         private (float, float) CaclDistMetrics(int[] ampDist)
         {
             int totalCount = ampDist.Sum();
-            float meanAmplitudePercentage = 0;
+            if (totalCount <= 0)
+                return (0f, 0f);
+
+            double mean = 0;
+            for (int i = 0; i <= 100; i++)
+                mean += i * (double)ampDist[i];
+            mean /= totalCount;
+
+            double var = 0;
             for (int i = 0; i <= 100; i++)
             {
-                meanAmplitudePercentage += i * ampDist[i];
+                double diff = i - mean;
+                var += ampDist[i] * diff * diff;
             }
-            meanAmplitudePercentage /= totalCount;
+            var /= totalCount;
 
-            float variance = 0;
-            for (int i = 0; i <= 100; i++)
-            {
-                float diff = i - meanAmplitudePercentage;
-                variance += ampDist[i] * diff * diff;
-            }
-            variance /= totalCount;
-            float stdDevAmplitudePercentage = (float)Math.Sqrt(variance);
+            float m = (float)Math.Round(mean, 2);
+            float s = (float)Math.Round(Math.Sqrt(var), 2);
 
-            float mean = (float)Math.Round(meanAmplitudePercentage, 2);
-            float stdDev = (float)Math.Round(stdDevAmplitudePercentage, 2);
-            return (mean, stdDev);
+            if (float.IsNaN(m) || float.IsInfinity(m)) m = 0f;
+            if (float.IsNaN(s) || float.IsInfinity(s)) s = 0f;
+
+            return (m, s);
         }
 
         private float totalMeanD = 0;
         private float totalStdD = 0;
-        private void CalculateDscanDist(bool isTotal = false)
-        {
-            int ichan = SelectedConfigIndex;
-            var gatesKey = Channels[ichan].CAscan.SelectedGateKey;
-            if (gatesKey == null) return;
-
-            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
-            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
-            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
-
-
-
-            (int firstIndex, int secondIndex, float mpsFirst, float mpsSecond) = Channels[ichan].CAscan.Gates[gatesKey];
-
-            int x1_idx = 0;
-            int x2_idx = lenScanAxis - 1;
-
-            int y1_idx = firstIndex < 0 ? 0 : firstIndex;
-            int y2_idx = secondIndex > lenDepthAxis - 1 ? lenDepthAxis - 1 : secondIndex;
-
-            if (isTotal)
-            {
-                y1_idx = 0;
-                y2_idx = lenDepthAxis - 1;
-            }
-
-
-            int[] coordinates = new int[] { x1_idx, x2_idx, y1_idx, y2_idx };
-
-            // need somehow to get z value:
-            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
-            var DscanData = Channels[ichan].Dscan.DscanData;
-
-            int lenAD = AmplitudeDistribution.Length;
-            int[] dscan_AmplitudeDistribution = new int[lenAD];
-            for (int i = coordinates[0]; i <= coordinates[1]; i++)
-            {
-                for (int j = coordinates[2]; j <= coordinates[3]; j++)
-                {
-                    float amplitudePercentage = (float)(DscanData[i, j] / Alims[ichan][1]) * 100;
-                    int percentageIndex = (int)Math.Round(amplitudePercentage);
-
-                    if (percentageIndex >= 0 && percentageIndex <= 100)
-                    {
-                        dscan_AmplitudeDistribution[percentageIndex]++;
-                    }
-                }
-            }
-
-            (float meanD, float stdD) = CaclDistMetrics(dscan_AmplitudeDistribution);
-            if (isTotal) { totalMeanD = meanD; totalStdD = stdD; }
-            Console.WriteLine($"Total Mean: {totalMeanD},  Total Std: {totalStdD}");
-            Console.WriteLine($"Mean: {meanD},  Std: {stdD}; Gates {gatesKey}");
-        }
 
         public void OnSNRRectangle_Changed(object sender, float x1, float x2, float y1, float y2, int ichan)
         {
             int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
-            int lenScanAxis  = SigDps[ichan][0].Length;    // SCANS (X-axis)
+            int lenScanAxis = SigDps[ichan][0].Length;    // SCANS (X-axis)
             int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
 
             var xlims = ScanLims[ichan];
@@ -1538,7 +1503,7 @@ namespace PAUTViewer.ViewModels
         public void OnKValue_Chaned()
         {
             int ichan = SelectedConfigIndex;
-           
+
             if (!Channels[ichan].CAscan.IsSNRMarkerAdded())
             {
                 if (!GlobalSettings.IsTurnOffNotifications)
@@ -1571,15 +1536,15 @@ namespace PAUTViewer.ViewModels
 
             int ix1 = (int)Math.Round((x1 - xlims[0]) / (xlims[1] - xlims[0]) * (lenScan - 1));
             int ix2 = (int)Math.Round((x2 - xlims[0]) / (xlims[1] - xlims[0]) * (lenScan - 1));
-            int iy1 = (int)Math.Round((y1 - ylims[0]) / (ylims[1] - ylims[0]) * (lenIndex - 1));
-            int iy2 = (int)Math.Round((y2 - ylims[0]) / (ylims[1] - ylims[0]) * (lenIndex - 1));
+            int iy1 = (int)Math.Round((ylims[1] - y1) / (ylims[1] - ylims[0]) * (lenIndex - 1));
+            int iy2 = (int)Math.Round((ylims[1] - y2) / (ylims[1] - ylims[0]) * (lenIndex - 1));
 
             ix1 = Math.Clamp(ix1, 0, lenScan - 1);
             ix2 = Math.Clamp(ix2, 0, lenScan - 1);
             iy1 = Math.Clamp(iy1, 0, lenIndex - 1);
             iy2 = Math.Clamp(iy2, 0, lenIndex - 1);
 
-            return new[] { ix1, ix2, iy1, iy2 };
+            return new[] { ix1, ix2, Math.Min(iy1, iy2), Math.Max(iy1, iy2) };
         }
 
         public void UpdateMarkedAreaOnCscan()
@@ -1612,8 +1577,8 @@ namespace PAUTViewer.ViewModels
             int cols = CurrentCscanData.GetLength(1);
             double[,] markedData = new double[rows, cols];
 
-            Area1 = 0;
-            Area2 = 0;
+            Area1 = "0";
+            Area2 = "0";
 
             var _area1_ = 0;
             var _area2_ = 0;
@@ -1626,7 +1591,7 @@ namespace PAUTViewer.ViewModels
                         // -1 all that less than Smin, 0 all that mre than Smin and less than Smax, and 1 all others
                         if (CurrentCscanData[i, j] > Smax)
                         {
-                            markedData[i, j] = 500;
+                            markedData[i, j] = 1;
                             _area2_++;
                         }
                     }
@@ -1641,35 +1606,85 @@ namespace PAUTViewer.ViewModels
                         // -1 all that less than Smin, 0 all that mre than Smin and less than Smax, and 1 all others
                         if (CurrentCscanData[i, j] < Smin)
                         {
-                            markedData[i, j] = -500;
+                            markedData[i, j] = 0;
                             _area1_++;
                         }
                         else if (CurrentCscanData[i, j] > Smax)
                         {
-                            markedData[i, j] = 500;
+                            markedData[i, j] = 1;
                             _area2_++;
                         }
                     }
                 }
             }
 
-            Area1 = (float)Math.Round(TotalArea * (_area1_ / totalAreaPointNumber), 2);
-            Area2 = (float)Math.Round(TotalArea * (_area2_ / totalAreaPointNumber), 2);
-            UpdateTotalDefectArea();
+            float _Area1 = (float)Math.Round(TotalArea * (_area1_ / totalAreaPointNumber), 2);
+            float _Area2 = (float)Math.Round(TotalArea * (_area2_ / totalAreaPointNumber), 2);
+            Area1 = _Area1.ToString();
+            Area2 = _Area2.ToString();
+            TotalDefectArea = ExcludeBelowValues ? _Area2 : _Area1 + _Area2;
+            TotalDefectAreaPerc = (float)Math.Round(TotalDefectArea / TotalArea, 4) * 100;
             return markedData;
         }
 
         private float totalAreaPointNumber = 1;
         private float Area1SavedValue = 0;
-        private void UpdateTotalDefectArea()
-        {
-            int ichan = SelectedConfigIndex;
-
-            TotalDefectArea = ExcludeBelowValues ? Area2 : Area1 + Area2;
-            TotalDefectAreaPerc = (float)Math.Round(TotalDefectArea / TotalArea, 4) * 100;
-        }
         #endregion
 
+        private void CalculateDscanDist(bool isTotal = false)
+        {
+            int ichan = SelectedConfigIndex;
+            var gatesKey = Channels[ichan].CAscan.SelectedGateKey;
+            if (gatesKey == null) return;
+
+            int lenIndexAxis = SigDps[ichan].Length;       // INDEX (Y-axis)
+            int lenScanAxis = SigDps[ichan][0].Length;    // SCANS (X-axis)
+            int lenDepthAxis = SigDps[ichan][0][0].Length; // DEPTH (projection dimension)
+
+
+
+            (int firstIndex, int secondIndex, float mpsFirst, float mpsSecond) = Channels[ichan].CAscan.Gates[gatesKey];
+
+            int x1_idx = 0;
+            int x2_idx = lenScanAxis - 1;
+
+            int y1_idx = firstIndex < 0 ? 0 : firstIndex;
+            int y2_idx = secondIndex > lenDepthAxis - 1 ? lenDepthAxis - 1 : secondIndex;
+
+            if (isTotal)
+            {
+                y1_idx = 0;
+                y2_idx = lenDepthAxis - 1;
+            }
+
+
+            int[] coordinates = new int[] { x1_idx, x2_idx, y1_idx, y2_idx };
+
+            // need somehow to get z value:
+            //_dataSeries = new UniformHeatmapDataSeries<double, double, double>(z, _xStart, _xStep, _yStart, _yStep);
+            var DscanData = Channels[ichan].Dscan.DscanData;
+
+            int lenAD = AmplitudeDistribution.Length;
+            int[] dscan_AmplitudeDistribution = new int[lenAD];
+            for (int i = coordinates[0]; i <= coordinates[1]; i++)
+            {
+                for (int j = coordinates[2]; j <= coordinates[3]; j++)
+                {
+                    float amplitudePercentage = (float)(DscanData[i, j] / Alims[ichan][1]) * 100;
+                    int percentageIndex = (int)Math.Round(amplitudePercentage);
+
+                    if (percentageIndex >= 0 && percentageIndex <= 100)
+                    {
+                        dscan_AmplitudeDistribution[percentageIndex]++;
+                    }
+                }
+            }
+
+            (float meanD, float stdD) = CaclDistMetrics(dscan_AmplitudeDistribution);
+            if (isTotal) { totalMeanD = meanD; totalStdD = stdD; }
+            Console.WriteLine($"Total Mean: {totalMeanD},  Total Std: {totalStdD}");
+            Console.WriteLine($"Mean: {meanD},  Std: {stdD}; Gates {gatesKey}");
+        }
 
 
         public class RelayCommand : ICommand
@@ -1732,7 +1747,24 @@ namespace PAUTViewer.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        // private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+            else
+            {
+                dispatcher.BeginInvoke(new Action(() =>
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName))
+                ));
+            }
+        }
+
     }
 
     // ===== helper types (kept in same file for convenience; move to separate files if you prefer) =====
