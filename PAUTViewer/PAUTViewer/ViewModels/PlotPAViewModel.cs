@@ -51,12 +51,6 @@ namespace PAUTViewer.ViewModels
 
         private int[] channels;
 
-        private string _depthMin;
-        public string DepthMin { get => _depthMin; set { _depthMin = value; OnPropertyChanged(nameof(DepthMin)); } }
-
-        private string _depthMax;
-        public string DepthMax { get => _depthMax; set { _depthMax = value; OnPropertyChanged(nameof(DepthMax)); } }
-
         public List<float[]> Tofs { get; set; }
         public List<float[]> Mps { get; set; }
         public List<float[]> Depths { get; set; }
@@ -561,14 +555,9 @@ namespace PAUTViewer.ViewModels
                     Context = ctx,
                     State = st,
                     Coordinator = coord,
-                    RowHeight1 = new GridLength(3, GridUnitType.Star), // left top
-                    RowHeight2 = new GridLength(15),                   // left horiz splitter
-                    RowHeight3 = new GridLength(1, GridUnitType.Star), // left bottom
-                    RowHeightBottom = GridLength.Auto,
-                    ColumnWidth1 = new GridLength(1, GridUnitType.Star), // left
-                    ColumnWidth2 = new GridLength(15),                   // vert splitter
-                    ColumnWidth3 = new GridLength(1, GridUnitType.Star), // right
-                    
+
+                    PredictedDefectsBySignals = new double[_sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0]],
+                    PredictedPositionsBySignals = new float[_sigDpsLengths[ichan][1], _sigDpsLengths[ichan][0], 2],
                 });
             }
 
@@ -587,7 +576,7 @@ namespace PAUTViewer.ViewModels
             AddSNRAnalysisArea_ClickCommand = new RelayCommand(() => AddSNRAnalysisArea_Click());
             RemoveSNRAnalysisArea_ClickCommand = new RelayCommand(() => RemoveSNRAnalysisArea_Click());
             Retrieve_ClickCommand = new RelayCommand(() => Retrieve_Click());
-            // AddSNRDefectsIntoDevTable = new RelayCommand(() => AddSN());
+            AddSNRDefectsIntoDevTable = new RelayCommand(() => DefineRectangularDefectLocations(true));
             AutoSNR_ClickCommand = new RelayCommand(() => AutoSNR_Click());
             RecalculateSoftGain = new RelayCommand(() => UpdateSGChanged());
 
@@ -1756,7 +1745,6 @@ namespace PAUTViewer.ViewModels
                 y2_idx = lenDepthAxis - 1;
             }
 
-
             int[] coordinates = new int[] { x1_idx, x2_idx, y1_idx, y2_idx };
 
             // need somehow to get z value:
@@ -1784,6 +1772,723 @@ namespace PAUTViewer.ViewModels
             Console.WriteLine($"Total Mean: {totalMeanD},  Total Std: {totalStdD}");
             Console.WriteLine($"Mean: {meanD},  Std: {stdD}; Gates {gatesKey}");
         }
+
+        #region AI defectr detection fields and variables
+
+        public string ScanMin { get; set; } = "1";
+        public string ScanMax { get; set; } = "299";
+        public string IndexMin { get; set; } = "0";
+        public string IndexMax { get; set; } = "10";
+
+        private string _depthMin = "0";
+        public string DepthMin { get => _depthMin; set { _depthMin = value; OnPropertyChanged(nameof(DepthMin)); } }
+
+        private string _depthMax = "0";
+        public string DepthMax { get => _depthMax; set { _depthMax = value; OnPropertyChanged(nameof(DepthMax)); } }
+
+        private ObservableCollection<RectangleInfo> _rectangleInfos;
+        public ObservableCollection<RectangleInfo> RectangleInfos
+        {
+            get { return _rectangleInfos; }
+            set
+            {
+                _rectangleInfos = value;
+                OnPropertyChanged(nameof(RectangleInfos));
+            }
+        }
+        private ObservableCollection<DefectData> _defectDatas;
+        public ObservableCollection<DefectData> DefectDatas
+        {
+            get { return _defectDatas; }
+            set
+            {
+                _defectDatas = value;
+                OnPropertyChanged(nameof(DefectDatas));
+            }
+        }
+
+        private int _totalBeams = 0;
+        public int TotalBeams
+        {
+            get => _totalBeams;
+            set
+            {
+                _totalBeams = value;
+                OnPropertyChanged(nameof(TotalBeams));
+            }
+        }
+        private int _currentBeam = 0;
+        public int CurrentBeam
+        {
+            get => _currentBeam;
+            set
+            {
+                _currentBeam = value;
+                OnPropertyChanged(nameof(CurrentBeam));
+            }
+        }
+        public Dictionary<string, string> ModelNames { get; set; } = new Dictionary<string, string>
+        {
+            {"000-HybridBinaryModel"           , "PAUTReader.Resources.000-HybridBinaryModel.onnx" },
+            {"002-HybridBinaryModel"           , "PAUTReader.Resources.002-HybridBinaryModel.onnx" },
+            {"002-HybridBinaryModel_pepero"    , "PAUTReader.Resources.002-HybridBinaryModel_pepero.onnx" },
+            {"003-HybridBinaryModel_pepero"    , "PAUTReader.Resources.003-HybridBinaryModel_pepero.onnx" },
+            {"004-HybridBinaryModel_pepero"    , "PAUTReader.Resources.004-HybridBinaryModel_pepero.onnx" },
+            {"005-HybridBinaryModel_pepero"    , "PAUTReader.Resources.005-HybridBinaryModel_pepero.onnx" },
+            {"010-HybridBinaryModel"           , "PAUTReader.Resources.010-HybridBinaryModel.onnx" },
+            {"011-HybridBinaryModel"           , "PAUTReader.Resources.011-HybridBinaryModel.onnx" },
+            {"012-HybridBinaryModel"           , "PAUTReader.Resources.012-HybridBinaryModel.onnx" },
+            {"013-HybridBinaryModel"           , "PAUTReader.Resources.013-HybridBinaryModel.onnx" },
+            {"013d-HybridBinaryModel"          , "PAUTReader.Resources.013d-HybridBinaryModel.onnx" },
+            {"015-HybridBinaryModel"           , "PAUTReader.Resources.015-HybridBinaryModel.onnx" },
+            {"015d-HybridBinaryModel"          , "PAUTReader.Resources.015d-HybridBinaryModel.onnx" },
+            {"016d-HybridBinaryModel"          , "PAUTReader.Resources.016d-HybridBinaryModel.onnx" },
+            {"018d-HybridBinaryModel"          , "PAUTReader.Resources.018d-HybridBinaryModel.onnx" },
+            {"Position Focused"                , "PAUTReader.Resources.100-EnhancedPositionMSC.onnx" },
+        };
+
+
+        private string _selectedModel = "015d-HybridBinaryModel";
+        public string SelectedModel
+        {
+            get => _selectedModel;
+            set
+            {
+                if (_selectedModel != value)
+                {
+                    _selectedModel = value;
+                    OnPropertyChanged(nameof(SelectedModel));
+                }
+            }
+        }
+
+        #endregion
+
+        #region AI defect detection functions
+
+
+        public void MakePredictionsForAllScanData()
+        {
+            if (!GlobalSettings.IsTurnOffNotifications)
+            {
+                string notificationText = Application.Current.Resources["notificationSearchForDefectsStarted"] as string;
+                NotificationManager.Notifier.ShowInformation(notificationText);
+            }
+            Task.Run(() =>
+            {
+                int ichan = SelectedConfigIndex;
+                int scanLen = _sigDpsLengths[ichan][1];
+                int siglen = _sigDpsLengths[ichan][2];
+                int numBeams = _sigDpsLengths[ichan][0];
+
+                // bool[,] defects2D = new bool[numBeams, scanLen];
+                // defects2D = new float[scanLen, numBeams];
+
+                // get file extension
+                string fileExtension = System.IO.Path.GetExtension(FilePath);  // .GetFileNameWithoutExtension(FilePath);
+                
+                #region Read Variables from GUI
+                float mpsLimitMin = 0;
+                var normalizedValue = DepthMin.Replace('.', ',');
+                if (float.TryParse(DepthMin, out float parsedMpsLime))
+                {
+                    mpsLimitMin = parsedMpsLime;
+                }
+                else if (float.TryParse(normalizedValue, out parsedMpsLime))
+                {
+                    mpsLimitMin = parsedMpsLime;
+                }
+
+                float mpsLimitMax = 0;
+                normalizedValue = DepthMax.Replace('.', ',');
+                if (float.TryParse(DepthMax, out parsedMpsLime))
+                {
+                    mpsLimitMax = parsedMpsLime;
+                }
+                else if (float.TryParse(normalizedValue, out parsedMpsLime))
+                {
+                    mpsLimitMax = parsedMpsLime;
+                }
+
+                int minAscan = 0;
+                normalizedValue = BeamMin.Replace('.', ',');
+                if (int.TryParse(BeamMin, out int ascanpos))
+                {
+                    minAscan = ascanpos;
+                }
+                else if (int.TryParse(normalizedValue, out ascanpos))
+                {
+                    minAscan = ascanpos;
+                }
+
+                int maxAscan = 0;
+                normalizedValue = BeamMax.Replace('.', ',');
+                if (int.TryParse(BeamMax, out ascanpos))
+                {
+                    maxAscan = ascanpos;
+                }
+                else if (int.TryParse(normalizedValue, out ascanpos))
+                {
+                    maxAscan = ascanpos;
+                }
+
+
+                string specimenName = Path.GetFileName(FilePath).Split('_')[0];
+                if (specimenName == "787-225")
+                {
+                    mpsLimitMax = 6;
+                }
+                (_, _, int scanI_0, int scanI_1) = GetScanLims_Predictions();
+                mpsLimitMin = mpsLimitMax < MpsLim[ichan][0] ? MpsLim[ichan][0] : mpsLimitMin;
+                mpsLimitMax = mpsLimitMax > MpsLim[ichan][1] ? MpsLim[ichan][1] : mpsLimitMax;
+                // just for case added preventing out of boundary for all cases
+                float mpsLimitMinPrc = Math.Min(Math.Max(0, (mpsLimitMin - MpsLim[ichan][0]) / (MpsLim[ichan][1] - MpsLim[ichan][0])), 1);
+                float mpsLimitMaxPrc = Math.Max(Math.Min((mpsLimitMax - MpsLim[ichan][0]) / (MpsLim[ichan][1] - MpsLim[ichan][0]), 1), 0);
+
+                minAscan = Math.Min(Math.Max(minAscan, 0), numBeams - 1);
+                maxAscan = Math.Min(Math.Max(maxAscan, 0), numBeams - 1);
+                if (minAscan == maxAscan)
+                {
+                    string notificationText = Application.Current.Resources["notificationBeamsLimsPrediction"] as string;
+                    NotificationManager.Notifier.ShowWarning("");
+                    return;
+                }
+
+                if (mpsLimitMaxPrc > 1)
+                {
+                    Console.WriteLine($"Depth max is out of range");
+                }
+                #endregion
+
+                float fullSignalLenght = _sigDpsLengths[ichan][2];
+                int[] signalDepthIdxLims = new int[] { (int)Math.Round(mpsLimitMinPrc * fullSignalLenght), (int)Math.Round(mpsLimitMaxPrc * fullSignalLenght) };
+                var mpsLimsDiff = Math.Abs(mpsLimitMax - mpsLimitMin);
+
+                float[,] target = new float[Channels[ichan].PredictedDefectsBySignals.GetLength(0), Channels[ichan].PredictedDefectsBySignals.GetLength(1)];
+
+                int rows = target.GetLength(0);
+                int cols = target.GetLength(1);
+
+                for (int r = 0; r < rows; ++r)
+                    for (int c = 0; c < cols; ++c)
+                        target[r, c] = 0;
+
+                // int chunkSize = 50;  // sequence len = number of signals in sequence
+                var modelName = SelectedModel;
+                int diff = (scanI_1 - scanI_0);
+                int chunkSize = 50;
+                if (modelName == "013d-HybridBinaryModel")
+                {
+                    int div = (int)Math.Ceiling((decimal)diff / 300);
+                    chunkSize = diff > 300 ? (int)(diff / div) : diff;
+                }
+                else if (modelName.Length > 3 && modelName[3] == 'd')
+                //(modelName == "015d-HybridBinaryModel")
+                {
+                    int div = (int)Math.Ceiling((decimal)diff / 1200);
+                    chunkSize = diff > 1200 ? (int)(diff / div) : diff;
+                }
+
+                int sigLength = 320;
+                string modelPath = @"D:\ML_DL_AI_stuff\!!NaWoo\model.onnx";  // check the const
+                // var localizationModelReousrce = "PAUTReader.Resources.001-PositionLocalizationModel.onnx";
+                // var localizationModelReousrce = "PAUTReader.Resources.002-PositionLocalizationModel.onnx";
+                var localizationModelReousrce = "PAUTReader.Resources.100-EnhancedPositionMSC.onnx";
+
+                if (scanI_1 < scanI_0)
+                {
+                    string notificationText = Application.Current.Resources["notificationSetCorrectScanRanges"] as string;
+                    NotificationManager.Notifier.ShowError(notificationText);
+                    return;
+                }
+
+                TotalBeams = maxAscan - minAscan;
+                // chunkSize = modelName == "013d-HybridBinaryModel" ? chunkSize : 50;
+                // sigLength = modelName == "MultiSignalClassifier4_modelOPD" ? 360 : sigLength;
+
+
+                bool isPositionFocused = modelName == "Position Focused";
+                Func<float[,], (float[] preds, float[] mins, float[] maxs)> infer0 =
+                    isPositionFocused
+                        ? new Func<float[,], (float[], float[], float[])>(
+                            b => MultiSignalClassifier.PredictOPD(modelPath, ModelNames[modelName], b))
+                        : b =>
+                        {
+                            var p = MultiSignalClassifier.PredictDetectionOriginal(ModelNames[modelName], b);
+                            var (mn, mx) = MultiSignalClassifier.PredictPosition(localizationModelReousrce, b);
+                            return (p, mn, mx);
+                        };
+
+
+                Func<float[,], (float[], float[], float[])> infer =
+                    isPositionFocused
+                        ? new Func<float[,], (float[], float[], float[])>(b =>
+                                MultiSignalClassifier.PredictOPD(modelPath, ModelNames[modelName], b))
+                        : new Func<float[,], (float[], float[], float[])>(b =>
+                        {
+                            float[] p = MultiSignalClassifier.PredictDetectionCached2D(ModelNames[modelName], b);
+                            // var pos = MultiSignalClassifier.PredictPositionCached2D(localizationModelReousrce, b);
+                            var pp1 = new float[p.Length];
+                            var pp2 = new float[p.Length];
+                            // return (p, pos.Item1, pos.Item2);
+                            return (p, pp1, pp2);
+                        });
+
+
+
+                for (int ascanIdx = minAscan; ascanIdx < maxAscan; ascanIdx++)
+                {
+                    float[,] fullSig = PrepareSignalsForPred_OPD(
+                                            ichan, sigLength, ascanIdx,
+                                            Enumerable.Range(scanI_0, scanI_1 - scanI_0).ToArray(),
+                                            Alims[ichan][1], signalDepthIdxLims);
+                    Console.WriteLine($"Created fullSig array for ascanIdx:  {ascanIdx}");
+
+                    int totalSignals = fullSig.GetLength(0);     // = scanI_1 - scanI_0
+                    Console.WriteLine($"Total number of signals to check for defects: {totalSignals}");
+                    CurrentBeam = ascanIdx - minAscan + 1;
+                    for (int offset = 0; offset < totalSignals; offset += chunkSize)
+                    {
+                        int curCount = Math.Min(chunkSize, totalSignals - offset);
+
+                        // build padded [50,320] batch 
+                        var batch = new float[chunkSize, sigLength];
+                        for (int i = 0; i < curCount; ++i)
+                            Buffer.BlockCopy(fullSig,
+                                                ((offset + i) * sigLength) * sizeof(float),
+                                                batch,
+                                                (i * sigLength) * sizeof(float),
+                                                sigLength * sizeof(float));
+
+
+                        var (preds, mins, maxs) = infer(batch);
+                        // write predictions back (row index needs the global scan index) 
+                        for (int i = 0; i < curCount; ++i)
+                        {
+                            int globalIdx = offset + i;
+                            int row = scanI_0 + globalIdx;  // (scanI_1 - globalIdx - 1);
+                            Channels[ichan].PredictedDefectsBySignals[row, ascanIdx] = preds[i];  // > 50? 1 : 0; // or >50 ? 1 : 0
+
+                            Channels[ichan].PredictedPositionsBySignals[row, ascanIdx, 0] = mpsLimitMin + mpsLimsDiff * mins[i];  // > 50? 1 : 0; // or >50 ? 1 : 0
+                            Channels[ichan].PredictedPositionsBySignals[row, ascanIdx, 1] = mpsLimitMin + mpsLimsDiff * maxs[i];  // > 50? 1 : 0; // or >50 ? 1 : 0
+                        }
+                    }
+                }
+
+                TotalBeams = 0;
+                CurrentBeam = 0;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // defects2D = localDefects2D;
+                    DisplayPredictedDefects = true;
+                    if (!GlobalSettings.IsTurnOffNotifications)
+                    {
+                        string notificationText = Application.Current.Resources["notificationAllDefectsDisplayed"] as string;
+                        NotificationManager.Notifier.ShowInformation(notificationText);
+                    }
+
+                    // DefineRectangularDefectLocations(ichan); need to add them only once - other wise it will add same defects again
+                    // Optionally call your UI update logic here, e.g.:
+                    // Channels[ichan].CscanPlot.AddPredictedDefectedMask(defects2D, ScanLims[ichan], Xlims[ichan]);
+
+                });
+            });
+        }
+
+
+        private (float, float, int, int) GetScanLims_Predictions()
+        {
+            int ichan = SelectedConfigIndex;
+            float scanMin = 0;
+            var normalizedValue = ScanMin.Replace('.', ',');
+            if (float.TryParse(ScanMin, out float parsedValue))
+            {
+                scanMin = parsedValue;
+            }
+            else if (float.TryParse(normalizedValue, out parsedValue))
+            {
+                scanMin = parsedValue;
+            }
+
+            float scanMax = 0;
+            normalizedValue = ScanMax.Replace('.', ',');
+            if (float.TryParse(ScanMax, out parsedValue))
+            {
+                scanMax = parsedValue;
+            }
+            else if (float.TryParse(normalizedValue, out parsedValue))
+            {
+                scanMax = parsedValue;
+            }
+
+            int scanLen = _sigDpsLengths[ichan][1];
+
+            int scanI_0 = (int)((scanMin - ScanLims[ichan][0]) * scanLen / (ScanLims[ichan][1] - ScanLims[ichan][0]));
+            int scanI_1 = (int)((scanMax - ScanLims[ichan][0]) * scanLen / (ScanLims[ichan][1] - ScanLims[ichan][0]));
+            scanI_0 = (scanI_0 < 0) ? 0 : scanI_0;
+            scanI_1 = (scanI_1 >= scanLen) ? scanLen - 1 : scanI_1;
+
+            Console.WriteLine($"Scan Lims setted as [{scanMin} : {scanMax}]");
+            Console.WriteLine($"Scan Lims readed as [{scanI_0} : {scanI_1}]");
+
+            return (scanMin, scanMax, scanI_0, scanI_1);
+        }
+
+        /// <summary>
+        /// The function to prepare set of signals (A-scans data) to feed it to NN for predictions
+        /// </summary>
+        /// <param name="ichan"> index of chanel </param>
+        /// <param name="length"> desired length of the signal: depends on what data NN was trained </param>
+        /// <param name="ascanIdx"> index of beam (A-scan) which slise we want to analyze</param>
+        /// <param name="sscanIdxs"> all Sscan steps (indexes) we want to analyse. I e it's a part of the scanned data we want to analyse</param>
+        /// <param name="maxVal"> amximum amplutude for ALL data in this channel</param>
+        /// <returns> 2D array of preprocessed signals ready to fed for NN to make predictions  </returns>
+        private float[,] PrepareSignalsForPred_OPD(int ichan, int length, int ascanIdx, int[] sscanIdxs, float maxVal, int[] signalDepthIdxLims)
+        {
+            float[,] processd_signals = new float[sscanIdxs.Length, length];
+
+            // TODO: NEED to implement limitations for depth!!
+
+            int realSignalLen = signalDepthIdxLims[1] - signalDepthIdxLims[0];
+
+            foreach (int sscanIdx in sscanIdxs)
+            {
+                float[] signal = new float[length];
+
+                if (realSignalLen < length)
+                {
+                    float[] interpolatedSignal = new float[length];
+                    float step = (float)(realSignalLen - 1) / (length - 1);
+
+                    for (int i = 0; i < length; i++)
+                    {
+                        float index = i * step;
+                        int indexLower = (int)Math.Floor(index) + signalDepthIdxLims[0];
+                        int indexUpper = Math.Max((int)Math.Ceiling(index), 0) + signalDepthIdxLims[0];
+
+                        if (indexUpper >= realSignalLen)
+                        {
+                            indexUpper = realSignalLen - 1;
+                        }
+
+                        float fraction = index - indexLower;
+                        // interpolatedSignal[i] = (1 - fraction) * initSignal[indexLower] + fraction * initSignal[indexUpper];
+                        // interpolatedSignal[i] = (1 - fraction) * SigDps[ichan][indexLower, ascanIdx, sscanIdx] + fraction * SigDps[ichan][indexUpper, ascanIdx, sscanIdx];
+                        interpolatedSignal[i] = (1 - fraction) * SigDps[ichan][ascanIdx][sscanIdx][indexLower] + fraction * SigDps[ichan][ascanIdx][sscanIdx][indexUpper];
+                        signal[i] = (interpolatedSignal[i] * SoftGain) / maxVal;
+
+                        processd_signals[sscanIdx - sscanIdxs[0], i] = signal[i];
+                    }
+                    // signal = interpolatedSignal.Select(x => x / maxVal).ToArray();
+                }
+                else
+                {
+                    // float[] initSignal = Enumerable.Range(signalDepthIdxLims[0], signalDepthIdxLims[1] - signalDepthIdxLims[0]).Select(i => SigDps[ichan][i, ascanIdx, sscanIdx]).ToArray();
+                    float[] initSignal = Enumerable.Range(signalDepthIdxLims[0], signalDepthIdxLims[1] - signalDepthIdxLims[0]).Select(i => SigDps[ichan][ascanIdx][sscanIdx][i]).ToArray();
+                    float step = (float)realSignalLen / length;
+                    for (int i = 0; i < length; i++)
+                    {
+                        int index = (int)Math.Floor(i * step);
+                        signal[i] = (float)initSignal.Skip(index).Take((int)Math.Ceiling(step)).Max() * SoftGain / maxVal;
+                        processd_signals[sscanIdx, i] = signal[i];
+                    }
+                }
+            }
+            return processd_signals;
+        }
+
+
+
+        #endregion
+
+        #region Convert C-Scan defective areas into exact defects locations
+        private int univIndex = 0;
+        private void DefineRectangularDefectLocations(bool isSNR = false)
+        {
+            int ichan = SelectedConfigIndex;
+            bool isSNRCorrectDimentions = isSNR ? MarkedData.GetLength(0) == _sigDpsLengths[ichan][1] && MarkedData.GetLength(1) == _sigDpsLengths[ichan][0] : false;
+
+            var rawDefects = isSNR && isSNRCorrectDimentions ? Segment(MarkedData, (float)0.5f) : Segment(Channels[ichan].PredictedDefectsBySignals, 50, true);
+            
+            int maxGapBeams = 3;
+            int maxGapScans = 5;
+            var defectsCoords = MergeCloseRectangles(rawDefects, maxGapBeams, maxGapScans);
+
+            float scanMin = ScanLims[ichan][0];
+            float scanMax = ScanLims[ichan][1];
+            float scanRange = scanMax - scanMin;
+            float Xmin = Xlims[ichan][0];
+            float Xmax = Xlims[ichan][1];
+            float Xrange = Xmax - Xmin;
+
+            float scanLen = _sigDpsLengths[ichan][1];
+            float numBeams = _sigDpsLengths[ichan][0];
+
+            // float mpsMin = Math.Round(MpsLim[ichan][0], 2);
+            // float mpsMax = Math.Round(MpsLim[ichan][1], 2);
+
+
+            float mpsLimitMin = 0;
+            var normalizedValue = DepthMin.Replace('.', ',');
+            if (float.TryParse(DepthMin, out float parsedMpsLime))
+            {
+                mpsLimitMin = parsedMpsLime;
+            }
+            else if (float.TryParse(normalizedValue, out parsedMpsLime))
+            {
+                mpsLimitMin = parsedMpsLime;
+            }
+
+            float mpsLimitMax = 0;
+            normalizedValue = DepthMax.Replace('.', ',');
+            if (float.TryParse(DepthMax, out parsedMpsLime))
+            {
+                mpsLimitMax = parsedMpsLime;
+            }
+            else if (float.TryParse(normalizedValue, out parsedMpsLime))
+            {
+                mpsLimitMax = parsedMpsLime;
+            }
+            mpsLimitMin = mpsLimitMax < MpsLim[ichan][0] ? MpsLim[ichan][0] : mpsLimitMin;
+            mpsLimitMax = mpsLimitMax > MpsLim[ichan][1] ? MpsLim[ichan][1] : mpsLimitMax;
+            float thickness = (float)Math.Round(mpsLimitMax - mpsLimitMin, 2);
+
+            int snrDefectIndex = 0;
+            univIndex = DefectDatas.Count();
+            // now for each element in defectsCoords we need to calculate the scan and index position
+            foreach (var defect in defectsCoords)
+            {
+                float x0 = defect.Item1;  // beam index
+                float y0 = defect.Item2;
+                float x1 = defect.Item3;  // beam index
+                float y1 = defect.Item4;
+
+                // need to add here definition of defect depth
+
+                float size = 0;
+                if (!isSNR)
+                {
+                    int b0 = Convert.ToInt32(Math.Round(x0));
+                    int b1 = Convert.ToInt32(Math.Round(x1));
+                    int s0 = Convert.ToInt32(Math.Round(scanLen - y0));
+                    int s1 = Convert.ToInt32(Math.Round(scanLen - y1));
+                    // int s0 = Convert.ToInt32(Math.Round(y0));
+                    // int s1 = Convert.ToInt32(Math.Round(y1));
+                    (float min0, float max0) = CalcualteDepthLims(ichan, Math.Min(b0, b1), Math.Max(b0, b1), Math.Min(s0, s1), Math.Max(s0, s1));
+
+                    mpsLimitMin = min0 != (-1000) ? min0 : mpsLimitMin;
+                    mpsLimitMax = max0 != (-1000) ? max0 : mpsLimitMax;
+
+                    if (min0 != -1000) size = Math.Abs(max0 - min0);
+                }
+
+                float scanStart = (float)Math.Round(scanMin + ((scanLen - y0) / scanLen) * scanRange, 2);
+                float scanEnd = (float)Math.Round(scanMin + ((scanLen - y1) / scanLen) * scanRange, 2);
+
+                // float scanSt = (float)Math.Round(scanMin + (y0 / scanLen) * scanRange, 2);
+                // float scanEn = (float)Math.Round(scanMin + (y1 / scanLen) * scanRange, 2);
+                // float scanStart = Math.Max(scanSt, scanEn);
+                // float scanEnd = Math.Min(scanSt, scanEn);
+
+                float Xstart = (float)Math.Round(Xmin + (x0 / numBeams) * Xrange, 2);
+                float Xend = (float)Math.Round(Xmin + (x1 / numBeams) * Xrange, 2);
+                if (Math.Abs(y1 - y0) < 2) continue;
+                if (Math.Abs(x1 - x0) < 1) continue;
+
+                size = (float)Math.Max(Math.Round(size, 2), Math.Max(Math.Abs(Xend - Xstart), Math.Abs(scanStart - scanEnd)));
+
+
+                var rectInfo = new RectangleInfo
+                {
+                    Folder = aiInspectionFileInfo.Folder,
+                    File = aiInspectionFileInfo.File,
+                    SpecimenName = aiInspectionFileInfo.SpecimenName,
+                    Company = aiInspectionFileInfo.Company,
+                    DateOfInspection = aiInspectionFileInfo.DateOfInspection,
+                    DateOfAnalysis = aiInspectionFileInfo.DateOfAnalysis,
+                    Channel = ichan.ToString(),
+                    ScanIndex1 = Math.Min(scanStart, scanEnd),
+                    ScanIndex2 = Math.Max(scanStart, scanEnd),
+                    CeneterXAxis1 = Xstart,
+                    CeneterXAxis2 = Xend,
+                    DepthMin = mpsLimitMin,  // TODO: remake to correct values: i e Depth, not MPS
+                    DepthMax = mpsLimitMax,
+                    UnivIndex = univIndex,
+                    DefectType = "Delamination",
+
+                };
+
+                var oneDefectData = new DefectData
+                {
+                    DefectNumber = Convert.ToString(univIndex),
+                    TypeOfDefect = "Delamination",
+                    InspectionMethod = "PAUT",
+                    Attenuation = Channels[ichan].State.Gain.ToString(),
+                    ThicknessOfPart = thickness,
+                    DepthFrom = $"{Math.Round(mpsLimitMin, 2)} to {Math.Round(mpsLimitMax, 2)}",
+                    Size = $"{Math.Round(size, 2)} mm",
+                    PictureNumber = $"",
+                    PictureNumber2 = $"",
+                    LocatedIn_PartName = $"",
+                    LocatedIn_Zone = "",
+                    Position_fromDatum = $"{Math.Round(Math.Min(scanStart, scanEnd), 2)} to {Math.Round(Math.Max(scanStart, scanEnd), 2)} mm",
+                    Position_beamAxis = $"{Xstart} to {Xend} mm",
+                    Remark = ""
+                };
+                univIndex++;
+                RectangleInfos.Add(rectInfo);
+                DefectDatas.Add(oneDefectData);
+
+            }
+        }
+        public static List<Tuple<int, int, int, int>> Segment(double[,] defects2D, float threshold = 50, bool isReversed = false)
+        {
+            int height = defects2D.GetLength(0);
+            int width = defects2D.GetLength(1);
+
+            bool[,] visited = new bool[height, width];
+            List<Tuple<int, int, int, int>> result = new List<Tuple<int, int, int, int>>();
+
+            int[] dx = { -1, -1, -1, 0, 0, 1, 1, 1 };
+            int[] dy = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                {
+                    if (!visited[y, x] && defects2D[y, x] >= threshold)
+                    {
+                        int minX = x, maxX = x, minY = y, maxY = y;
+                        Queue<(int x, int y)> queue = new Queue<(int x, int y)>();
+                        queue.Enqueue((x, y));
+                        visited[y, x] = true;
+
+                        while (queue.Count > 0)
+                        {
+                            var (cx, cy) = queue.Dequeue();
+
+                            for (int d = 0; d < 8; d++)
+                            {
+                                int nx = cx + dx[d];
+                                int ny = cy + dy[d];
+
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height &&
+                                    !visited[ny, nx] && defects2D[ny, nx] >= threshold)
+                                {
+                                    visited[ny, nx] = true;
+                                    queue.Enqueue((nx, ny));
+                                    minX = Math.Min(minX, nx);
+                                    maxX = Math.Max(maxX, nx);
+                                    minY = Math.Min(minY, ny);
+                                    maxY = Math.Max(maxY, ny);
+                                }
+                            }
+                        }
+                        if (isReversed)
+                        {
+                            result.Add(Tuple.Create(minX, height - minY - 1, maxX, height - maxY - 1));
+                            Console.WriteLine($"Original coords. Beams: [{minX}:{maxX}], Scans: [{minY}:{maxY}]");
+                            Console.WriteLine($"Reversed coords. Beams: [{minX}:{maxX}], Scans: [{height - 1 - minY}:{height - 1 - maxY}]");
+                        }
+                        else
+                        {
+                            result.Add(Tuple.Create(minX, minY, maxX, maxY));
+                        }
+                    }
+                }
+
+            return result;
+        }
+        public static List<Tuple<int, int, int, int>> MergeCloseRectangles(List<Tuple<int, int, int, int>> rects,
+                    int maxGapX,   // max gap in beams (x direction)
+                    int maxGapY)   // max gap in scans (y direction)
+        {
+            if (rects == null || rects.Count == 0)
+                return rects;
+
+            var remaining = new List<Tuple<int, int, int, int>>(rects);
+            bool merged;
+
+            do
+            {
+                merged = false;
+                var newList = new List<Tuple<int, int, int, int>>();
+
+                while (remaining.Count > 0)
+                {
+                    var r = remaining[0];
+                    remaining.RemoveAt(0);
+
+                    int rMinX = Math.Min(r.Item1, r.Item3);
+                    int rMaxX = Math.Max(r.Item1, r.Item3);
+                    int rMinY = Math.Min(r.Item2, r.Item4);
+                    int rMaxY = Math.Max(r.Item2, r.Item4);
+                    bool mergedThis = false;
+
+                    for (int i = 0; i < remaining.Count; i++)
+                    {
+                        var q = remaining[i];
+                        int qMinX = q.Item1, qMinY = q.Item2, qMaxX = q.Item3, qMaxY = q.Item4;
+
+                        // distance in X between boxes (0 if overlap)
+                        int dx;
+                        if (qMinX > rMaxX) dx = qMinX - rMaxX;
+                        else if (rMinX > qMaxX) dx = rMinX - qMaxX;
+                        else dx = 0;
+
+                        // distance in Y between boxes (0 if overlap)
+                        int dy;
+                        if (qMinY > rMaxY) dy = qMinY - rMaxY;
+                        else if (rMinY > qMaxY) dy = rMinY - qMaxY;
+                        else dy = 0;
+
+                        if (dx <= maxGapX && dy <= maxGapY)
+                        {
+                            // merge r and q into bigger rectangle
+                            rMinX = Math.Min(rMinX, qMinX);
+                            rMinY = Math.Min(rMinY, qMinY);
+                            rMaxX = Math.Max(rMaxX, qMaxX);
+                            rMaxY = Math.Max(rMaxY, qMaxY);
+
+                            remaining.RemoveAt(i);
+                            i--;
+                            mergedThis = true;
+                            merged = true;
+                        }
+                    }
+
+                    newList.Add(Tuple.Create(rMinX, rMinY, rMaxX, rMaxY));
+                }
+
+                remaining = newList;
+            } while (merged);
+
+            return remaining;
+        }
+
+        private (float, float) CalcualteDepthLims(int ichan, int x0, int x1, int y0, int y1)
+        {
+            var mins = new List<float>();
+            var maxs = new List<float>();
+
+            for (int y = y0; y < y1; y++)
+            {
+                for (int x = x0; x < x1; x++)
+                {
+                    mins.Add(Channels[ichan].PredictedPositionsBySignals[y, x, 0]);
+                    maxs.Add(Channels[ichan].PredictedPositionsBySignals[y, x, 1]);
+                }
+            }
+
+            if (mins.Count == 0 || maxs.Count == 0)
+                return (-1000, -1000);
+            float min = mins.Min();
+            float max = maxs.Max();
+
+            return (min, max);
+        }
+
+        #endregion
+
 
 
         public class RelayCommand : ICommand
@@ -1950,100 +2655,11 @@ namespace PAUTViewer.ViewModels
         public ScanState State { get; init; }
         public ScanCoordinator Coordinator { get; init; }
 
-        #region Softgan
-
-
-
-        
-        #endregion
-
-        #region Rows Heights and Collumn width
-
-        private GridLength _rowHeight1;
-        private GridLength _rowHeight2;
-        private GridLength _rowHeight3;
-        private GridLength _rowHeight4;
-        private GridLength _rowHeight5;
-        private GridLength _rowHeight6;
-        private GridLength _rowHeightBottom;
-
-        public GridLength RowHeight1
-        {
-            get => _rowHeight1;
-            set
-            {
-                _rowHeight1 = value;
-                OnPropertyChanged(nameof(RowHeight1));
-            }
-        }
-
-        public GridLength RowHeight2
-        {
-            get => _rowHeight2;
-            set
-            {
-                _rowHeight2 = value;
-                OnPropertyChanged(nameof(RowHeight2));
-            }
-        }
-
-        public GridLength RowHeight3
-        {
-            get => _rowHeight3;
-            set
-            {
-                _rowHeight3 = value;
-                OnPropertyChanged(nameof(RowHeight3));
-            }
-        }
-
-        public GridLength RowHeightBottom
-        {
-            get => _rowHeightBottom;
-            set
-            {
-                _rowHeightBottom = value;
-                OnPropertyChanged(nameof(RowHeightBottom));
-            }
-        }
-
-        // 0 - left, 1 - splitter, 2 - right width
-        private GridLength _columnWidth1;
-        private GridLength _columnWidth2;
-        private GridLength _columnWidth3;
-        public GridLength ColumnWidth1
-        {
-            get => _columnWidth1;
-            set
-            {
-                _columnWidth1 = value;
-                OnPropertyChanged(nameof(ColumnWidth1));
-            }
-        }
-        public GridLength ColumnWidth2
-        {
-            get => _columnWidth2;
-            set
-            {
-                _columnWidth2 = value;
-                OnPropertyChanged(nameof(ColumnWidth2));
-            }
-        }
-        public GridLength ColumnWidth3
-        {
-            get => _columnWidth3;
-            set
-            {
-                _columnWidth3 = value;
-                OnPropertyChanged(nameof(ColumnWidth3));
-            }
-        }
+        public double[,] PredictedDefectsBySignals;
+        public float[,,] PredictedPositionsBySignals;
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        #endregion
-
 
     }
 }

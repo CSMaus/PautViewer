@@ -45,8 +45,8 @@
     <system:String x:Key="predict">Predict</system:String>
     <system:String x:Key="predictAndDisplayDefects">Predict Defects</system:String>
     <system:String x:Key="displayPre4dictedDefectsArea">Display defective area</system:String>
-    <system:String x:Key="addSNRMarker">Add SNR Marker</system:String>
-    <system:String x:Key="hideSNRMarker">Hide SNR Marker</system:String>
+    <system:String x:Key="addSNRMarker">Add SNR Box</system:String>
+    <system:String x:Key="hideSNRMarker">Hide SNR Box</system:String>
     <system:String x:Key="calculateGates">Recalculate Gates</system:String>
     <system:String x:Key="autoSNR">AutoSNR</system:String>
     <system:String x:Key="saveSignals">Save Signals</system:String>
@@ -108,9 +108,9 @@
     <system:String x:Key="analysisWindow">Analysis Window</system:String>
     <system:String x:Key="referenceArea">Reference Area</system:String>
     <system:String x:Key="evaluation">Evaluation</system:String>
-    <system:String x:Key="meanValue">Mean value:</system:String>
-    <system:String x:Key="standardDeviation">Standard deviation:</system:String>
-    <system:String x:Key="excludeValuesFromBelowGate">Exclude values from below gate (no detection)</system:String>
+    <system:String x:Key="meanValue">Mean</system:String>
+    <system:String x:Key="standardDeviation">Standard deviation</system:String>
+    <system:String x:Key="excludeValuesFromBelowGate">Exclude values from below gate</system:String>
     <system:String x:Key="displayDefectArea">Display Defect area</system:String>
     <system:String x:Key="snrDefectsInDeveloperTable">Add to Report</system:String>
     <system:String x:Key="defectArea">Defect area (A1 + A2):</system:String>

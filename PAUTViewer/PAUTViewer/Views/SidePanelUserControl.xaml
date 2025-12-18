@@ -17,8 +17,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-            
-            
+
+
         <ComboBox
             Margin="5, 0, 5, 0"
             Height="22"
@@ -30,7 +30,7 @@
             ItemsSource="{Binding configNames}"
             SelectedIndex="{Binding SelectedConfigIndex, UpdateSourceTrigger=PropertyChanged}"/>
 
-            
+
         <TabControl Grid.Row="1" Margin="2,10,2,2" HorizontalAlignment="Stretch">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabItem}"
@@ -56,7 +56,7 @@
                         <CheckBox Content="Sync Scans Axis" IsChecked="{Binding IsSyncScansAxis}"  Margin="0, 5, 0, 5"
                                   ToolTip="Sync axis to be same as in C-Scam: Amplitude"/>
                     </Border>
-                    
+
                     <Border Grid.Row="3" Margin="2" BorderThickness="0, 2, 0, 2" BorderBrush="DarkGray" HorizontalAlignment="Stretch">
                         <Grid Margin="0,2,0,0">
                             <Grid.ColumnDefinitions>
@@ -86,7 +86,7 @@
     SelectedItem="{Binding SelectedDscanColorMapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                         </Grid>
-                        
+
                     </Border>
 
 
@@ -104,7 +104,7 @@
                                     -->
                         </StackPanel>
                     </Border>
-                    
+
                 </Grid>
             </TabItem>
 
@@ -126,7 +126,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
+
                     <TextBlock Text="{DynamicResource referenceArea}" Background="{DynamicResource Background}" Width="90" HorizontalAlignment="Left" Margin="2"/>
 
                     <Grid Grid.Row="1" Margin="0, -9, 0, 0">
@@ -141,13 +141,13 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Button Content="{DynamicResource addSNRMarker}"  Margin="2" Width="102" HorizontalAlignment="Left" Command="{Binding AddSNRAnalysisArea_ClickCommand}"
+                        <Button Content="{DynamicResource addSNRMarker}"  Margin="2" Width="82" HorizontalAlignment="Left" Command="{Binding AddSNRAnalysisArea_ClickCommand}"
                                 Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="1"/>
-                        <Button Content="{DynamicResource hideSNRMarker}"  Margin="2" Width="102" HorizontalAlignment="Left" Command="{Binding RemoveSNRAnalysisArea_ClickCommand}"
+                        <Button Content="{DynamicResource hideSNRMarker}"  Margin="2" Width="82" HorizontalAlignment="Left" Command="{Binding RemoveSNRAnalysisArea_ClickCommand}"
                                 Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="1"/>
                         <Button Content="{DynamicResource retrieve}"  Command="{Binding Retrieve_ClickCommand}"
                                 Grid.Row="0" Grid.ColumnSpan="3" Grid.Column="1"
-                                Margin="2" Width="88" HorizontalAlignment="Right" />
+                                Margin="2" Width="82" HorizontalAlignment="Right" />
 
 
                         <TextBlock Text="{DynamicResource meanValue}" 
@@ -156,7 +156,7 @@
                             Text="{Binding Mean, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                         <TextBlock Text=" %" Margin="2" Grid.Row="1" Grid.Column="3"/>
 
-                        <TextBlock Text="{DynamicResource standardDeviation}" Grid.Row="2" Grid.Column="1" 
+                        <TextBlock Text="STD" Grid.Row="2" Grid.Column="1" ToolTip="{DynamicResource standardDeviation}"
                             HorizontalAlignment="Right" Margin="2" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="2" Grid.Column="2" Margin="2" IsReadOnly="True" HorizontalAlignment="Right" Width="50"
                         Text="{Binding StdDev, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
@@ -171,7 +171,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="60"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -206,7 +205,7 @@
                                 <s:VerticalLineAnnotation
                                     Stroke="Red" StrokeThickness="2"
                                     X1="{Binding Smin, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                    IsEditable="False" ShowLabel="True" LabelTextFormatting="0.00" />   
+                                    IsEditable="False" ShowLabel="True" LabelTextFormatting="0.00" />
                                 <s:VerticalLineAnnotation
                                     Stroke="Red" StrokeThickness="2"
                                     X1="{Binding Smax, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -230,7 +229,7 @@
                     </Grid>
 
 
-                    
+
                     <StackPanel  Grid.Row="5" HorizontalAlignment="Left" VerticalAlignment="Top">
                         <CheckBox IsChecked="{Binding ExcludeBelowValues}" Content="{DynamicResource excludeValuesFromBelowGate}" Margin="1"/>
                         <CheckBox IsChecked="{Binding DisplayDefectAreaMask, UpdateSourceTrigger=PropertyChanged}" 
@@ -243,8 +242,9 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="21*"/>
+                                <ColumnDefinition Width="24*"/>
+                                <ColumnDefinition Width="56*"/>
                                 <ColumnDefinition Width="Auto" MaxWidth="45"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -257,37 +257,37 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <TextBlock Text="K:" Width="15" Grid.Column="0"/>
-                            <TextBox Grid.Column="4" Text="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-                            <Slider Grid.Column="1" Grid.ColumnSpan="3" Value="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
-                                    Minimum="0" Maximum="20" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" MinWidth="150"/>
+                            <TextBox Grid.Column="5" Text="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                            <Slider Grid.Column="1" Grid.ColumnSpan="5" Value="{Binding KValue, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                    Minimum="0" Maximum="20" HorizontalContentAlignment="Stretch" MinWidth="120" Margin="0,0,18,0"/>
 
-                            <TextBlock Text="{DynamicResource defectArea}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3"/>
-                            <StackPanel Orientation="Horizontal"  Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" Margin="3">
+                            <TextBlock Text="{DynamicResource defectArea}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="5,3,0,3"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="1" Grid.Column="4" HorizontalAlignment="Left" Margin="3,3,0,3">
                                 <TextBlock Text="{Binding TotalDefectArea}"/>
                                 <TextBlock Text=" mm"/>
                                 <TextBlock Text="2" FontSize="7"/>
                             </StackPanel>
 
-                            <TextBlock Text="{DynamicResource signalToNoiseRatio}" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3" ToolTip="SNR = 20 * Log10(K)"/>
-                            <StackPanel Orientation="Horizontal"  Grid.Row="2" Grid.Column="3" HorizontalAlignment="Left" Margin="3" ToolTip="SNR = 20 * Log10(K)">
+                            <TextBlock Text="{DynamicResource signalToNoiseRatio}" Grid.Row="2" Grid.Column="0"  Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="11,3,0,3" ToolTip="SNR = 20 * Log10(K)"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="2" Grid.Column="4" HorizontalAlignment="Left" Margin="3,3,0,3" ToolTip="SNR = 20 * Log10(K)">
                                 <TextBlock Text="{Binding KValue}"/>
                                 <TextBlock Text=" ("/>
                                 <TextBlock Text="{Binding SNR}"/>
                                 <TextBlock Text=" dB)"/>
                             </StackPanel>
 
-                            <Border BorderBrush="{DynamicResource BordersBrush}" BorderThickness="0,1,0,0" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" Margin="3"/>
+                            <Border BorderBrush="{DynamicResource BordersBrush}" BorderThickness="0,1,0,0" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5" Margin="3,3,3,3"/>
 
-                            <TextBlock Text="{DynamicResource totalArea}" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3"/>
-                            <StackPanel Orientation="Horizontal"  Grid.Row="4" Grid.Column="3" HorizontalAlignment="Left" Margin="3">
+                            <TextBlock Text="{DynamicResource totalArea}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Left" Margin="53,3,0,3"/>
+                            <StackPanel Orientation="Horizontal"  Grid.Row="4" Grid.Column="4" HorizontalAlignment="Left" Margin="3,3,0,3">
                                 <TextBlock Text="{Binding TotalArea}" />
                                 <TextBlock Text=" mm"/>
                                 <TextBlock Text="2" FontSize="7"/>
                             </StackPanel>
 
-                            <TextBlock Text="{DynamicResource defectAreaTotalArea}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" Margin="3" ToolTip="SNR = 20 * Log10(K)"/>
+                            <TextBlock Text="{DynamicResource defectAreaTotalArea}" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Left" Margin="3,3,0,3" ToolTip="SNR = 20 * Log10(K)"/>
 
-                            <StackPanel Orientation="Horizontal"  Grid.Row="5" Grid.Column="3" HorizontalAlignment="Left" Margin="3" >
+                            <StackPanel Orientation="Horizontal"  Grid.Row="5" Grid.Column="4" HorizontalAlignment="Left" Margin="3,3,0,3" >
                                 <TextBlock Text="{Binding TotalDefectAreaPerc}" />
                                 <TextBlock Text=" %"/>
                             </StackPanel>
@@ -303,12 +303,84 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <TextBlock Text="{DynamicResource scanStartEnd}"  Grid.Row="2" Grid.Column="0" Height="25" VerticalAlignment="Center" Margin="5, 10, 5, 0"/>
+                    <TextBox Name="SscanMin" Grid.Row="2" Grid.Column="1"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipScanIndexStart}"
+                            Text="{Binding ScanMin, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBox Name="SscanMax" Grid.Row="2" Grid.Column="2"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipScanIndexEnd}"
+                            Text="{Binding ScanMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <TextBlock Text="{DynamicResource beamStartEnd}"  Grid.Row="3" Grid.Column="0" Height="25" VerticalAlignment="Center" Margin="5, 10, 5, 0"/>
+                    <TextBox Name="BeamMin" Grid.Row="3" Grid.Column="1"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipBeamIndexStart}"
+                            Text="{Binding IndexMin, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBox Name="BeamMax" Grid.Row="3" Grid.Column="2"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipBeamIndexEnd}"
+                            Text="{Binding IndexMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <TextBlock Text="{DynamicResource depthStartEnd}"  Grid.Row="4" Grid.Column="0" Height="25" VerticalAlignment="Center" Margin="5, 10, 5, 0"/>
+                    <TextBox Name="DepthMin" Grid.Row="4" Grid.Column="1"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipDepthIndexStart}"
+                            Text="{Binding DepthMin, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBox Name="DepthMax"  Grid.Row="4" Grid.Column="2"
+                            Margin="5" Height="25" MinWidth="50"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            InputScope="Number"
+                            ToolTip="{DynamicResource tooltipDepthIndexEnd}"
+                            Text="{Binding DepthMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}">
+                    <TextBox.InputBindings>
+                            <KeyBinding Key="Space" Command="ApplicationCommands.NotACommand"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+
                 </Grid>
             </TabItem>
 
